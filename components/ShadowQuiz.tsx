@@ -499,10 +499,10 @@ const ShadowQuiz = () => {
               whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
               whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              aria-label="Ask Claude for personalized shadow insights"
+              aria-label="Ask Dr. Shadow for personalized shadow insights"
             >
               <MessageCircle className="w-6 h-6 mx-auto mb-2" />
-              <div className="text-lg font-bold">Ask Claude</div>
+              <div className="text-lg font-bold">Ask Dr. Shadow</div>
               <div className="text-sm opacity-90">Personal Insights</div>
             </motion.button>
             
@@ -541,7 +541,7 @@ const ShadowQuiz = () => {
                 className="bg-black/40 rounded-3xl p-10 glass mb-12"
               >
                 <h3 className="text-2xl font-semibold text-white mb-6 text-center">
-                  Explore Your Shadow Deeper
+                  Consult with Dr. Shadow
                 </h3>
                 <textarea
                   value={userQuestion}
@@ -581,7 +581,7 @@ const ShadowQuiz = () => {
                   >
                     <h4 className="text-xl font-semibold text-indigo-200 mb-4 flex items-center">
                       <MessageCircle className="w-5 h-5 mr-2" />
-                      Personal Shadow Insight
+                      Dr. Shadow's Insight
                     </h4>
                     <p className="text-indigo-100 leading-relaxed text-lg font-light whitespace-pre-line">
                       {claudeResponse}

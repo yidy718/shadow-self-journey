@@ -220,7 +220,7 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
             </motion.button>
 
             <motion.div variants={itemVariants}>
-              <button
+              <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowNameInput(!showNameInput)}
@@ -233,7 +233,7 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
                 <p className="text-purple-200 group-hover:text-purple-100 transition-colors">
                   Carry a name through your shadow work. Progress saved locally.
                 </p>
-              </button>
+              </motion.button>
 
               <AnimatePresence>
                 {showNameInput && (
