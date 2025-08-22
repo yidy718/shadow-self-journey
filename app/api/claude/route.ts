@@ -84,11 +84,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ ANTHROPIC_API_KEY found, attempting Claude API call');
+    console.log('API Key first 20 chars:', process.env.ANTHROPIC_API_KEY?.substring(0, 20) + '...');
+    console.log('API Key starts with sk-ant-:', process.env.ANTHROPIC_API_KEY?.startsWith('sk-ant-'));
 
     try {
+      console.log('🔄 Making request to Claude API...');
+      
       // Call Claude API with latest Claude 4 Sonnet model
       const claudeResponse = await anthropic.messages.create({
-        model: 'claude-4-sonnet-20250308', // Latest Claude 4 Sonnet with 1M context window
+        model: 'claude-3-5-sonnet-20241022', // Latest available Claude 3.5 Sonnet
         max_tokens: 1200, // Increased for more comprehensive responses
         temperature: 0.8, // Optimal for creative, nuanced psychological insights
         system: createShadowWorkSystemPrompt(shadowProfile.archetype, shadowProfile.intensity),
@@ -99,6 +103,10 @@ export async function POST(request: NextRequest) {
           }
         ]
       });
+
+      console.log('✅ Claude API responded successfully');
+      console.log('Response type:', claudeResponse.content[0].type);
+      console.log('Response length:', claudeResponse.content[0].type === 'text' ? claudeResponse.content[0].text.length : 0);
 
       const responseText = claudeResponse.content[0].type === 'text' 
         ? claudeResponse.content[0].text 

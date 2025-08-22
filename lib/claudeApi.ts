@@ -14,6 +14,12 @@ export const askClaude = async (
   conversationHistory?: Array<{question: string, response: string}>
 ): Promise<string> => {
   try {
+    console.log('🔄 Frontend: Calling /api/claude with:', {
+      question: question.substring(0, 50) + '...',
+      archetype: shadowProfile.archetype,
+      conversationCount: conversationHistory?.length || 0
+    });
+
     const response = await fetch('/api/claude', {
       method: 'POST',
       headers: {
@@ -37,6 +43,11 @@ export const askClaude = async (
     }
 
     const data = await response.json();
+    console.log('📨 Frontend: Received response:', {
+      source: data.source,
+      responseLength: data.response?.length || 0,
+      responseStart: data.response?.substring(0, 100) + '...'
+    });
     return data.response;
   } catch (error) {
     console.error('Error asking Claude:', error);
