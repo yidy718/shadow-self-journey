@@ -135,14 +135,20 @@ const ShadowQuiz = () => {
         console.log('⚠️ Using fallback response:', error);
       }
       
-      // Add source indicator for debugging
-      const finalResponse = response + (isFromAPI ? '' : '\n\n*Note: This is a fallback response. Claude API may not be available.*');
-      setClaudeResponse(finalResponse);
+      // Add source indicator 
+      setClaudeResponse(response);
+      
+      // Log the source for debugging
+      if (isFromAPI) {
+        console.log('✅ Dr. Shadow (Claude 4 API) responded');
+      } else {
+        console.log('⚠️ Using fallback - Dr. Shadow unavailable');
+      }
       
       // Save conversation to history
       const newConversation: Conversation = {
         question: userQuestion,
-        response: finalResponse,
+        response: response,
         timestamp: Date.now()
       };
       
@@ -152,8 +158,18 @@ const ShadowQuiz = () => {
       setUserQuestion('');
       
     } catch (error) {
-      const errorResponse = "I'm having trouble connecting right now, but your willingness to explore these depths shows tremendous courage. Your shadow work journey is valid and important.";
+      const errorResponse = `**Connection Error** ⚠️
+
+Dr. Shadow is experiencing technical difficulties and cannot respond to your question right now.
+
+**Your question:** "${userQuestion}"
+
+This appears to be a temporary issue. Please try again in a few moments. Your courage in exploring these depths shows tremendous strength, and your shadow work journey is valid and important.
+
+*If this problem persists, there may be an issue with the Claude API configuration.*`;
+      
       setClaudeResponse(errorResponse);
+      console.log('❌ Connection error:', error);
       
       // Save error conversation too
       const errorConversation: Conversation = {
@@ -702,7 +718,7 @@ const ShadowQuiz = () => {
                                 Q: {conv.question}
                               </div>
                               <div className="text-gray-100 mb-3 whitespace-pre-line">
-                                {conv.response.split('\n\n*Note:')[0]}
+                                {conv.response}
                               </div>
                               <div className="flex gap-2">
                                 <button

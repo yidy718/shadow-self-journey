@@ -73,13 +73,16 @@ export async function POST(request: NextRequest) {
 
     // Check if Claude API key is available
     if (!process.env.ANTHROPIC_API_KEY) {
-      console.log('No Claude API key found, using fallback insights');
+      console.log('❌ No ANTHROPIC_API_KEY found in environment variables');
+      console.log('Available env vars:', Object.keys(process.env).filter(key => key.includes('ANTHROPIC')));
       const fallbackResponse = getDemoInsight(question, shadowProfile);
       return NextResponse.json({ 
         response: fallbackResponse,
-        source: 'fallback' 
+        source: 'fallback-no-key' 
       });
     }
+
+    console.log('✅ ANTHROPIC_API_KEY found, attempting Claude API call');
 
     try {
       // Call Claude API with latest Claude 4 Sonnet model
@@ -106,13 +109,20 @@ export async function POST(request: NextRequest) {
       });
 
     } catch (claudeError) {
-      console.error('Claude API error:', claudeError);
+      console.error('❌ Claude API error:', claudeError);
+      
+      // More specific error logging
+      if (claudeError instanceof Error) {
+        console.error('Error message:', claudeError.message);
+        console.error('Error name:', claudeError.name);
+      }
       
       // Fallback to demo insights if Claude API fails
       const fallbackResponse = getDemoInsight(question, shadowProfile);
       return NextResponse.json({ 
         response: fallbackResponse,
-        source: 'fallback-after-error' 
+        source: 'fallback-after-error',
+        error: claudeError instanceof Error ? claudeError.message : 'Unknown error'
       });
     }
 
