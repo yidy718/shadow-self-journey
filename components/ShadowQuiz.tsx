@@ -604,6 +604,22 @@ const ShadowQuiz = () => {
               <RotateCcw className="inline-block mr-4 w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
               Journey Again
             </motion.button>
+            
+            {/* Legal Notice */}
+            <motion.div 
+              variants={itemVariants}
+              className="mt-12 text-center text-gray-400 text-sm max-w-2xl mx-auto"
+            >
+              <p className="mb-2">
+                © 2024 yidy. All rights reserved. For personal use only.
+              </p>
+              <p className="text-xs">
+                Commercial use prohibited. This application is not a substitute for professional psychological treatment.
+                <br />
+                <a href="/LICENSE.md" className="text-red-400 hover:text-red-300 underline mx-2">License</a>
+                <a href="/TERMS.md" className="text-red-400 hover:text-red-300 underline mx-2">Terms</a>
+              </p>
+            </motion.div>
           </div>
         </motion.div>
       </div>
