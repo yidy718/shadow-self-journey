@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ef4444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, [role="button"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disable animations for reduced motion users */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Enhanced focus states */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+}
+
+/* Custom selection colors */
+::selection {
+  background: #ef444450;
+  color: #fff;
+}
+
+/* Particle animation base */
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  66% {
+    transform: translateY(10px) translateX(-5px);
+  }
+}
+
+.particle {
+  animation: particleFloat var(--duration) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+/* Glow effects */
+.glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.glow-red:hover {
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+}
+
+/* Text glow variations */
+.text-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.05) 50%, 
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* Backdrop blur for glass effects */
+.glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-black to-red-900 hover:from-gray-900 hover:to-red-800 
+         text-red-100 px-8 py-4 rounded-full font-semibold 
+         transition-all duration-300 transform hover:scale-105 active:scale-95
+         shadow-2xl border border-red-500/30 glow-red 
+         focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50;
+}
+
+.btn-secondary {
+  @apply bg-gray-900/80 backdrop-blur-sm border border-red-500/30 
+         rounded-2xl p-6 text-left hover:bg-red-900/20 hover:border-red-400/70 
+         transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0
+         hover:shadow-2xl hover:shadow-red-500/20 
+         focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50;
+}
+
+/* Advanced animations */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes levitate {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes subtlePulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-levitate {
+  animation: levitate 3s ease-in-out infinite;
+}
+
+.animate-subtle-pulse {
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+
+/* Improved glass morphism */
+.glass-strong {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Typography enhancements */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Enhanced shadows */
+.shadow-glow-red {
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 0 50px rgba(147, 51, 234, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Interactive feedback */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Micro-interactions */
+.tap-feedback {
+  transform: scale(1);
+  transition: transform 0.1s ease;
+}
+
+.tap-feedback:active {
+  transform: scale(0.98);
+}
