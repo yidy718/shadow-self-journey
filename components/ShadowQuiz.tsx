@@ -126,9 +126,15 @@ const ShadowQuiz = () => {
       
       // Try Claude API first, fallback to demo insights
       try {
-        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id);
+        // Convert conversations to the format expected by the API
+        const apiConversationHistory = conversations.map(conv => ({
+          question: conv.question,
+          response: conv.response
+        }));
+        
+        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory);
         isFromAPI = true;
-        console.log('✅ Using Claude API response');
+        console.log('✅ Using Claude API response with', apiConversationHistory.length, 'previous exchanges');
       } catch (error) {
         // Fallback to demo insights if API fails
         response = getDemoInsight(userQuestion, shadowProfile);

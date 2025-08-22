@@ -15,10 +15,11 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, shadowProfile, userId }: { 
+    const { question, shadowProfile, userId, conversationHistory }: { 
       question: string; 
       shadowProfile: ShadowProfile; 
-      userId?: string 
+      userId?: string;
+      conversationHistory?: Array<{question: string, response: string}>
     } = await request.json();
 
     // Validate input
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'user',
-            content: createUserPrompt(question, shadowProfile)
+            content: createUserPrompt(question, shadowProfile, conversationHistory)
           }
         ]
       });
@@ -238,12 +239,27 @@ SPECIALIZED FOCUS: Eternally Forsaken Shadow Integration
   return basePrompt + (archetypeSpecifics[archetype as keyof typeof archetypeSpecifics] || archetypeSpecifics['The Self-Destroyer']);
 }
 
-function createUserPrompt(question: string, shadowProfile: ShadowProfile): string {
-  return `I've just completed a shadow self assessment and been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.
+function createUserPrompt(
+  question: string, 
+  shadowProfile: ShadowProfile, 
+  conversationHistory?: Array<{question: string, response: string}>
+): string {
+  let prompt = `I've been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.`;
 
-My question about my shadow work journey is: "${question}"
+  // Add conversation history if it exists
+  if (conversationHistory && conversationHistory.length > 0) {
+    prompt += `\n\nOUR PREVIOUS CONVERSATION:\n`;
+    conversationHistory.slice(-3).forEach((conv, index) => {
+      prompt += `\n${index + 1}. I asked: "${conv.question}"\n   You responded: "${conv.response.substring(0, 200)}..."\n`;
+    });
+    prompt += `\nCONTINUING OUR CONVERSATION:\n`;
+  }
 
-Please provide insight that acknowledges the specific darkness I carry as ${shadowProfile.archetype}, addresses my question directly, and gives me practical guidance for integration. I'm ready for psychological depth and honest truth about these shadow aspects.`;
+  prompt += `\nMy current question: "${question}"
+
+Please respond directly to THIS specific question. Build on our conversation history if relevant. Provide personalized insight that addresses exactly what I'm asking about, not general archetype information. I want practical, specific guidance for my current concern.`;
+
+  return prompt;
 }
 
 // Enhanced fallback function with more nuanced responses

@@ -7,7 +7,12 @@ export interface ShadowProfile {
   description: string;
 }
 
-export const askClaude = async (question: string, shadowProfile: ShadowProfile, userId?: string): Promise<string> => {
+export const askClaude = async (
+  question: string, 
+  shadowProfile: ShadowProfile, 
+  userId?: string,
+  conversationHistory?: Array<{question: string, response: string}>
+): Promise<string> => {
   try {
     const response = await fetch('/api/claude', {
       method: 'POST',
@@ -18,6 +23,7 @@ export const askClaude = async (question: string, shadowProfile: ShadowProfile, 
         question,
         shadowProfile,
         userId,
+        conversationHistory,
       }),
     });
 
