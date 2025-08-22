@@ -7,7 +7,7 @@ export interface ShadowProfile {
   description: string;
 }
 
-export const askClaude = async (question: string, shadowProfile: ShadowProfile): Promise<string> => {
+export const askClaude = async (question: string, shadowProfile: ShadowProfile, userId?: string): Promise<string> => {
   try {
     const response = await fetch('/api/claude', {
       method: 'POST',
@@ -17,8 +17,14 @@ export const askClaude = async (question: string, shadowProfile: ShadowProfile):
       body: JSON.stringify({
         question,
         shadowProfile,
+        userId,
       }),
     });
+
+    if (response.status === 429) {
+      const errorData = await response.json();
+      throw new Error(`Rate limit exceeded. Please try again later. ${errorData.resetTime ? `Reset in ${Math.ceil((errorData.resetTime - Date.now()) / (60 * 1000))} minutes.` : ''}`);
+    }
 
     if (!response.ok) {
       throw new Error('Failed to get response from Claude');
@@ -28,6 +34,9 @@ export const askClaude = async (question: string, shadowProfile: ShadowProfile):
     return data.response;
   } catch (error) {
     console.error('Error asking Claude:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error;
+    }
     throw new Error('Failed to connect to Claude. Please try again later.');
   }
 };

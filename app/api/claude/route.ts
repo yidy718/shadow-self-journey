@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Anthropic from '@anthropic-ai/sdk';
 
 export interface ShadowProfile {
   archetype: string;
@@ -7,22 +8,158 @@ export interface ShadowProfile {
   description: string;
 }
 
+// Initialize Claude client
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const { question, shadowProfile }: { question: string; shadowProfile: ShadowProfile } = await request.json();
+    const { question, shadowProfile, userId }: { 
+      question: string; 
+      shadowProfile: ShadowProfile; 
+      userId?: string 
+    } = await request.json();
 
-    // For now, we'll use the fallback system since the user hasn't provided Claude API keys
-    // In a production environment, you would integrate with Claude's API here
-    const response = getDemoInsight(question, shadowProfile);
+    // Validate input
+    if (!question?.trim()) {
+      return NextResponse.json(
+        { error: 'Question is required' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ response });
+    if (!shadowProfile?.archetype) {
+      return NextResponse.json(
+        { error: 'Shadow profile is required' },
+        { status: 400 }
+      );
+    }
+
+    // Server-side rate limiting (IP-based)
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitKey = `rate_limit_${ip}`;
+    
+    // Simple in-memory rate limiting (resets on server restart)
+    const now = Date.now();
+    const windowMs = 60 * 60 * 1000; // 1 hour
+    const limit = 10; // 10 requests per hour per IP
+    
+    // Note: In production, use Redis or database for persistent rate limiting
+    if (!global.rateLimitStore) {
+      global.rateLimitStore = new Map();
+    }
+    
+    const current = global.rateLimitStore.get(rateLimitKey) || { count: 0, resetTime: now + windowMs };
+    
+    if (now > current.resetTime) {
+      current.count = 0;
+      current.resetTime = now + windowMs;
+    }
+    
+    if (current.count >= limit) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please try again later.',
+          resetTime: current.resetTime
+        },
+        { status: 429 }
+      );
+    }
+    
+    current.count++;
+    global.rateLimitStore.set(rateLimitKey, current);
+
+    // Check if Claude API key is available
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.log('No Claude API key found, using fallback insights');
+      const fallbackResponse = getDemoInsight(question, shadowProfile);
+      return NextResponse.json({ 
+        response: fallbackResponse,
+        source: 'fallback' 
+      });
+    }
+
+    try {
+      // Call Claude API with sophisticated shadow work prompt
+      const claudeResponse = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 800,
+        temperature: 0.7,
+        system: createShadowWorkSystemPrompt(),
+        messages: [
+          {
+            role: 'user',
+            content: createUserPrompt(question, shadowProfile)
+          }
+        ]
+      });
+
+      const responseText = claudeResponse.content[0].type === 'text' 
+        ? claudeResponse.content[0].text 
+        : 'Unable to generate response';
+
+      return NextResponse.json({ 
+        response: responseText,
+        source: 'claude-api' 
+      });
+
+    } catch (claudeError) {
+      console.error('Claude API error:', claudeError);
+      
+      // Fallback to demo insights if Claude API fails
+      const fallbackResponse = getDemoInsight(question, shadowProfile);
+      return NextResponse.json({ 
+        response: fallbackResponse,
+        source: 'fallback-after-error' 
+      });
+    }
+
   } catch (error) {
     console.error('Error in Claude API route:', error);
     return NextResponse.json(
-      { error: 'Failed to process request' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
+}
+
+function createShadowWorkSystemPrompt(): string {
+  return `You are a profound psychological guide specializing in Jungian shadow work and depth psychology. Your role is to provide compassionate, insightful responses to people exploring their shadow archetypes.
+
+KEY PRINCIPLES:
+- Shadow integration, not elimination - the goal is wholeness, not perfection
+- Compassionate but unflinching honesty about difficult psychological truths
+- Practical guidance that people can actually implement
+- Avoid clinical jargon - speak in accessible, emotionally resonant language
+- Frame darkness as wounded parts needing compassion, not evil to be destroyed
+- Always include concrete next steps or practices
+
+RESPONSE STYLE:
+- 2-3 paragraphs maximum (200-400 words)
+- Start by acknowledging the depth of their question/struggle
+- Provide psychological insight that reveals deeper patterns
+- End with practical integration guidance they can use immediately
+- Use language that matches the intensity of shadow work - authentic, direct, sometimes raw
+- Avoid generic advice - make it specific to their shadow archetype and question
+
+SHADOW ARCHETYPES TO UNDERSTAND:
+- The Self-Destroyer: Extreme self-hatred and inner criticism
+- The Void Walker: Existential emptiness and despair  
+- The Invisible One: Deep feelings of worthlessness and inadequacy
+- The Hidden Sadist: Enjoyment of others' pain, cruelty impulses
+- The Master of Masks: Complete inauthenticity, lost true self
+- The Eternally Forsaken: Terror of abandonment, self-sabotage in relationships
+
+Remember: This is deep psychological work. People asking these questions are often in genuine pain and seeking real transformation.`;
+}
+
+function createUserPrompt(question: string, shadowProfile: ShadowProfile): string {
+  return `I've just completed a shadow self assessment and been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.
+
+My question about my shadow work journey is: "${question}"
+
+Please provide insight that acknowledges the specific darkness I carry as ${shadowProfile.archetype}, addresses my question directly, and gives me practical guidance for integration. I'm ready for psychological depth and honest truth about these shadow aspects.`;
 }
 
 // Enhanced fallback function with more nuanced responses
@@ -31,24 +168,12 @@ function getDemoInsight(question: string, shadowProfile: ShadowProfile): string 
   
   // Pattern-based response generation for more dynamic responses
   const responsePatterns = {
-    relationship: [
-      'relationship', 'love', 'partner', 'dating', 'marriage', 'connection', 'intimacy'
-    ],
-    work: [
-      'work', 'job', 'career', 'boss', 'colleague', 'professional', 'workplace'
-    ],
-    family: [
-      'family', 'parent', 'mother', 'father', 'sibling', 'child', 'childhood'
-    ],
-    self: [
-      'myself', 'self', 'identity', 'personality', 'confidence', 'worth'
-    ],
-    fear: [
-      'afraid', 'fear', 'scared', 'anxiety', 'worry', 'panic', 'terrified'
-    ],
-    anger: [
-      'angry', 'rage', 'furious', 'hate', 'resentment', 'bitter', 'mad'
-    ]
+    relationship: ['relationship', 'love', 'partner', 'dating', 'marriage', 'connection', 'intimacy'],
+    work: ['work', 'job', 'career', 'boss', 'colleague', 'professional', 'workplace'],
+    family: ['family', 'parent', 'mother', 'father', 'sibling', 'child', 'childhood'],
+    self: ['myself', 'self', 'identity', 'personality', 'confidence', 'worth'],
+    fear: ['afraid', 'fear', 'scared', 'anxiety', 'worry', 'panic', 'terrified'],
+    anger: ['angry', 'rage', 'furious', 'hate', 'resentment', 'bitter', 'mad']
   };
 
   const matchedCategory = Object.keys(responsePatterns).find(category =>
@@ -60,57 +185,23 @@ function getDemoInsight(question: string, shadowProfile: ShadowProfile): string 
   const archeypeInsights = {
     'The Self-Destroyer': {
       relationship: `Your question about relationships touches the heart of The Self-Destroyer's struggle. You may find yourself sabotaging connections because deep down, you don't believe you deserve love. This isn't your truth - it's learned behavior from wounds that taught you to attack yourself first. In relationships, practice radical self-compassion. When the inner critic whispers that you're unworthy, respond with the same kindness you'd show a beloved friend.`,
-      
       work: `The Self-Destroyer often struggles in work environments because your inner critic is louder than any external feedback. You may find yourself paralyzed by perfectionism or convinced you're fraudulent. Remember: your harshest critic lives inside your head, not in your workplace. Start small - celebrate one accomplishment daily, even if it feels insignificant. Your professional worth isn't determined by the cruelest voice in your mind.`,
-      
-      family: `Family dynamics often created The Self-Destroyer's inner voice. Perhaps criticism or conditional love taught you to be cruel to yourself first. Understanding this pattern is liberation. You can choose to break the cycle. The way your family spoke to you doesn't have to become your inner dialogue. Practice speaking to yourself as the loving parent you needed.`,
-      
-      self: `Your question reveals The Self-Destroyer's core wound: you've internalized criticism so deeply it feels like truth. But self-hatred isn't your authentic nature - it's a learned response to pain. Begin healing by noticing when you speak cruelly to yourself. Don't fight the voice; simply acknowledge it and choose kindness instead. "I see you, inner critic, but today I choose compassion."`,
-      
       default: `Your question illuminates The Self-Destroyer's central challenge: you've become your own worst enemy. This shadow developed to protect you - if you attack yourself first, perhaps others can't hurt you as deeply. But this armor has become a prison. Your healing begins with treating yourself as you would treat someone you love unconditionally. Start with one moment of self-kindness today.`
     },
-
     'The Void Walker': {
       relationship: `As The Void Walker, you may feel emotionally numb in relationships, wondering if you're capable of genuine connection. This emptiness isn't who you are - it's how you've protected yourself from overwhelming pain. Your capacity for feeling hasn't disappeared; it's buried under layers of protective numbness. In relationships, start small: notice one moment of genuine feeling, however brief. Connection can return gradually.`,
-      
-      work: `The Void Walker often feels disconnected from work, going through motions without meaning. This detachment can actually be a strength - you see clearly without emotional interference. But if you're seeking more engagement, focus on small moments of purpose. What tiny aspect of your work serves something beyond yourself? Meaning doesn't have to be grand; it can be found in helping one person or solving one problem.`,
-      
       default: `Your question touches The Void Walker's core experience: moving through life carrying an emptiness that feels endless. This void isn't your identity - it's your psyche's way of managing unbearable pain. When we can't process trauma, sometimes numbness feels safer than feeling. But beneath that protective emptiness lies tremendous capacity for depth. Start with small connections to sensation, beauty, or meaning. Feeling can return gradually, safely.`
     },
-
     'The Invisible One': {
-      relationship: `The Invisible One's deepest fear in relationships is being truly seen and found wanting. You may exhaust yourself trying to earn love through constant giving or perfect behavior. But love isn't a transaction you must win. Your worth exists independent of what you do or provide. Practice being authentically yourself in small moments. Start with sharing one genuine opinion or preference without justifying it.`,
-      
-      work: `At work, The Invisible One often overperforms and undervalues their contributions. You may struggle to advocate for yourself because you don't believe you deserve recognition. But your worth isn't determined by constant achievement. Practice stating your accomplishments without minimizing them. Your presence and contributions have value beyond your ability to prove it.`,
-      
       default: `Your question reflects The Invisible One's core wound: the belief that you must earn your right to exist. Someone taught you that love and acceptance were conditional on performance, but they were wrong. You don't need to justify your existence through constant achievement or self-sacrifice. Practice taking up space without apology. You belong here simply because you exist.`
     },
-
     'The Hidden Sadist': {
-      relationship: `The Hidden Sadist's question about relationships reveals complex dynamics around power and pain. Perhaps you sometimes enjoy your partner's discomfort or feel a dark satisfaction when they struggle. This doesn't make you evil - it often comes from feeling powerless for too long. Your intensity and understanding of pain can become fierce compassion when channeled constructively. Use your insight into suffering to protect, not harm.`,
-      
-      anger: `Your anger as The Hidden Sadist likely carries a desire to make others feel your pain. This shadow understands suffering intimately and sometimes wants to share that knowledge. But your pain doesn't deserve to create more pain. Channel that intensity into justice, advocacy, or protection of the vulnerable. Your deep understanding of hurt can become a gift when used to prevent others' suffering.`,
-      
       default: `Your question reveals The Hidden Sadist's complex relationship with power and pain. That part of you that sometimes enjoys others' suffering isn't pure evil - it's often wounded power seeking expression. When we feel helpless for too long, causing pain can feel like reclaiming control. Your healing involves channeling this intensity constructively: become a fierce protector rather than a source of harm. Your understanding of pain can serve justice, not vengeance.`
     },
-
     'The Master of Masks': {
-      relationship: `The Master of Masks exhausts themselves being who others need them to be, losing track of their authentic self in relationships. You've become so skilled at adaptation that you fear there's nothing genuine underneath. But your true self isn't gone - it's been protected behind masks for so long you've forgotten it exists. Start revealing small, authentic pieces of yourself. Your real personality is worth knowing and loving.`,
-      
-      work: `At work, The Master of Masks may feel like they're constantly performing, never sure which version of themselves is "real" or appropriate. This adaptability is actually a strength, but chronic performance is exhausting. Practice moments of authenticity: share one genuine reaction or opinion. Your professional relationships can handle more honesty than you think.`,
-      
-      self: `Your question about self-identity strikes at The Master of Masks' core struggle: you've been so many people for so long that you're not sure who you actually are. This isn't a sign that you're empty - it's evidence of your incredible adaptability and empathy. Your authentic self exists; it's been carefully protected behind all those masks. Start uncovering it gradually, one genuine moment at a time.`,
-      
       default: `As The Master of Masks, your question touches the exhaustion of constant performance. You've perfected being whoever others need, but lost connection to your authentic self. This skill developed to keep you safe and loved, but it's become a prison. Your real self isn't as terrible or boring as you fear - it's simply been protected for so long you've forgotten its voice. Begin listening for your genuine reactions and honoring them, even in small ways.`
     },
-
     'The Eternally Forsaken': {
-      relationship: `The Eternally Forsaken's question about relationships reveals the painful irony of your shadow: fearing abandonment so intensely that you create it. You may push people away before they can leave, or cling so tightly you suffocate connection. Your fear is understandable - someone important taught you that leaving was inevitable. But not everyone will abandon you. Practice staying present in relationships even when every instinct screams to flee or cling.`,
-      
-      fear: `Your fear as The Eternally Forsaken is the deep terror of being left alone. This fear may control many of your choices, causing you to contort yourself to keep people close or to reject them before they can reject you. But fear of abandonment often creates abandonment. Practice tolerating the uncertainty of relationships. Not everyone who gets close will leave, and you can't control their choices - only your responses.`,
-      
-      family: `Family dynamics likely created The Eternally Forsaken's abandonment fears. Perhaps someone central to your world left physically or emotionally, teaching you that connection is temporary and conditional. But that early experience doesn't determine all relationships. Some people stay. Some people are safe. Healing involves learning to distinguish between past wounds and present realities.`,
-      
       default: `Your question touches The Eternally Forsaken's deepest terror: being left alone. This fear may drive you to either cling desperately to relationships or to reject people before they can abandon you. Both strategies often create the very outcome you're trying to avoid. Your healing involves learning to tolerate the uncertainty inherent in all relationships. Not everyone will leave, and you deserve connections that feel secure and lasting.`
     }
   };
