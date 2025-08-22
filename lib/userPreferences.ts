@@ -1,6 +1,7 @@
 'use client';
 
 export interface UserPreferences {
+  id: string;
   name?: string;
   isAnonymous: boolean;
   assessmentHistory: AssessmentResult[];
@@ -54,6 +55,7 @@ export const saveUserPreferences = (prefs: UserPreferences): void => {
 export const createNewUser = (name?: string): UserPreferences => {
   const now = new Date();
   const newUser: UserPreferences = {
+    id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: name?.trim() || undefined,
     isAnonymous: !name?.trim(),
     assessmentHistory: [],

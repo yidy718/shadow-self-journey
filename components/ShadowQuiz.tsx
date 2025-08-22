@@ -1,23 +1,31 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target } from 'lucide-react';
+import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
+import { WelcomeScreen } from './WelcomeScreen';
 import ShadowJournal from './ShadowJournal';
 import IntegrationExercises from './IntegrationExercises';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile } from '../lib/claudeApi';
+import { getUserPreferences, saveUserPreferences, type UserPreferences } from '../lib/userPreferences';
 
 interface Answer {
   optionId: string;
   shadow: Record<string, number>;
 }
 
+interface Conversation {
+  question: string;
+  response: string;
+  timestamp: number;
+}
+
 const ShadowQuiz = () => {
-  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'quiz' | 'results' | 'journal' | 'exercises'>('welcome');
+  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises'>('identity');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -27,12 +35,20 @@ const ShadowQuiz = () => {
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [showConversationHistory, setShowConversationHistory] = useState(false);
   
   const shouldReduceMotion = useReducedMotion();
   
   // Preload next screen data for better performance
   useEffect(() => {
     setIsReady(true);
+  }, []);
+
+  const handleUserPreferences = useCallback((prefs: UserPreferences) => {
+    setUserPrefs(prefs);
+    setCurrentScreen('welcome');
   }, []);
 
   const handleAnswer = useCallback(async (questionId: number, optionId: string, shadow: Record<string, number>) => {
@@ -105,21 +121,63 @@ const ShadowQuiz = () => {
         description: archetype.description
       };
 
+      let response: string;
+      let isFromAPI = false;
+      
       // Try Claude API first, fallback to demo insights
       try {
-        const response = await askClaude(userQuestion, shadowProfile);
-        setClaudeResponse(response);
+        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id);
+        isFromAPI = true;
+        console.log('✅ Using Claude API response');
       } catch (error) {
         // Fallback to demo insights if API fails
-        const response = getDemoInsight(userQuestion, shadowProfile);
-        setClaudeResponse(response);
+        response = getDemoInsight(userQuestion, shadowProfile);
+        console.log('⚠️ Using fallback response:', error);
       }
+      
+      // Add source indicator for debugging
+      const finalResponse = response + (isFromAPI ? '' : '\n\n*Note: This is a fallback response. Claude API may not be available.*');
+      setClaudeResponse(finalResponse);
+      
+      // Save conversation to history
+      const newConversation: Conversation = {
+        question: userQuestion,
+        response: finalResponse,
+        timestamp: Date.now()
+      };
+      
+      setConversations(prev => [...prev, newConversation]);
+      
+      // Clear question for next use
+      setUserQuestion('');
+      
     } catch (error) {
-      setClaudeResponse("I'm having trouble connecting right now, but your willingness to explore these depths shows tremendous courage. Your shadow work journey is valid and important.");
+      const errorResponse = "I'm having trouble connecting right now, but your willingness to explore these depths shows tremendous courage. Your shadow work journey is valid and important.";
+      setClaudeResponse(errorResponse);
+      
+      // Save error conversation too
+      const errorConversation: Conversation = {
+        question: userQuestion,
+        response: errorResponse,
+        timestamp: Date.now()
+      };
+      setConversations(prev => [...prev, errorConversation]);
     } finally {
       setIsLoadingResponse(false);
     }
-  }, [userQuestion, calculateShadow]);
+  }, [userQuestion, calculateShadow, userPrefs?.id]);
+
+  const createJournalFromConversation = useCallback((conversation: Conversation) => {
+    // Navigate to journal with pre-filled content
+    setCurrentScreen('journal');
+    // We'll pass the conversation content to the journal component
+  }, []);
+  
+  const createExerciseFromConversation = useCallback((conversation: Conversation) => {
+    // Navigate to exercises with suggested practice
+    setCurrentScreen('exercises');
+    // We'll pass the conversation content to the exercises component
+  }, []);
 
   const restart = useCallback(() => {
     // Haptic feedback
@@ -127,7 +185,7 @@ const ShadowQuiz = () => {
       navigator.vibrate(100);
     }
     
-    setCurrentScreen('welcome');
+    setCurrentScreen('identity');
     setCurrentQuestion(0);
     setAnswers({});
     setShowFeedback(false);
@@ -135,6 +193,8 @@ const ShadowQuiz = () => {
     setClaudeResponse('');
     setIsTransitioning(false);
     setSelectedOption(null);
+    setConversations([]);
+    setUserPrefs(null);
   }, []);
   
   const openJournal = useCallback(() => {
@@ -184,6 +244,10 @@ const ShadowQuiz = () => {
         <Loader className="w-8 h-8 text-red-400 animate-spin" />
       </div>
     );
+  }
+
+  if (currentScreen === 'identity') {
+    return <WelcomeScreen onContinue={handleUserPreferences} />;
   }
 
   if (currentScreen === 'welcome') {
@@ -586,6 +650,81 @@ const ShadowQuiz = () => {
                     <p className="text-indigo-100 leading-relaxed text-lg font-light whitespace-pre-line">
                       {claudeResponse}
                     </p>
+                    
+                    {/* Action buttons for latest response */}
+                    {conversations.length > 0 && (
+                      <div className="flex gap-3 mt-6">
+                        <button
+                          onClick={() => createJournalFromConversation(conversations[conversations.length - 1])}
+                          className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300"
+                        >
+                          <BookOpen className="w-4 h-4 mr-2" />
+                          Journal This
+                        </button>
+                        <button
+                          onClick={() => createExerciseFromConversation(conversations[conversations.length - 1])}
+                          className="flex items-center bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300"
+                        >
+                          <Target className="w-4 h-4 mr-2" />
+                          Practice This
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+                
+                {/* Conversation History */}
+                {conversations.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-6"
+                  >
+                    <button
+                      onClick={() => setShowConversationHistory(!showConversationHistory)}
+                      className="text-purple-300 hover:text-purple-200 font-medium flex items-center"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {showConversationHistory ? 'Hide' : 'Show'} Conversation History ({conversations.length})
+                    </button>
+                    
+                    <AnimatePresence>
+                      {showConversationHistory && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-4 space-y-4 max-h-96 overflow-y-auto"
+                        >
+                          {conversations.slice().reverse().map((conv, index) => (
+                            <div key={index} className="bg-gray-800/50 rounded-xl p-4 text-sm">
+                              <div className="text-gray-300 font-medium mb-2">
+                                Q: {conv.question}
+                              </div>
+                              <div className="text-gray-100 mb-3 whitespace-pre-line">
+                                {conv.response.split('\n\n*Note:')[0]}
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => createJournalFromConversation(conv)}
+                                  className="flex items-center bg-emerald-600/70 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs transition-all"
+                                >
+                                  <BookOpen className="w-3 h-3 mr-1" />
+                                  Journal
+                                </button>
+                                <button
+                                  onClick={() => createExerciseFromConversation(conv)}
+                                  className="flex items-center bg-amber-600/70 hover:bg-amber-600 text-white px-3 py-1 rounded-lg text-xs transition-all"
+                                >
+                                  <Target className="w-3 h-3 mr-1" />
+                                  Practice
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </motion.div>
