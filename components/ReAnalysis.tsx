@@ -112,7 +112,7 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
           traits: ['growth-tracking', 'pattern-recognition'],
           intensity: 'deep',
           description: 'Comprehensive re-analysis of accumulated shadow work data'
-        });
+        }, undefined, undefined, undefined, undefined, 'reanalysis');
         setAnalysisResults(response);
         setCurrentPhase('results');
       } else {
@@ -123,7 +123,7 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
           traits: ['inquiry', 'exploration'],
           intensity: 'deep',
           description: 'Generating deeper shadow work questions'
-        });
+        }, undefined, undefined, undefined, undefined, 'reanalysis');
         
         // Parse questions from response
         const questions = parseQuestions(response);
@@ -235,7 +235,7 @@ Be direct, use their exact words, and focus on practical integration.`;
         traits: ['insight', 'integration'],
         intensity: 'deep',
         description: 'Analysis of deeper question responses'
-      });
+      }, undefined, undefined, undefined, undefined, 'reanalysis');
 
       setAnalysisResults(response);
       setCurrentPhase('results');

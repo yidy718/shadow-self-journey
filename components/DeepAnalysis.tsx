@@ -127,7 +127,7 @@ No other text, no explanations, just the numbered questions.`;
         traits: ['self-reflection'],
         intensity: 'moderate',
         description: 'Behavioral pattern analysis'
-      });
+      }, undefined, undefined, undefined, undefined, 'analysis');
 
       // Parse the follow-up questions with improved logic
       
@@ -262,7 +262,7 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
         traits: ['pattern-recognition', 'integration'],
         intensity: 'deep',
         description: 'Complete behavioral shadow analysis'
-      });
+      }, undefined, undefined, undefined, undefined, 'analysis');
 
       setFinalAnalysis(analysis);
     } catch (error) {

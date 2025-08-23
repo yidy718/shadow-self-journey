@@ -221,7 +221,7 @@ const ShadowQuiz = () => {
           })()
         };
         
-        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext, userPrefs?.name);
+        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext, userPrefs?.name, 'chat');
         isFromAPI = true;
         console.log('✅ Using Claude API response with enhanced context:', {
           conversations: apiConversationHistory.length,

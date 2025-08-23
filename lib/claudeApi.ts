@@ -19,13 +19,16 @@ export interface EnhancedContext {
   moodTrends?: number[];
 }
 
+export type ConversationContext = 'chat' | 'assessment' | 'analysis' | 'reanalysis';
+
 export const askClaude = async (
   question: string, 
   shadowProfile: ShadowProfile, 
   userId?: string,
   conversationHistory?: Array<{question: string, response: string}>,
   enhancedContext?: EnhancedContext,
-  userName?: string
+  userName?: string,
+  context: ConversationContext = 'chat'
 ): Promise<string> => {
   try {
 
@@ -41,6 +44,7 @@ export const askClaude = async (
         conversationHistory,
         enhancedContext,
         userName,
+        context,
       }),
     });
 
