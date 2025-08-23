@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
 
 interface DeepAnalysisProps {

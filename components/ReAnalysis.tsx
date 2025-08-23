@@ -127,22 +127,36 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
   };
 
   const parseQuestions = (response: string): string[] => {
-    // Try numbered format first
+    // First try to extract numbered questions that actually end with question marks
     let questions = response.split('\n')
-      .filter(line => line.match(/^\d+\./))
+      .filter(line => line.match(/^\d+\./)) // Numbered items
       .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(q => q.length > 0);
+      .filter(q => q.length > 0 && q.includes('?')) // Must contain question mark
+      .filter(q => q.endsWith('?')); // Must end with question mark
 
-    // Fallback: extract question marks
+    // Fallback: extract sentences that are clearly questions
     if (questions.length === 0) {
-      questions = response.split(/[.!?]+/)
+      questions = response.split(/[.!]+/) // Split on periods and exclamations, not question marks
         .filter(s => s.includes('?'))
         .map(s => s.trim())
-        .filter(s => s.length > 20)
+        .filter(s => s.length > 20 && s.endsWith('?'))
         .slice(0, 5);
     }
 
-    // Final fallback
+    // Enhanced fallback: Look for question words
+    if (questions.length === 0) {
+      const questionWords = ['what', 'how', 'why', 'when', 'where', 'which', 'who'];
+      questions = response.split(/[.!]+/)
+        .filter(s => {
+          const lower = s.toLowerCase().trim();
+          return questionWords.some(word => lower.startsWith(word)) && s.includes('?');
+        })
+        .map(s => s.trim())
+        .filter(s => s.endsWith('?'))
+        .slice(0, 5);
+    }
+
+    // Final fallback with curated questions
     if (questions.length === 0) {
       questions = [
         "What pattern in your shadow work keeps recurring despite your awareness of it?",
@@ -151,7 +165,8 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
       ];
     }
 
-    return questions.slice(0, 5);
+    // Ensure all questions end with question marks
+    return questions.slice(0, 5).map(q => q.endsWith('?') ? q : q + '?');
   };
 
   const handleQuestionResponse = () => {
@@ -258,6 +273,8 @@ Provide specific, personalized insights using their exact words and examples. Fo
   const createDeeperPrompt = (data: UserData): string => {
     return `You are Sage conducting a deeper dive analysis. Based on all accumulated data, generate 3-5 penetrating questions that this user isn't yet asking themselves but needs to explore.
 
+IMPORTANT: Generate ONLY actual questions that end with question marks. Do NOT provide statements, assessments, or observations. Each item must be a direct question the user can answer.
+
 USER'S ACCUMULATED WISDOM:
 
 ARCHETYPE: ${data.archetype?.archetype || 'Not yet determined'}
@@ -279,19 +296,19 @@ Based on everything they've revealed, generate 3-5 powerful questions that:
 4. Go deeper than their current level of self-inquiry
 5. Connect patterns across different life areas
 
-Format as:
+Format EXACTLY as:
 **DEEPER QUESTIONS FOR YOUR CONTINUED JOURNEY:**
 
-1. [Challenging question based on their specific patterns]
-2. [Question about what they're not seeing]
-3. [Question that connects multiple themes]
-4. [Question about their avoidance patterns]
-5. [Question about their next growth edge]
+1. What [specific challenging question based on their patterns]?
+2. How [question about what they're not seeing]?
+3. Why [question that connects multiple themes]?
+4. What [question about their avoidance patterns]?
+5. How [question about their next growth edge]?
 
 **WHAT THESE QUESTIONS REVEAL:**
 [Brief insight about why these questions matter for their growth]
 
-Use their exact words and themes. Be direct but compassionate.`;
+CRITICAL: Every numbered item must be a complete question ending with a question mark. Use their exact words and themes. Be direct but compassionate.`;
   };
 
   const renderLoadingPhase = () => (
