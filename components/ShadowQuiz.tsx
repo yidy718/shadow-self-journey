@@ -232,18 +232,11 @@ const ShadowQuiz = () => {
       } catch (error) {
         // Fallback to demo insights if API fails
         response = getDemoInsight(userQuestion, shadowProfile);
-        console.log('⚠️ Using fallback response:', error);
       }
       
       // Add source indicator 
       setClaudeResponse(response);
       
-      // Log the source for debugging
-      if (isFromAPI) {
-        console.log('✅ Sage (Claude 3.5 Sonnet API) responded');
-      } else {
-        console.log('⚠️ Using fallback - Sage unavailable');
-      }
       
       // Save conversation to history
       const newConversation: Conversation = {
@@ -290,7 +283,6 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 *If this problem persists, there may be an issue with the Claude API configuration.*`;
       
       setClaudeResponse(errorResponse);
-      console.log('❌ Connection error:', error);
       
       // Save error conversation too
       const errorConversation: Conversation = {
@@ -954,7 +946,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               className="mt-12 text-center text-gray-400 text-sm max-w-2xl mx-auto"
             >
               <p className="mb-2">
-                © 2024 yidy. All rights reserved. For personal use only.
+                © 2025 yidy. All rights reserved. For personal use only.
               </p>
               <p className="text-xs">
                 Commercial use prohibited. This application is not a substitute for professional psychological treatment.

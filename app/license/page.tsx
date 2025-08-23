@@ -14,7 +14,7 @@ export default function LicensePage() {
             <p className="text-center text-purple-300 mb-8">(CC BY-NC-ND 4.0)</p>
 
             <p className="text-center mb-8">
-              <strong>Copyright (c) 2024 yidy</strong>
+              <strong>Copyright (c) 2025 yidy</strong>
             </p>
 
             <h3 className="text-2xl font-semibold text-green-200 mt-8 mb-4">✅ You are free to:</h3>

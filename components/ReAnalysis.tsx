@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader, Brain, FileText, MessageCircle, Eye, Target, Sparkles } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
+import toast from 'react-hot-toast';
 
 interface ReAnalysisProps {
   onClose: () => void;
@@ -65,10 +66,22 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
         }));
       }
 
-      // Load conversation history 
+      // Load conversation history from multiple sources
       const conversationData = localStorage.getItem('shadowConversations');
       if (conversationData) {
         data.conversations = JSON.parse(conversationData);
+      }
+      
+      // Also check user preferences for conversations (backup/alternative source)
+      const userPrefs = localStorage.getItem('shadowUserPreferences');
+      if (userPrefs) {
+        const prefs = JSON.parse(userPrefs);
+        if (prefs.currentQuizProgress?.conversations && prefs.currentQuizProgress.conversations.length > 0) {
+          // Merge with existing conversations, avoiding duplicates
+          const existingIds = new Set(data.conversations.map(c => c.timestamp));
+          const prefsConversations = prefs.currentQuizProgress.conversations.filter(c => !existingIds.has(c.timestamp));
+          data.conversations = [...data.conversations, ...prefsConversations];
+        }
       }
 
       // Extract previous analyses from journal entries
@@ -540,7 +553,15 @@ CRITICAL: Every numbered item must be a complete question ending with a question
             entries.unshift(reAnalysisEntry);
             localStorage.setItem('shadowJournalEntries', JSON.stringify(entries));
             
-            alert('Re-analysis saved to your journal!');
+            toast.success('Re-analysis saved to your journal!', {
+              duration: 4000,
+              position: 'top-center',
+              style: {
+                background: '#1f2937',
+                color: '#f3f4f6',
+                border: '1px solid #6b7280',
+              },
+            });
           }}
           className="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
         >

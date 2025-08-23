@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata: Metadata = {
   title: 'The Abyss - Shadow Self Journey',
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
         </div>
         <div id="modal-root"></div>
+        <Toaster />
       </body>
     </html>
   )

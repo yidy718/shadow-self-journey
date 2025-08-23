@@ -2,7 +2,7 @@
 
 ## Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)
 
-**Copyright (c) 2024 yidy**
+**Copyright (c) 2025 yidy**
 
 ### You are free to:
 - **Share** — copy and redistribute the material in any medium or format

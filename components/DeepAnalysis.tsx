@@ -130,7 +130,6 @@ No other text, no explanations, just the numbered questions.`;
       });
 
       // Parse the follow-up questions with improved logic
-      console.log('Raw follow-up response:', followUpResponse);
       
       // First try numbered format (1. 2. 3.)
       let questions = followUpResponse.split('\n')

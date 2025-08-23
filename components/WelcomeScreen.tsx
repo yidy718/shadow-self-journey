@@ -40,6 +40,8 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   };
 
   const handleNewIdentity = () => {
+    clearUserData(); // Clear all user data including journal
+    setExistingUser(null);
     setCurrentStep('identity');
   };
 
@@ -254,7 +256,9 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
             )}
           </AnimatePresence>
 
-          <div className="grid gap-6 max-w-md mx-auto">
+          {/* Only show identity options if there's no existing user */}
+          {!existingUser && (
+            <div className="grid gap-6 max-w-md mx-auto">
             <motion.button
               variants={itemVariants}
               whileHover={{ scale: 1.02, y: -2 }}
@@ -315,7 +319,8 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                 )}
               </AnimatePresence>
             </motion.div>
-          </div>
+            </div>
+          )}
         </motion.div>
       </div>
     );

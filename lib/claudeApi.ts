@@ -28,11 +28,6 @@ export const askClaude = async (
   userName?: string
 ): Promise<string> => {
   try {
-    console.log('🔄 Frontend: Calling /api/claude with:', {
-      question: question.substring(0, 50) + '...',
-      archetype: shadowProfile.archetype,
-      conversationCount: conversationHistory?.length || 0
-    });
 
     const response = await fetch('/api/claude', {
       method: 'POST',
