@@ -25,7 +25,7 @@ interface Conversation {
 }
 
 const ShadowQuiz = () => {
-  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises'>('identity');
+  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat'>('identity');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -146,7 +146,7 @@ const ShadowQuiz = () => {
       
       // Log the source for debugging
       if (isFromAPI) {
-        console.log('✅ Dr. Shadow (Claude 4 API) responded');
+        console.log('✅ Dr. Shadow (Claude 3.5 Sonnet API) responded');
       } else {
         console.log('⚠️ Using fallback - Dr. Shadow unavailable');
       }
@@ -189,16 +189,24 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     }
   }, [userQuestion, calculateShadow, userPrefs?.id]);
 
+  const openChat = useCallback(() => {
+    setCurrentScreen('chat');
+  }, []);
+  
+  const closeChat = useCallback(() => {
+    setCurrentScreen('results');
+  }, []);
+
   const createJournalFromConversation = useCallback((conversation: Conversation) => {
     // Navigate to journal with pre-filled content
     setCurrentScreen('journal');
-    // We'll pass the conversation content to the journal component
+    // We'll enhance the journal component to accept initial content
   }, []);
   
   const createExerciseFromConversation = useCallback((conversation: Conversation) => {
     // Navigate to exercises with suggested practice
     setCurrentScreen('exercises');
-    // We'll pass the conversation content to the exercises component
+    // We'll enhance the exercises component to accept conversation context
   }, []);
 
   const restart = useCallback(() => {
@@ -581,15 +589,15 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12"
           >
             <motion.button
-              onClick={() => setShowFeedback(true)}
+              onClick={openChat}
               whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
               whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              aria-label="Ask Dr. Shadow for personalized shadow insights"
+              aria-label="Chat with Dr. Shadow"
             >
               <MessageCircle className="w-6 h-6 mx-auto mb-2" />
-              <div className="text-lg font-bold">Ask Dr. Shadow</div>
-              <div className="text-sm opacity-90">Personal Insights</div>
+              <div className="text-lg font-bold">Chat with Dr. Shadow</div>
+              <div className="text-sm opacity-90">{conversations.length > 0 ? `${conversations.length} exchanges` : 'Start conversation'}</div>
             </motion.button>
             
             <motion.button
@@ -808,6 +816,126 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
         archetype={archetype?.name || 'Universal'}
         onClose={closeExercises} 
       />
+    );
+  }
+  
+  // Handle chat screen
+  if (currentScreen === 'chat') {
+    const archetype = Object.keys(answers).length > 0 
+      ? getShadowArchetype(calculateShadow.dominantTraits, calculateShadow.totalDarkness) 
+      : null;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex flex-col relative overflow-hidden">
+        <ParticleField count={shouldReduceMotion ? 15 : 30} />
+        
+        <div className="relative z-10 flex flex-col h-screen max-w-4xl mx-auto w-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Dr. Shadow</h2>
+              <p className="text-gray-400 text-sm">{archetype?.name || 'Shadow Work Consultation'}</p>
+            </div>
+            <button
+              onClick={closeChat}
+              className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {conversations.length === 0 ? (
+              <div className="text-center text-gray-400 mt-8">
+                <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Start a conversation with Dr. Shadow</p>
+                <p className="text-sm mt-2">Ask about your shadow work, relationships, patterns, or anything on your mind.</p>
+              </div>
+            ) : (
+              conversations.map((conv, index) => (
+                <div key={index} className="space-y-3">
+                  {/* User message */}
+                  <div className="flex justify-end">
+                    <div className="bg-purple-600 text-white p-3 rounded-2xl rounded-br-md max-w-[80%]">
+                      {conv.question}
+                    </div>
+                  </div>
+                  
+                  {/* Dr. Shadow response */}
+                  <div className="flex justify-start">
+                    <div className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md max-w-[85%]">
+                      <div className="text-sm text-purple-400 mb-2">Dr. Shadow</div>
+                      <div className="whitespace-pre-line">{conv.response}</div>
+                      
+                      {/* Action buttons */}
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => createJournalFromConversation(conv)}
+                          className="flex items-center bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 px-3 py-1 rounded-lg text-xs transition-all"
+                        >
+                          <BookOpen className="w-3 h-3 mr-1" />
+                          Journal
+                        </button>
+                        <button
+                          onClick={() => createExerciseFromConversation(conv)}
+                          className="flex items-center bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 px-3 py-1 rounded-lg text-xs transition-all"
+                        >
+                          <Target className="w-3 h-3 mr-1" />
+                          Practice
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+            
+            {/* Loading indicator */}
+            {isLoadingResponse && (
+              <div className="flex justify-start">
+                <div className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md">
+                  <div className="text-sm text-purple-400 mb-2">Dr. Shadow</div>
+                  <div className="flex items-center space-x-2">
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span>Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Input Area */}
+          <div className="p-4 bg-gray-900/50 backdrop-blur">
+            <div className="flex space-x-2">
+              <textarea
+                value={userQuestion}
+                onChange={(e) => setUserQuestion(e.target.value)}
+                placeholder="Ask Dr. Shadow anything about your shadow work journey..."
+                className="flex-1 bg-gray-800 text-white p-3 rounded-xl border border-gray-700 focus:border-purple-500 focus:outline-none resize-none"
+                rows={2}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAskClaude();
+                  }
+                }}
+              />
+              <button
+                onClick={handleAskClaude}
+                disabled={!userQuestion.trim() || isLoadingResponse}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl transition-colors flex items-center"
+              >
+                {isLoadingResponse ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
