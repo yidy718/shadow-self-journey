@@ -13,7 +13,7 @@ import ReAnalysis from './ReAnalysis';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
-import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, type UserPreferences } from '../lib/userPreferences';
+import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, addAssessmentResult, type UserPreferences } from '../lib/userPreferences';
 
 interface Answer {
   optionId: string;
@@ -65,6 +65,11 @@ const ShadowQuiz = () => {
         setCurrentScreen('quiz');
       }
     } else {
+      // No quiz progress, but check if we have conversations from localStorage
+      const savedConversations = localStorage.getItem('shadowConversations');
+      if (savedConversations) {
+        setConversations(JSON.parse(savedConversations));
+      }
       setCurrentScreen('welcome');
     }
   }, []);
@@ -103,9 +108,32 @@ const ShadowQuiz = () => {
     } else {
       setCurrentScreen('results');
       
+      // Save completed assessment to history
+      const finalAnswers = { ...answers, [questionId]: { optionId, shadow } };
+      // Calculate shadow traits for the final answers
+      const shadowTraits: Record<string, number> = {};
+      Object.values(finalAnswers).forEach(answer => {
+        Object.entries(answer.shadow).forEach(([trait, value]) => {
+          shadowTraits[trait] = (shadowTraits[trait] || 0) + value;
+        });
+      });
+      
+      const dominantTraits = Object.entries(shadowTraits)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3) as [string, number][];
+      const totalDarkness = Object.values(shadowTraits).reduce((sum, val) => sum + val, 0);
+      const archetype = getShadowArchetype(dominantTraits, totalDarkness);
+      
+      // Add to assessment history
+      addAssessmentResult({
+        archetype: archetype.name,
+        intensity: archetype.intensity || 'moderate',
+        dominantTraits: dominantTraits.map(([trait]) => trait),
+        totalDarkness
+      });
+      
       // Clear quiz progress when completed and save final state
       if (userPrefs) {
-        const finalAnswers = { ...answers, [questionId]: { optionId, shadow } };
         saveQuizProgress(questions.length, finalAnswers, conversations);
       }
     }
@@ -226,6 +254,9 @@ const ShadowQuiz = () => {
       
       const updatedConversations = [...conversations, newConversation];
       setConversations(updatedConversations);
+      
+      // Save conversations to localStorage for ReAnalysis access
+      localStorage.setItem('shadowConversations', JSON.stringify(updatedConversations));
       
       // Save progress with new conversation
       if (userPrefs) {
