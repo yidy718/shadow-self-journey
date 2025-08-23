@@ -951,8 +951,8 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <p className="text-xs">
                 Commercial use prohibited. This application is not a substitute for professional psychological treatment.
                 <br />
-                <a href="/LICENSE.md" className="text-red-400 hover:text-red-300 underline mx-2">License</a>
-                <a href="/TERMS.md" className="text-red-400 hover:text-red-300 underline mx-2">Terms</a>
+                <a href="/license" className="text-red-400 hover:text-red-300 underline mx-2">License</a>
+                <a href="/terms" className="text-red-400 hover:text-red-300 underline mx-2">Terms</a>
               </p>
             </motion.div>
           </div>
