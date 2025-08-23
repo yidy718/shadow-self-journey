@@ -17,9 +17,13 @@ interface JournalEntry {
 interface ShadowJournalProps {
   currentArchetype?: string;
   onClose: () => void;
+  initialContent?: {
+    question: string;
+    response: string;
+  };
 }
 
-export const ShadowJournal = ({ currentArchetype, onClose }: ShadowJournalProps) => {
+export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: ShadowJournalProps) => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isAddingEntry, setIsAddingEntry] = useState(false);
   const [newEntry, setNewEntry] = useState({
@@ -28,6 +32,19 @@ export const ShadowJournal = ({ currentArchetype, onClose }: ShadowJournalProps)
     insights: '',
     integration: ''
   });
+
+  // Handle initial content from conversation
+  useEffect(() => {
+    if (initialContent) {
+      setIsAddingEntry(true);
+      setNewEntry({
+        reflection: `My question: "${initialContent.question}"\n\nDr. Shadow's insight: ${initialContent.response}`,
+        mood: 3,
+        insights: '',
+        integration: ''
+      });
+    }
+  }, [initialContent]);
 
   // Load entries from localStorage on mount
   useEffect(() => {

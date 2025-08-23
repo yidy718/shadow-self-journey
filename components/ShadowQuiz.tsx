@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
@@ -11,7 +11,7 @@ import IntegrationExercises from './IntegrationExercises';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile } from '../lib/claudeApi';
-import { getUserPreferences, saveUserPreferences, type UserPreferences } from '../lib/userPreferences';
+import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, type UserPreferences } from '../lib/userPreferences';
 
 interface Answer {
   optionId: string;
@@ -38,6 +38,7 @@ const ShadowQuiz = () => {
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showConversationHistory, setShowConversationHistory] = useState(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
   
   const shouldReduceMotion = useReducedMotion();
   
@@ -48,7 +49,22 @@ const ShadowQuiz = () => {
 
   const handleUserPreferences = useCallback((prefs: UserPreferences) => {
     setUserPrefs(prefs);
-    setCurrentScreen('welcome');
+    
+    // Load saved quiz progress if it exists
+    if (prefs.currentQuizProgress) {
+      setCurrentQuestion(prefs.currentQuizProgress.currentQuestion);
+      setAnswers(prefs.currentQuizProgress.answers);
+      setConversations(prefs.currentQuizProgress.conversations);
+      
+      // If quiz was completed, go to results, otherwise continue quiz
+      if (prefs.currentQuizProgress.currentQuestion >= questions.length) {
+        setCurrentScreen('results');
+      } else {
+        setCurrentScreen('quiz');
+      }
+    } else {
+      setCurrentScreen('welcome');
+    }
   }, []);
 
   const handleAnswer = useCallback(async (questionId: number, optionId: string, shadow: Record<string, number>) => {
@@ -75,9 +91,21 @@ const ShadowQuiz = () => {
     await new Promise(resolve => setTimeout(resolve, shouldReduceMotion ? 200 : 400));
     
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+      const nextQuestion = currentQuestion + 1;
+      setCurrentQuestion(nextQuestion);
+      
+      // Save progress after each answer
+      if (userPrefs) {
+        saveQuizProgress(nextQuestion, answers, conversations);
+      }
     } else {
       setCurrentScreen('results');
+      
+      // Clear quiz progress when completed and save final state
+      if (userPrefs) {
+        const finalAnswers = { ...answers, [questionId]: { optionId, shadow } };
+        saveQuizProgress(questions.length, finalAnswers, conversations);
+      }
     }
     setIsTransitioning(false);
   }, [currentQuestion, shouldReduceMotion]);
@@ -158,10 +186,23 @@ const ShadowQuiz = () => {
         timestamp: Date.now()
       };
       
-      setConversations(prev => [...prev, newConversation]);
+      const updatedConversations = [...conversations, newConversation];
+      setConversations(updatedConversations);
+      
+      // Save progress with new conversation
+      if (userPrefs) {
+        saveQuizProgress(currentQuestion, answers, updatedConversations);
+      }
       
       // Clear question for next use
       setUserQuestion('');
+      
+      // Auto-scroll to bottom after response
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+      }, 100);
       
     } catch (error) {
       const errorResponse = `**Connection Error** ⚠️
@@ -197,10 +238,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     setCurrentScreen('results');
   }, []);
 
+  const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
+
   const createJournalFromConversation = useCallback((conversation: Conversation) => {
-    // Navigate to journal with pre-filled content
+    setSelectedConversationForJournal(conversation);
     setCurrentScreen('journal');
-    // We'll enhance the journal component to accept initial content
   }, []);
   
   const createExerciseFromConversation = useCallback((conversation: Conversation) => {
@@ -215,6 +257,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
       navigator.vibrate(100);
     }
     
+    // Clear saved quiz progress
+    if (userPrefs) {
+      clearQuizProgress();
+    }
+    
     setCurrentScreen('identity');
     setCurrentQuestion(0);
     setAnswers({});
@@ -225,7 +272,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     setSelectedOption(null);
     setConversations([]);
     setUserPrefs(null);
-  }, []);
+  }, [userPrefs]);
   
   const openJournal = useCallback(() => {
     setCurrentScreen('journal');
@@ -236,6 +283,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }, []);
   
   const closeJournal = useCallback(() => {
+    setSelectedConversationForJournal(null);
     setCurrentScreen('results');
   }, []);
   
@@ -800,7 +848,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     return (
       <ShadowJournal 
         currentArchetype={Object.keys(answers).length > 0 ? getShadowArchetype(calculateShadow.dominantTraits, calculateShadow.totalDarkness).name : undefined}
-        onClose={closeJournal} 
+        onClose={closeJournal}
+        initialContent={selectedConversationForJournal ? {
+          question: selectedConversationForJournal.question,
+          response: selectedConversationForJournal.response
+        } : undefined}
       />
     );
   }
@@ -845,7 +897,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           </div>
           
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div ref={chatMessagesRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {conversations.length === 0 ? (
               <div className="text-center text-gray-400 mt-8">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />

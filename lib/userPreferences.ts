@@ -7,6 +7,11 @@ export interface UserPreferences {
   assessmentHistory: AssessmentResult[];
   createdAt: Date;
   lastUsed: Date;
+  currentQuizProgress?: {
+    currentQuestion: number;
+    answers: Record<number, any>;
+    conversations: Array<{question: string, response: string, timestamp: number}>;
+  };
 }
 
 export interface AssessmentResult {
@@ -115,4 +120,38 @@ export const exportUserData = () => {
     exerciseProgress: exerciseProgress ? JSON.parse(exerciseProgress) : null,
     exportDate: new Date().toISOString()
   };
+};
+
+export const saveQuizProgress = (
+  currentQuestion: number, 
+  answers: Record<number, any>, 
+  conversations: Array<{question: string, response: string, timestamp: number}>
+): void => {
+  const prefs = getUserPreferences();
+  if (!prefs) return;
+
+  const updatedPrefs: UserPreferences = {
+    ...prefs,
+    currentQuizProgress: {
+      currentQuestion,
+      answers,
+      conversations
+    },
+    lastUsed: new Date()
+  };
+
+  saveUserPreferences(updatedPrefs);
+};
+
+export const clearQuizProgress = (): void => {
+  const prefs = getUserPreferences();
+  if (!prefs) return;
+
+  const updatedPrefs: UserPreferences = {
+    ...prefs,
+    currentQuizProgress: undefined,
+    lastUsed: new Date()
+  };
+
+  saveUserPreferences(updatedPrefs);
 };
