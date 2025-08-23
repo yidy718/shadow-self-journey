@@ -1111,6 +1111,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           description: currentArchetype.description
         } : undefined}
         journalEntries={parsedEntries}
+        setCurrentScreen={setCurrentScreen}
       />
     );
   }

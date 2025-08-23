@@ -15,6 +15,7 @@ interface DeepAnalysisProps {
     insights: string;
     integration: string;
   }>;
+  setCurrentScreen?: (screen: 'results' | 'identity' | 'exercises' | 'journal' | 'chat' | 'welcome' | 'quiz' | 'deepanalysis' | 'reanalysis') => void;
 }
 
 interface AnalysisQuestion {
@@ -61,7 +62,7 @@ const CORE_BEHAVIORAL_QUESTIONS: AnalysisQuestion[] = [
   }
 ];
 
-export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries }: DeepAnalysisProps) => {
+export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurrentScreen }: DeepAnalysisProps) => {
   const [currentPhase, setCurrentPhase] = useState<'intro' | 'questions' | 'followup' | 'analysis'>('intro');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -536,175 +537,159 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
     const insights = parseInsights(finalAnalysis);
 
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto p-8"
-      >
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-600 to-blue-600 rounded-2xl mb-4">
-            <Target className="w-8 h-8 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black/50 to-black"></div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 max-w-6xl w-full"
+        >
+          <div className="text-center mb-16">
+            <motion.h1 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="text-4xl sm:text-5xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-white to-gray-300 mb-6 tracking-tight hover:scale-105 transition-transform duration-300 cursor-default text-center"
+            >
+              Your Shadow Analysis
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-lg sm:text-2xl text-purple-200 font-light text-center"
+            >
+              Deep behavioral insights revealed
+            </motion.p>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Your Shadow Analysis</h1>
-          <p className="text-gray-300">Comprehensive insights based on your behavioral patterns</p>
-        </div>
-
-        {/* Personalized Insights Cards */}
-        {(insights.personalArchetype || insights.deepTruth || insights.integration) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {insights.personalArchetype && (
-              <div className="bg-gradient-to-br from-purple-600/20 to-indigo-600/20 rounded-2xl p-6 glass">
-                <Brain className="w-8 h-8 text-purple-400 mb-3" />
-                <h3 className="text-lg font-semibold text-purple-200 mb-2">Your Shadow Pattern</h3>
-                <p className="text-gray-300 text-sm">{insights.personalArchetype}</p>
-              </div>
-            )}
-            
-            {insights.deepTruth && (
-              <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-2xl p-6 glass">
-                <Eye className="w-8 h-8 text-orange-400 mb-3" />
-                <h3 className="text-lg font-semibold text-orange-200 mb-2">Deep Truth</h3>
-                <p className="text-gray-300 text-sm">{insights.deepTruth}</p>
-              </div>
-            )}
-            
-            {insights.integration && (
-              <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 rounded-2xl p-6 glass">
-                <Target className="w-8 h-8 text-green-400 mb-3" />
-                <h3 className="text-lg font-semibold text-green-200 mb-2">Integration Path</h3>
-                <p className="text-gray-300 text-sm">{insights.integration}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="bg-black/40 rounded-3xl p-8 glass">
-          <div className="prose prose-invert max-w-none">
-            <div className="text-gray-100 leading-relaxed whitespace-pre-line">
-              {finalAnalysis}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center space-x-4 mt-8">
-          <button
-            onClick={() => {
-              // Parse the analysis into different sections
-              const parseAnalysis = (analysis: string) => {
-                const sections = {
-                  patterns: '',
-                  shadow: '',
-                  root: '',
-                  integration: '',
-                  exercises: ''
-                };
-
-                // Try to extract different sections from the analysis
-                const patternMatch = analysis.match(/\*\*BEHAVIORAL PATTERNS[^*]*:\*\*\s*([^*]+)/i);
-                const shadowMatch = analysis.match(/\*\*SHADOW ELEMENTS[^*]*:\*\*\s*([^*]+)/i);
-                const rootMatch = analysis.match(/\*\*ROOT ANALYSIS[^*]*:\*\*\s*([^*]+)/i);
-                const integrationMatch = analysis.match(/\*\*INTEGRATION PLAN[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i);
-                const exercisesMatch = analysis.match(/\*\*INTEGRATION EXERCISES[^*]*:\*\*\s*([^*]+)/i);
-
-                sections.patterns = patternMatch ? patternMatch[1].trim() : '';
-                sections.shadow = shadowMatch ? shadowMatch[1].trim() : '';
-                sections.root = rootMatch ? rootMatch[1].trim() : '';
-                sections.integration = integrationMatch ? integrationMatch[1].trim() : '';
-                sections.exercises = exercisesMatch ? exercisesMatch[1].trim() : '';
-
-                return sections;
-              };
-
-              const parsed = parseAnalysis(finalAnalysis);
-
-              // Save analysis to journal with proper sections
-              const analysisEntry = {
-                id: `analysis-${Date.now()}`,
-                date: new Date(),
-                archetype: shadowProfile?.archetype || 'Deep Analysis',
-                reflection: parsed.patterns || `Key patterns identified from behavioral analysis:\n\n${finalAnalysis.slice(0, 300)}...`,
-                mood: 4,
-                insights: parsed.shadow || parsed.root || 'Deep behavioral pattern analysis revealing unconscious dynamics and core wounds driving surface behaviors.',
-                integration: parsed.integration || parsed.exercises || 'Working through identified shadow elements with specific action steps for conscious integration and growth.'
-              };
-              
-              const existingEntries = localStorage.getItem('shadowJournalEntries');
-              const entries = existingEntries ? JSON.parse(existingEntries) : [];
-              entries.unshift(analysisEntry);
-              localStorage.setItem('shadowJournalEntries', JSON.stringify(entries));
-              
-              alert('Analysis saved to your journal!');
-            }}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Save to Journal</span>
-          </button>
-
-          <button
-            onClick={() => {
-              // Parse and save first, then close
-              const parseAnalysis = (analysis: string) => {
-                const sections = {
-                  patterns: '',
-                  shadow: '',
-                  root: '',
-                  integration: '',
-                  exercises: ''
-                };
-
-                const patternMatch = analysis.match(/\*\*BEHAVIORAL PATTERNS[^*]*:\*\*\s*([^*]+)/i);
-                const shadowMatch = analysis.match(/\*\*SHADOW ELEMENTS[^*]*:\*\*\s*([^*]+)/i);
-                const rootMatch = analysis.match(/\*\*ROOT ANALYSIS[^*]*:\*\*\s*([^*]+)/i);
-                const integrationMatch = analysis.match(/\*\*INTEGRATION PLAN[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i);
-                const exercisesMatch = analysis.match(/\*\*INTEGRATION EXERCISES[^*]*:\*\*\s*([^*]+)/i);
-
-                sections.patterns = patternMatch ? patternMatch[1].trim() : '';
-                sections.shadow = shadowMatch ? shadowMatch[1].trim() : '';
-                sections.root = rootMatch ? rootMatch[1].trim() : '';
-                sections.integration = integrationMatch ? integrationMatch[1].trim() : '';
-                sections.exercises = exercisesMatch ? exercisesMatch[1].trim() : '';
-
-                return sections;
-              };
-
-              const parsed = parseAnalysis(finalAnalysis);
-
-              const analysisEntry = {
-                id: `analysis-${Date.now()}`,
-                date: new Date(),
-                archetype: shadowProfile?.archetype || 'Deep Analysis',
-                reflection: parsed.patterns || `Key patterns identified from behavioral analysis:\n\n${finalAnalysis.slice(0, 300)}...`,
-                mood: 4,
-                insights: parsed.shadow || parsed.root || 'Deep behavioral pattern analysis revealing unconscious dynamics and core wounds driving surface behaviors.',
-                integration: parsed.integration || parsed.exercises || 'Working through identified shadow elements with specific action steps for conscious integration and growth.'
-              };
-              
-              const existingEntries = localStorage.getItem('shadowJournalEntries');
-              const entries = existingEntries ? JSON.parse(existingEntries) : [];
-              entries.unshift(analysisEntry);
-              localStorage.setItem('shadowJournalEntries', JSON.stringify(entries));
-              
-              onClose();
-            }}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-300"
-          >
-            Save & Continue
-          </button>
           
-          <button
-            onClick={onClose}
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl mb-12 hover:shadow-3xl transition-shadow duration-500"
           >
-            Skip Save
-          </button>
-        </div>
-      </motion.div>
+            <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-12 glass">
+              <motion.div
+                animate={{ 
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{ 
+                  duration: 6, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
+                <Brain className="w-24 h-24 text-white mb-10 mx-auto" />
+              </motion.div>
+              
+              <h2 className="text-4xl md:text-6xl font-bold text-white text-center mb-10 text-glow">
+                {insights.personalArchetype || 'Your Behavioral Pattern'}
+              </h2>
+              
+              <div className="max-w-6xl mx-auto space-y-8">
+                <div className="bg-white/10 rounded-2xl p-10 glass">
+                  <h3 className="text-3xl font-semibold text-white mb-6 text-center">The Pattern You Live</h3>
+                  <p className="text-xl text-white/90 leading-relaxed text-center font-light">
+                    {insights.personalArchetype || 'Your comprehensive behavioral analysis reveals the unconscious patterns shaping your daily experience.'}
+                  </p>
+                </div>
+                
+                {insights.deepTruth && (
+                  <div className="bg-yellow-900/30 rounded-2xl p-10 glass">
+                    <h3 className="text-3xl font-semibold text-yellow-200 mb-6 text-center">The Deep Truth</h3>
+                    <p className="text-xl text-yellow-100 leading-relaxed text-center italic font-light">
+                      {insights.deepTruth}
+                    </p>
+                  </div>
+                )}
+                
+                {insights.integration && (
+                  <div className="bg-green-900/40 rounded-2xl p-10 glass">
+                    <h3 className="text-3xl font-semibold text-green-200 mb-6 text-center">Path to Integration</h3>
+                    <p className="text-xl text-green-100 leading-relaxed text-center font-light">
+                      {insights.integration}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="bg-purple-900/30 rounded-2xl p-8 glass">
+                  <h3 className="text-2xl font-semibold text-purple-200 mb-4 text-center">
+                    Your Journey Continues
+                  </h3>
+                  <p className="text-purple-100 text-center font-light">
+                    Remember: Your patterns developed to protect you. Integration, not elimination, is the goal. 
+                    Honor the wisdom in your shadow while choosing new ways forward.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Full Analysis Details - Collapsible */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mb-12"
+          >
+            <details className="bg-black/40 rounded-3xl glass">
+              <summary className="p-6 cursor-pointer text-xl font-semibold text-white hover:text-purple-200 transition-colors">
+                📋 View Complete Analysis Details
+              </summary>
+              <div className="px-6 pb-6">
+                <div className="prose prose-invert max-w-none">
+                  <div className="text-gray-100 leading-relaxed whitespace-pre-line">
+                    {finalAnalysis}
+                  </div>
+                </div>
+              </div>
+            </details>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            <motion.button
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30 text-xl"
+            >
+              ← Back to Journey
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen ? setCurrentScreen('journal') : onClose()}
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-green-500/30 text-xl"
+            >
+              📖 Journal This
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen ? setCurrentScreen('chat') : onClose()}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-orange-500/30 text-xl"
+            >
+              💬 Chat with Sage
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900/20 relative overflow-hidden">
+      {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black/50 to-black"></div>
       
       {/* Header */}
