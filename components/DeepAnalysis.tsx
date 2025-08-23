@@ -228,6 +228,12 @@ ${journalEntries?.length ? `JOURNAL CONTEXT: Analyze patterns from ${journalEntr
 
 Provide comprehensive analysis in this structure:
 
+**YOUR SHADOW PATTERN:** 
+[Give them a personalized archetype-style name/description based on their specific pattern, like "The Hidden Perfectionist" or "The Wounded Protector"]
+
+**DEEP TRUTH:**
+[The fundamental truth about their patterns - what their behavior is really protecting or trying to achieve]
+
 **BEHAVIORAL PATTERNS IDENTIFIED:**
 [3-4 specific patterns with examples from their responses]
 
@@ -236,6 +242,9 @@ Provide comprehensive analysis in this structure:
 
 **ROOT ANALYSIS:**
 [The 1-2 core issues driving everything - their deepest fears/wounds]
+
+**INTEGRATION PATH:**
+[The core transformation needed - their path from shadow to integration]
 
 **INTEGRATION PLAN:**
 - **Immediate Actions:** [3 specific things they can do this week]
@@ -246,7 +255,7 @@ Provide comprehensive analysis in this structure:
 **INTEGRATION EXERCISES:**
 [2-3 specific practices to work with their shadow elements]
 
-Use their exact words and examples. Be direct but compassionate. Focus on patterns, not isolated incidents. Frame as growth opportunities.`;
+Use their exact words and examples. Be direct but compassionate. Focus on patterns, not isolated incidents. Frame as growth opportunities. Make the "Your Shadow Pattern" section feel like a personalized archetype.`;
 
       const analysis = await askClaude(analysisPrompt, shadowProfile || {
         archetype: 'Comprehensive Analysis',
@@ -503,6 +512,29 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
       );
     }
 
+    // Parse insights from analysis
+    const parseInsights = (analysis: string) => {
+      const deepTruthMatch = analysis.match(/\*\*DEEP TRUTH[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                           analysis.match(/\*\*ROOT TRUTH[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                           analysis.match(/truth[^.]*[:]\s*([^.]+\.)/i);
+      
+      const integrationMatch = analysis.match(/\*\*INTEGRATION PATH[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                              analysis.match(/\*\*INTEGRATION[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                              analysis.match(/\*\*PATH FORWARD[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                              analysis.match(/\*\*HEALING[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i);
+
+      const personalArchetypeMatch = analysis.match(/\*\*YOUR SHADOW PATTERN[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i) ||
+                                     analysis.match(/you are[^.]*"([^"]+)"|archetype[^:]*:\s*([^.\n]+)|shadow[^:]*:\s*"([^"]+)"/i);
+
+      return {
+        personalArchetype: personalArchetypeMatch ? (personalArchetypeMatch[1] || personalArchetypeMatch[2] || personalArchetypeMatch[3])?.trim() : null,
+        deepTruth: deepTruthMatch ? deepTruthMatch[1].trim() : null,
+        integration: integrationMatch ? integrationMatch[1].trim() : null
+      };
+    };
+
+    const insights = parseInsights(finalAnalysis);
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -516,6 +548,35 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
           <h1 className="text-3xl font-bold text-white mb-2">Your Shadow Analysis</h1>
           <p className="text-gray-300">Comprehensive insights based on your behavioral patterns</p>
         </div>
+
+        {/* Personalized Insights Cards */}
+        {(insights.personalArchetype || insights.deepTruth || insights.integration) && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {insights.personalArchetype && (
+              <div className="bg-gradient-to-br from-purple-600/20 to-indigo-600/20 rounded-2xl p-6 glass">
+                <Brain className="w-8 h-8 text-purple-400 mb-3" />
+                <h3 className="text-lg font-semibold text-purple-200 mb-2">Your Shadow Pattern</h3>
+                <p className="text-gray-300 text-sm">{insights.personalArchetype}</p>
+              </div>
+            )}
+            
+            {insights.deepTruth && (
+              <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-2xl p-6 glass">
+                <Eye className="w-8 h-8 text-orange-400 mb-3" />
+                <h3 className="text-lg font-semibold text-orange-200 mb-2">Deep Truth</h3>
+                <p className="text-gray-300 text-sm">{insights.deepTruth}</p>
+              </div>
+            )}
+            
+            {insights.integration && (
+              <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 rounded-2xl p-6 glass">
+                <Target className="w-8 h-8 text-green-400 mb-3" />
+                <h3 className="text-lg font-semibold text-green-200 mb-2">Integration Path</h3>
+                <p className="text-gray-300 text-sm">{insights.integration}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="bg-black/40 rounded-3xl p-8 glass">
           <div className="prose prose-invert max-w-none">
