@@ -24,9 +24,13 @@ interface Exercise {
 interface IntegrationExercisesProps {
   archetype: string;
   onClose: () => void;
+  conversationContext?: {
+    question: string;
+    response: string;
+  };
 }
 
-export const IntegrationExercises = ({ archetype, onClose }: IntegrationExercisesProps) => {
+export const IntegrationExercises = ({ archetype, onClose, conversationContext }: IntegrationExercisesProps) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
@@ -37,9 +41,132 @@ export const IntegrationExercises = ({ archetype, onClose }: IntegrationExercise
     const completedExercises = savedProgress ? JSON.parse(savedProgress) : {};
 
     // Generate exercises based on archetype
-    const archetypeExercises = generateExercises(archetype, completedExercises);
+    let archetypeExercises = generateExercises(archetype, completedExercises);
+    
+    // If we have conversation context, add a custom exercise at the top
+    if (conversationContext) {
+      const customExercise = generateConversationExercise(conversationContext, archetype, completedExercises);
+      archetypeExercises = [customExercise, ...archetypeExercises];
+    }
+    
     setExercises(archetypeExercises);
-  }, [archetype]);
+  }, [archetype, conversationContext]);
+
+  const generateConversationExercise = (
+    context: { question: string; response: string }, 
+    archetype: string, 
+    completedData: any
+  ): Exercise => {
+    // Extract key themes from the conversation to create a tailored exercise
+    const question = context.question.toLowerCase();
+    const response = context.response.toLowerCase();
+    
+    // Determine the focus based on question content
+    let exerciseType: 'relationship' | 'self-worth' | 'fear' | 'anger' | 'authenticity' | 'general' = 'general';
+    
+    if (question.includes('relationship') || question.includes('dating') || question.includes('love') || question.includes('partner')) {
+      exerciseType = 'relationship';
+    } else if (question.includes('worth') || question.includes('confidence') || question.includes('enough') || question.includes('good')) {
+      exerciseType = 'self-worth';
+    } else if (question.includes('afraid') || question.includes('fear') || question.includes('scared') || question.includes('anxious')) {
+      exerciseType = 'fear';
+    } else if (question.includes('angry') || question.includes('rage') || question.includes('mad') || question.includes('frustrated')) {
+      exerciseType = 'anger';
+    } else if (question.includes('real') || question.includes('authentic') || question.includes('fake') || question.includes('mask')) {
+      exerciseType = 'authenticity';
+    }
+
+    const exerciseTemplates = {
+      relationship: {
+        title: 'Relationship Shadow Practice',
+        description: 'Integrate Dr. Shadow\'s insights about your relationship patterns',
+        category: 'Reflection' as const,
+        instructions: [
+          `Reflect on your question: "${context.question}"`,
+          'Write down the specific relationship pattern Dr. Shadow identified',
+          'Notice when this pattern shows up in your current relationships',
+          'Practice one small act of vulnerability or authenticity today',
+          'Journal about how it felt to try something different'
+        ]
+      },
+      'self-worth': {
+        title: 'Self-Worth Integration Practice',
+        description: 'Apply Dr. Shadow\'s guidance about your sense of worth',
+        category: 'Daily Practice' as const,
+        instructions: [
+          `Start with your question: "${context.question}"`,
+          'List 3 ways you typically judge or criticize yourself',
+          'For each criticism, write a compassionate response Dr. Shadow might give',
+          'Choose one area to practice self-compassion today',
+          'Set a phone reminder to check in with yourself kindly 3 times today'
+        ]
+      },
+      fear: {
+        title: 'Fear Integration Exercise',
+        description: 'Work with the fears Dr. Shadow helped you understand',
+        category: 'Action' as const,
+        instructions: [
+          `Revisit your question: "${context.question}"`,
+          'Name the specific fear Dr. Shadow helped you identify',
+          'Write down what this fear is trying to protect you from',
+          'Take one small action today despite this fear',
+          'Notice what happens when you act from courage instead of fear'
+        ]
+      },
+      anger: {
+        title: 'Anger Integration Practice',
+        description: 'Channel your anger constructively as Dr. Shadow suggested',
+        category: 'Action' as const,
+        instructions: [
+          `Reflect on your question: "${context.question}"`,
+          'Identify what you\'re really angry about (the deeper wound)',
+          'Write a letter expressing your anger fully - don\'t send it',
+          'Transform that energy: what boundary do you need to set?',
+          'Take one action today to honor your needs or protect your energy'
+        ]
+      },
+      authenticity: {
+        title: 'Authenticity Practice',
+        description: 'Practice being more real as Dr. Shadow encouraged',
+        category: 'Daily Practice' as const,
+        instructions: [
+          `Consider your question: "${context.question}"`,
+          'Identify one area where you\'ve been performing or masking',
+          'Choose a safe person/situation to be more genuine with today',
+          'Share one authentic thought, feeling, or opinion',
+          'Journal about the experience - what did you notice?'
+        ]
+      },
+      general: {
+        title: 'Shadow Integration Practice',
+        description: 'Apply Dr. Shadow\'s personalized insights to your daily life',
+        category: 'Reflection' as const,
+        instructions: [
+          `Reflect deeply on your question: "${context.question}"`,
+          'Write down the key insight Dr. Shadow shared with you',
+          'Identify one pattern or belief this insight challenges',
+          'Choose one small way to apply this wisdom today',
+          'At day\'s end, journal about what you noticed or learned'
+        ]
+      }
+    };
+
+    const template = exerciseTemplates[exerciseType];
+    const exerciseId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    return {
+      id: exerciseId,
+      title: template.title,
+      description: template.description,
+      duration: '15-30 minutes',
+      difficulty: 'Moderate',
+      category: template.category,
+      instructions: template.instructions,
+      archetype: archetype,
+      completed: completedData[exerciseId] || false,
+      dateCompleted: completedData[exerciseId] ? new Date(completedData[exerciseId]) : undefined
+    };
+  };
 
   const generateExercises = (archetype: string, completedData: any): Exercise[] => {
     const baseExercises: Omit<Exercise, 'id' | 'completed' | 'dateCompleted' | 'archetype'>[] = [];

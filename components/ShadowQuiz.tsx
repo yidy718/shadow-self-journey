@@ -244,6 +244,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }, []);
 
   const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
+  const [selectedConversationForExercise, setSelectedConversationForExercise] = useState<Conversation | null>(null);
 
   const createJournalFromConversation = useCallback((conversation: Conversation) => {
     setSelectedConversationForJournal(conversation);
@@ -251,9 +252,8 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }, []);
   
   const createExerciseFromConversation = useCallback((conversation: Conversation) => {
-    // Navigate to exercises with suggested practice
+    setSelectedConversationForExercise(conversation);
     setCurrentScreen('exercises');
-    // We'll enhance the exercises component to accept conversation context
   }, []);
 
   const restart = useCallback(() => {
@@ -293,6 +293,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }, []);
   
   const closeExercises = useCallback(() => {
+    setSelectedConversationForExercise(null);
     setCurrentScreen('results');
   }, []);
 
@@ -871,7 +872,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     return (
       <IntegrationExercises 
         archetype={archetype?.name || 'Universal'}
-        onClose={closeExercises} 
+        onClose={closeExercises}
+        conversationContext={selectedConversationForExercise ? {
+          question: selectedConversationForExercise.question,
+          response: selectedConversationForExercise.response
+        } : undefined}
       />
     );
   }
