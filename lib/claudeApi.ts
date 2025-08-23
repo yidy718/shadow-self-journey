@@ -58,11 +58,11 @@ export const askClaude = async (
   }
 };
 
-// Honest fallback when Dr. Shadow is unavailable
+// Honest fallback when Sage is unavailable
 export const getDemoInsight = (question: string, shadowProfile: ShadowProfile): string => {
-  return `**Dr. Shadow is currently unavailable** 📵
+  return `**Sage is currently unavailable** 📵
 
-I apologize, but I cannot provide the personalized psychological insight you deserve right now. The Claude AI system that powers Dr. Shadow appears to be temporarily unavailable or not properly configured.
+I apologize, but I cannot provide the personalized psychological insight you deserve right now. The Claude AI system that powers Sage appears to be temporarily unavailable or not properly configured.
 
 **Your question was:** "${question}"
 **Your archetype:** ${shadowProfile.archetype}
@@ -71,7 +71,7 @@ Rather than give you a generic response that doesn't address your specific situa
 
 **What you can do:**
 • Try asking again in a few minutes
-• Check back later when Dr. Shadow may be available
+• Check back later when Sage may be available
 • Use the Journal feature to record your thoughts and questions
 • Explore the Integration Exercises for your archetype
 

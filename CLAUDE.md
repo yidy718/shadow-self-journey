@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview Update
 
-"The Abyss - Shadow Self Journey" is now a sophisticated psychological assessment platform with integrated AI consultation featuring "Dr. Shadow" - a specialized psychological AI agent.
+"The Abyss - Shadow Self Journey" is now a sophisticated psychological assessment platform with integrated AI consultation featuring "Sage" - a wise, friendly psychological AI agent specializing in shadow work and behavioral pattern analysis.
 
 ## Project Overview
 
@@ -30,8 +30,9 @@ npm run lint
 
 ### Core Components Structure
 
-- **ShadowQuiz**: Main application component handling five screens (welcome, quiz, results, journal, exercises)
-- **WelcomeScreen**: User identity selection (anonymous vs named) with returning user recognition
+- **ShadowQuiz**: Main application component handling six screens (welcome, quiz, results, journal, exercises, deepanalysis)
+- **WelcomeScreen**: User identity selection (anonymous vs named) with returning user recognition and Deep Analysis access
+- **DeepAnalysis**: Hybrid shadow work assessment with behavioral questions and AI-generated follow-ups
 - **ShadowJournal**: Personal journaling system with mood tracking and insight recording
 - **IntegrationExercises**: Personalized homework assignments based on shadow archetype
 - **ParticleField**: Animated background particles for visual atmosphere
@@ -59,10 +60,12 @@ npm run lint
 Uses React hooks for local state:
 - Quiz progression tracking
 - Answer accumulation with shadow trait weighting
-- Screen transitions (welcome → quiz → results → journal → exercises)
+- Screen transitions (welcome → quiz → results → journal → exercises → deepanalysis)
 - User identity management (anonymous/named)
 - Assessment history tracking
-- Dr. Shadow AI consultation integration
+- Sage AI consultation integration
+- Deep Analysis behavioral question flow
+- Follow-up question generation and responses
 
 ### Styling Approach
 
@@ -73,14 +76,17 @@ Heavy use of:
 - Mobile-first responsive design patterns
 - Accessibility support with reduced motion preferences
 
-### Dr. Shadow AI Integration
+### Sage AI Integration
 
-- **AI Agent**: "Dr. Shadow" - specialized psychological AI with 20+ years expertise persona
+- **AI Agent**: "Sage" - wise, friendly psychological AI specializing in shadow work and behavioral analysis
 - **Model**: Claude 3.5 Sonnet (claude-3-5-sonnet-20241022) - latest and most advanced
+- **Communication Style**: Direct but compassionate, uses user's exact words, avoids jargon
+- **Safety Guidelines**: Professional support recommendations, non-diagnostic approach
 - **Dynamic Prompting**: Archetype-specific system prompts for personalized responses
 - **API Route**: `/api/claude` with comprehensive rate limiting and abuse protection
 - **Fallback System**: Enhanced pattern-based responses when API unavailable
 - **Cost Protection**: 5 requests/hour per user, 10/hour per IP, ~$0.003 per insight
+- **Deep Analysis**: Hybrid assessment with behavioral questions and AI-generated follow-ups
 - **Response Structure**: Recognition → Insight → Integration → Embodiment
 
 ## Development Notes

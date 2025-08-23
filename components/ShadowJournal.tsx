@@ -38,7 +38,7 @@ export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: Sha
     if (initialContent) {
       setIsAddingEntry(true);
       setNewEntry({
-        reflection: `My question: "${initialContent.question}"\n\nDr. Shadow's insight: ${initialContent.response}`,
+        reflection: `My question: "${initialContent.question}"\n\nSage's insight: ${initialContent.response}`,
         mood: 3,
         insights: '',
         integration: ''

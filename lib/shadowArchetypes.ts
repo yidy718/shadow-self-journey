@@ -64,6 +64,15 @@ export const shadowArchetypes: Record<string, ShadowArchetype> = {
 };
 
 export const getShadowArchetype = (dominantTraits: [string, number][], totalDarkness: number): ShadowArchetype => {
+  // Safety check for undefined/empty parameters
+  if (!dominantTraits || dominantTraits.length === 0) {
+    return {
+      ...shadowArchetypes.facade,
+      intensity: 'mild',
+      dominantTraits: []
+    };
+  }
+  
   const [primary] = dominantTraits;
   const intensity = totalDarkness > 45 ? 'extreme' : totalDarkness > 35 ? 'severe' : totalDarkness > 25 ? 'moderate' : 'mild';
   

@@ -79,11 +79,11 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
     const exerciseTemplates = {
       relationship: {
         title: 'Relationship Shadow Practice',
-        description: 'Integrate Dr. Shadow\'s insights about your relationship patterns',
+        description: 'Integrate Sage\'s insights about your relationship patterns',
         category: 'Reflection' as const,
         instructions: [
           `Reflect on your question: "${context.question}"`,
-          'Write down the specific relationship pattern Dr. Shadow identified',
+          'Write down the specific relationship pattern Sage identified',
           'Notice when this pattern shows up in your current relationships',
           'Practice one small act of vulnerability or authenticity today',
           'Journal about how it felt to try something different'
@@ -91,23 +91,23 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
       },
       'self-worth': {
         title: 'Self-Worth Integration Practice',
-        description: 'Apply Dr. Shadow\'s guidance about your sense of worth',
+        description: 'Apply Sage\'s guidance about your sense of worth',
         category: 'Daily Practice' as const,
         instructions: [
           `Start with your question: "${context.question}"`,
           'List 3 ways you typically judge or criticize yourself',
-          'For each criticism, write a compassionate response Dr. Shadow might give',
+          'For each criticism, write a compassionate response Sage might give',
           'Choose one area to practice self-compassion today',
           'Set a phone reminder to check in with yourself kindly 3 times today'
         ]
       },
       fear: {
         title: 'Fear Integration Exercise',
-        description: 'Work with the fears Dr. Shadow helped you understand',
+        description: 'Work with the fears Sage helped you understand',
         category: 'Action' as const,
         instructions: [
           `Revisit your question: "${context.question}"`,
-          'Name the specific fear Dr. Shadow helped you identify',
+          'Name the specific fear Sage helped you identify',
           'Write down what this fear is trying to protect you from',
           'Take one small action today despite this fear',
           'Notice what happens when you act from courage instead of fear'
@@ -115,7 +115,7 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
       },
       anger: {
         title: 'Anger Integration Practice',
-        description: 'Channel your anger constructively as Dr. Shadow suggested',
+        description: 'Channel your anger constructively as Sage suggested',
         category: 'Action' as const,
         instructions: [
           `Reflect on your question: "${context.question}"`,
@@ -127,7 +127,7 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
       },
       authenticity: {
         title: 'Authenticity Practice',
-        description: 'Practice being more real as Dr. Shadow encouraged',
+        description: 'Practice being more real as Sage encouraged',
         category: 'Daily Practice' as const,
         instructions: [
           `Consider your question: "${context.question}"`,
@@ -139,11 +139,11 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
       },
       general: {
         title: 'Shadow Integration Practice',
-        description: 'Apply Dr. Shadow\'s personalized insights to your daily life',
+        description: 'Apply Sage\'s personalized insights to your daily life',
         category: 'Reflection' as const,
         instructions: [
           `Reflect deeply on your question: "${context.question}"`,
-          'Write down the key insight Dr. Shadow shared with you',
+          'Write down the key insight Sage shared with you',
           'Identify one pattern or belief this insight challenges',
           'Choose one small way to apply this wisdom today',
           'At day\'s end, journal about what you noticed or learned'

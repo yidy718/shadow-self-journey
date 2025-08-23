@@ -8,6 +8,8 @@ import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
 import ShadowJournal from './ShadowJournal';
 import IntegrationExercises from './IntegrationExercises';
+import DeepAnalysis from './DeepAnalysis';
+import ReAnalysis from './ReAnalysis';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile } from '../lib/claudeApi';
@@ -25,7 +27,7 @@ interface Conversation {
 }
 
 const ShadowQuiz = () => {
-  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat'>('identity');
+  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat' | 'deepanalysis' | 'reanalysis'>('identity');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -174,9 +176,9 @@ const ShadowQuiz = () => {
       
       // Log the source for debugging
       if (isFromAPI) {
-        console.log('✅ Dr. Shadow (Claude 3.5 Sonnet API) responded');
+        console.log('✅ Sage (Claude 3.5 Sonnet API) responded');
       } else {
-        console.log('⚠️ Using fallback - Dr. Shadow unavailable');
+        console.log('⚠️ Using fallback - Sage unavailable');
       }
       
       // Save conversation to history
@@ -212,7 +214,7 @@ const ShadowQuiz = () => {
     } catch (error) {
       const errorResponse = `**Connection Error** ⚠️
 
-Dr. Shadow is experiencing technical difficulties and cannot respond to your question right now.
+Sage is experiencing technical difficulties and cannot respond to your question right now.
 
 **Your question:** "${userQuestion}"
 
@@ -242,6 +244,21 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   const closeChat = useCallback(() => {
     setCurrentScreen('results');
   }, []);
+
+  const openDeepAnalysis = useCallback(() => {
+    setCurrentScreen('deepanalysis');
+  }, []);
+
+  const closeDeepAnalysis = useCallback(() => {
+    // Smart navigation based on user's journey
+    if (Object.keys(answers).length > 0) {
+      // User has archetype - go to results with both assessments
+      setCurrentScreen('results');
+    } else {
+      // User only has deep analysis - create a minimal "results" state for deep analysis only
+      setCurrentScreen('results');
+    }
+  }, [answers]);
 
   const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
   const [selectedConversationForExercise, setSelectedConversationForExercise] = useState<Conversation | null>(null);
@@ -285,6 +302,10 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   
   const openExercises = useCallback(() => {
     setCurrentScreen('exercises');
+  }, []);
+
+  const openReAnalysis = useCallback(() => {
+    setCurrentScreen('reanalysis');
   }, []);
   
   const closeJournal = useCallback(() => {
@@ -331,7 +352,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }
 
   if (currentScreen === 'identity') {
-    return <WelcomeScreen onContinue={handleUserPreferences} />;
+    return <WelcomeScreen onContinue={handleUserPreferences} onDeepAnalysis={openDeepAnalysis} />;
   }
 
   if (currentScreen === 'welcome') {
@@ -549,9 +570,17 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }
 
   if (currentScreen === 'results') {
-    const { dominantTraits, totalDarkness } = calculateShadow;
-    const archetype = getShadowArchetype(dominantTraits, totalDarkness);
-    const IconComponent = archetype.icon;
+    // Check if user has completed archetype quiz
+    const hasArchetype = Object.keys(answers).length > 0;
+    
+    let archetype = null;
+    let IconComponent = null;
+    
+    if (hasArchetype) {
+      const { dominantTraits, totalDarkness } = calculateShadow;
+      archetype = getShadowArchetype(dominantTraits, totalDarkness);
+      IconComponent = archetype.icon;
+    }
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-red-900/20 flex items-center justify-center p-4 relative overflow-hidden">
@@ -580,7 +609,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           
           <motion.div 
             variants={itemVariants}
-            className={`bg-gradient-to-br ${archetype.color} p-1 rounded-3xl shadow-2xl mb-12 hover:shadow-3xl transition-shadow duration-500`}
+            className={`bg-gradient-to-br ${archetype?.color || 'from-purple-600 to-blue-600'} p-1 rounded-3xl shadow-2xl mb-12 hover:shadow-3xl transition-shadow duration-500`}
           >
             <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-12 glass">
               <motion.div
@@ -594,44 +623,56 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   ease: "easeInOut" 
                 }}
               >
-                <IconComponent className="w-24 h-24 text-white mb-10 mx-auto" />
+                {IconComponent ? (
+                  <IconComponent className="w-24 h-24 text-white mb-10 mx-auto" />
+                ) : (
+                  <Eye className="w-24 h-24 text-white mb-10 mx-auto" />
+                )}
               </motion.div>
               
               <h2 className="text-4xl md:text-6xl font-bold text-white text-center mb-10 text-glow">
-                {archetype.name}
+                {hasArchetype ? archetype.name : 'Your Shadow Analysis'}
               </h2>
               
               <div className="max-w-6xl mx-auto space-y-8">
                 <div className="bg-white/10 rounded-2xl p-10 glass">
-                  <h3 className="text-3xl font-semibold text-white mb-6 text-center">The Shadow You Carry</h3>
-                  <p className="text-xl text-white/90 leading-relaxed text-center font-light">
-                    {archetype.description}
-                  </p>
-                </div>
-                
-                <div className="bg-yellow-900/30 rounded-2xl p-10 glass">
-                  <h3 className="text-3xl font-semibold text-yellow-200 mb-6 text-center">The Deep Truth</h3>
-                  <p className="text-xl text-yellow-100 leading-relaxed text-center italic font-light">
-                    {archetype.deepTruth}
-                  </p>
-                </div>
-                
-                <div className="bg-green-900/40 rounded-2xl p-10 glass">
-                  <h3 className="text-3xl font-semibold text-green-200 mb-6 text-center">Path to Integration</h3>
-                  <p className="text-xl text-green-100 leading-relaxed text-center font-light">
-                    {archetype.integration}
-                  </p>
-                </div>
-                
-                <div className="bg-purple-900/30 rounded-2xl p-8 glass">
-                  <h3 className="text-2xl font-semibold text-purple-200 mb-4 text-center">
-                    Shadow Intensity: {archetype.intensity?.toUpperCase()}
+                  <h3 className="text-3xl font-semibold text-white mb-6 text-center">
+                    {hasArchetype ? 'The Shadow You Carry' : 'Your Deep Analysis Complete'}
                   </h3>
-                  <p className="text-purple-100 text-center font-light">
-                    Remember: Your shadow is not your enemy — it is the part of you that needs the most compassion. 
-                    Integration, not elimination, is the goal.
+                  <p className="text-xl text-white/90 leading-relaxed text-center font-light">
+                    {hasArchetype 
+                      ? archetype.description 
+                      : 'Your comprehensive behavioral analysis has been completed and saved to your journal. Access it anytime through the Journal section, or continue your shadow work journey by chatting with Sage.'}
                   </p>
                 </div>
+                
+                {hasArchetype && (
+                  <>
+                    <div className="bg-yellow-900/30 rounded-2xl p-10 glass">
+                      <h3 className="text-3xl font-semibold text-yellow-200 mb-6 text-center">The Deep Truth</h3>
+                      <p className="text-xl text-yellow-100 leading-relaxed text-center italic font-light">
+                        {archetype.deepTruth}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-green-900/40 rounded-2xl p-10 glass">
+                      <h3 className="text-3xl font-semibold text-green-200 mb-6 text-center">Path to Integration</h3>
+                      <p className="text-xl text-green-100 leading-relaxed text-center font-light">
+                        {archetype.integration}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-purple-900/30 rounded-2xl p-8 glass">
+                      <h3 className="text-2xl font-semibold text-purple-200 mb-4 text-center">
+                        Shadow Intensity: {archetype.intensity?.toUpperCase()}
+                      </h3>
+                      <p className="text-purple-100 text-center font-light">
+                        Remember: Your shadow is not your enemy — it is the part of you that needs the most compassion. 
+                        Integration, not elimination, is the goal.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
@@ -640,17 +681,17 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           {/* Action Buttons */}
           <motion.div 
             variants={itemVariants}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12"
           >
             <motion.button
               onClick={openChat}
               whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
               whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              aria-label="Chat with Dr. Shadow"
+              aria-label="Chat with Sage"
             >
               <MessageCircle className="w-6 h-6 mx-auto mb-2" />
-              <div className="text-lg font-bold">Chat with Dr. Shadow</div>
+              <div className="text-lg font-bold">Chat with Sage</div>
               <div className="text-sm opacity-90">{conversations.length > 0 ? `${conversations.length} exchanges` : 'Start conversation'}</div>
             </motion.button>
             
@@ -677,6 +718,18 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <div className="text-lg font-bold">Exercises</div>
               <div className="text-sm opacity-90">Integration Work</div>
             </motion.button>
+
+            <motion.button
+              onClick={openReAnalysis}
+              whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+              whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-orange-500/30 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              aria-label="Re-analyze all data with Sage"
+            >
+              <Brain className="w-6 h-6 mx-auto mb-2" />
+              <div className="text-lg font-bold">Re-analyze</div>
+              <div className="text-sm opacity-90">Evolved Insights</div>
+            </motion.button>
           </motion.div>
 
           <AnimatePresence>
@@ -689,7 +742,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 className="bg-black/40 rounded-3xl p-10 glass mb-12"
               >
                 <h3 className="text-2xl font-semibold text-white mb-6 text-center">
-                  Consult with Dr. Shadow
+                  Consult with Sage
                 </h3>
                 <textarea
                   value={userQuestion}
@@ -729,7 +782,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   >
                     <h4 className="text-xl font-semibold text-indigo-200 mb-4 flex items-center">
                       <MessageCircle className="w-5 h-5 mr-2" />
-                      Dr. Shadow's Insight
+                      Sage's Insight
                     </h4>
                     <p className="text-indigo-100 leading-relaxed text-lg font-light whitespace-pre-line">
                       {claudeResponse}
@@ -895,7 +948,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur">
             <div>
-              <h2 className="text-xl font-semibold text-white">Dr. Shadow</h2>
+              <h2 className="text-xl font-semibold text-white">Sage</h2>
               <p className="text-gray-400 text-sm">{archetype?.name || 'Shadow Work Consultation'}</p>
             </div>
             <button
@@ -911,7 +964,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             {conversations.length === 0 ? (
               <div className="text-center text-gray-400 mt-8">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Start a conversation with Dr. Shadow</p>
+                <p>Start a conversation with Sage</p>
                 <p className="text-sm mt-2">Ask about your shadow work, relationships, patterns, or anything on your mind.</p>
               </div>
             ) : (
@@ -924,10 +977,10 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                     </div>
                   </div>
                   
-                  {/* Dr. Shadow response */}
+                  {/* Sage response */}
                   <div className="flex justify-start">
                     <div data-response className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md max-w-[80%]">
-                      <div className="text-sm text-purple-400 mb-2">Dr. Shadow</div>
+                      <div className="text-sm text-purple-400 mb-2">Sage</div>
                       <div className="whitespace-pre-line">{conv.response}</div>
                       
                       {/* Action buttons */}
@@ -957,7 +1010,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             {isLoadingResponse && (
               <div className="flex justify-start">
                 <div className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md">
-                  <div className="text-sm text-purple-400 mb-2">Dr. Shadow</div>
+                  <div className="text-sm text-purple-400 mb-2">Sage</div>
                   <div className="flex items-center space-x-2">
                     <Loader className="w-4 h-4 animate-spin" />
                     <span>Thinking...</span>
@@ -973,7 +1026,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <textarea
                 value={userQuestion}
                 onChange={(e) => setUserQuestion(e.target.value)}
-                placeholder="Ask Dr. Shadow anything about your shadow work journey..."
+                placeholder="Ask Sage anything about your shadow work journey..."
                 className="flex-1 bg-gray-800 text-white p-3 rounded-xl border border-gray-700 focus:border-purple-500 focus:outline-none resize-none"
                 rows={2}
                 onKeyPress={(e) => {
@@ -998,6 +1051,54 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (currentScreen === 'deepanalysis') {
+    // Load journal entries for analysis
+    const journalEntries = localStorage.getItem('shadowJournalEntries');
+    const parsedEntries = journalEntries ? JSON.parse(journalEntries) : [];
+    
+    // Get archetype if user has completed quiz
+    const currentArchetype = Object.keys(answers).length > 0 ? getShadowArchetype(calculateShadow.dominantTraits || [], calculateShadow.totalDarkness || 0) : null;
+    
+    return (
+      <DeepAnalysis 
+        onClose={closeDeepAnalysis}
+        shadowProfile={currentArchetype ? {
+          archetype: currentArchetype.name,
+          traits: calculateShadow.dominantTraits?.slice(0, 5).map(t => t[0]) || [],
+          intensity: (() => {
+            const totalScore = calculateShadow.totalDarkness || 0;
+            return totalScore > 15 ? 'intense' : totalScore > 10 ? 'deep' : totalScore > 5 ? 'moderate' : 'gentle';
+          })(),
+          description: currentArchetype.description
+        } : undefined}
+        journalEntries={parsedEntries}
+      />
+    );
+  }
+
+  if (currentScreen === 'reanalysis') {
+    // Get archetype if user has completed quiz
+    const hasAnswers = Object.keys(answers).length > 0;
+    let currentArchetype = null;
+    
+    if (hasAnswers) {
+      const { dominantTraits, totalDarkness } = calculateShadow;
+      currentArchetype = getShadowArchetype(dominantTraits, totalDarkness);
+    }
+    
+    return (
+      <ReAnalysis 
+        onClose={() => setCurrentScreen('results')}
+        shadowProfile={currentArchetype ? {
+          archetype: currentArchetype.name,
+          traits: calculateShadow.dominantTraits.map(([trait]) => trait),
+          intensity: currentArchetype.intensity || 'moderate',
+          description: currentArchetype.description
+        } : undefined}
+      />
     );
   }
 

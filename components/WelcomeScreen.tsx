@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, User, UserX, Sparkles, Brain, ArrowRight, AlertTriangle } from 'lucide-react';
 import { ParticleField } from './ParticleField';
-import { getUserPreferences, createNewUser, type UserPreferences } from '../lib/userPreferences';
+import { getUserPreferences, createNewUser, saveUserPreferences, type UserPreferences } from '../lib/userPreferences';
 
 interface WelcomeScreenProps {
   onContinue: (userPrefs: UserPreferences) => void;
+  onDeepAnalysis?: () => void;
 }
 
-export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
-  const [currentStep, setCurrentStep] = useState<'intro' | 'identity' | 'warning'>('intro');
+export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps) => {
+  const [currentStep, setCurrentStep] = useState<'identity' | 'intro' | 'warning'>('identity');
   const [userName, setUserName] = useState('');
   const [existingUser, setExistingUser] = useState<UserPreferences | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
@@ -23,7 +24,7 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
 
   const handleReturnUser = () => {
     if (existingUser) {
-      onContinue(existingUser);
+      setCurrentStep('intro');
     }
   };
 
@@ -33,8 +34,8 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
 
   const handleAnonymous = () => {
     const newUser = createNewUser();
-    setCurrentStep('warning');
-    setTimeout(() => onContinue(newUser), 2000);
+    saveUserPreferences(newUser);
+    setCurrentStep('intro');
   };
 
   const handleWithName = () => {
@@ -43,8 +44,19 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
       return;
     }
     const newUser = createNewUser(userName);
+    saveUserPreferences(newUser);
+    setCurrentStep('intro');
+  };
+
+  const handleArchetypeAssessment = () => {
     setCurrentStep('warning');
-    setTimeout(() => onContinue(newUser), 2000);
+    setTimeout(() => onContinue(getUserPreferences()!), 2000);
+  };
+
+  const handleDeepAnalysisStart = () => {
+    if (onDeepAnalysis) {
+      onDeepAnalysis();
+    }
   };
 
   const containerVariants = {
@@ -124,54 +136,43 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
             And if you gaze long into an abyss, the abyss also gazes into you." — Nietzsche
           </motion.p>
 
-          <AnimatePresence>
-            {existingUser && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-8 p-6 bg-purple-900/30 border border-purple-500/40 rounded-2xl max-w-md mx-auto"
-              >
-                <h3 className="text-purple-200 font-semibold mb-2">
-                  Welcome back{existingUser.name ? `, ${existingUser.name}` : ''}
-                </h3>
-                <p className="text-purple-300 text-sm mb-4">
-                  {existingUser.assessmentHistory.length} previous assessment{existingUser.assessmentHistory.length !== 1 ? 's' : ''}
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleReturnUser}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
-                  >
-                    Continue Journey
-                  </button>
-                  <button
-                    onClick={handleNewIdentity}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
-                  >
-                    New Identity
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-          {!existingUser && (
-            <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleNewIdentity}
-              className="group btn-primary text-lg sm:text-2xl px-8 sm:px-12 py-4 sm:py-6 relative overflow-hidden transition-all duration-300 hover:shadow-2xl"
-              aria-label="Begin the shadow self assessment"
-            >
-              <span className="relative z-10 flex items-center">
-                <Brain className="mr-2 sm:mr-3 w-6 h-6 sm:w-7 sm:h-7" />
-                Descend Into Darkness
-                <ArrowRight className="ml-2 sm:ml-4 w-6 h-6 sm:w-7 sm:h-7 group-hover:translate-x-2 transition-transform relative z-10" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            </motion.button>
-          )}
+          <motion.div 
+            variants={itemVariants}
+            className="flex flex-col sm:flex-row gap-4 sm:gap-6 max-w-4xl mx-auto"
+          >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleArchetypeAssessment}
+                className="group btn-primary text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1"
+                aria-label="Begin the shadow archetype assessment"
+              >
+                <span className="relative z-10 flex items-center justify-center">
+                  <Brain className="mr-2 sm:mr-3 w-6 h-6" />
+                  Archetype Assessment
+                  <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform relative z-10" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </motion.button>
+
+              {onDeepAnalysis && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDeepAnalysisStart}
+                  className="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold transition-all duration-300 hover:shadow-2xl relative overflow-hidden flex-1"
+                  aria-label="Begin deep behavioral analysis"
+                >
+                  <span className="relative z-10 flex items-center justify-center">
+                    <Eye className="mr-2 sm:mr-3 w-6 h-6" />
+                    Deep Analysis
+                    <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform relative z-10" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </motion.button>
+              )}
+          </motion.div>
         </motion.div>
       </div>
     );
@@ -201,6 +202,37 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
           >
             Your choice affects only your local experience. No data leaves your device.
           </motion.p>
+
+          <AnimatePresence>
+            {existingUser && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-8 p-6 bg-purple-900/30 border border-purple-500/40 rounded-2xl max-w-md mx-auto"
+              >
+                <h3 className="text-purple-200 font-semibold mb-2">
+                  Welcome back{existingUser.name ? `, ${existingUser.name}` : ''}
+                </h3>
+                <p className="text-purple-300 text-sm mb-4">
+                  {existingUser.assessmentHistory.length} previous assessment{existingUser.assessmentHistory.length !== 1 ? 's' : ''}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleReturnUser}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                  >
+                    Continue Journey
+                  </button>
+                  <button
+                    onClick={() => setExistingUser(null)}
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                  >
+                    New Identity
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="grid gap-6 max-w-md mx-auto">
             <motion.button
