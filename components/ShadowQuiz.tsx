@@ -12,7 +12,7 @@ import DeepAnalysis from './DeepAnalysis';
 import ReAnalysis from './ReAnalysis';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
-import { askClaude, getDemoInsight, type ShadowProfile } from '../lib/claudeApi';
+import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
 import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, type UserPreferences } from '../lib/userPreferences';
 
 interface Answer {
@@ -161,10 +161,46 @@ const ShadowQuiz = () => {
           question: conv.question,
           response: conv.response
         }));
+
+        // Gather enhanced context from localStorage
+        const enhancedContext = {
+          journalEntries: (() => {
+            const journalData = localStorage.getItem('shadowJournalEntries');
+            if (!journalData) return [];
+            const entries = JSON.parse(journalData);
+            return entries.slice(-8).map((entry: any) => ({
+              date: new Date(entry.date).toLocaleDateString(),
+              reflection: entry.reflection || '',
+              insights: entry.insights || '',
+              integration: entry.integration || '',
+              mood: entry.mood || 3
+            }));
+          })(),
+          recentAnalyses: (() => {
+            const journalData = localStorage.getItem('shadowJournalEntries');
+            if (!journalData) return [];
+            const entries = JSON.parse(journalData);
+            return entries
+              .filter((entry: any) => entry.id?.includes('analysis-') || entry.id?.includes('reanalysis-'))
+              .slice(-3)
+              .map((entry: any) => entry.insights || entry.reflection);
+          })(),
+          moodTrends: (() => {
+            const journalData = localStorage.getItem('shadowJournalEntries');
+            if (!journalData) return [];
+            const entries = JSON.parse(journalData);
+            return entries.slice(-10).map((entry: any) => entry.mood || 3);
+          })()
+        };
         
-        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory);
+        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext);
         isFromAPI = true;
-        console.log('✅ Using Claude API response with', apiConversationHistory.length, 'previous exchanges');
+        console.log('✅ Using Claude API response with enhanced context:', {
+          conversations: apiConversationHistory.length,
+          journalEntries: enhancedContext.journalEntries.length,
+          analyses: enhancedContext.recentAnalyses.length,
+          moods: enhancedContext.moodTrends.length
+        });
       } catch (error) {
         // Fallback to demo insights if API fails
         response = getDemoInsight(userQuestion, shadowProfile);

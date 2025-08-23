@@ -8,6 +8,18 @@ export interface ShadowProfile {
   description: string;
 }
 
+export interface EnhancedContext {
+  journalEntries?: Array<{
+    date: string;
+    reflection: string;
+    insights: string;
+    integration: string;
+    mood: number;
+  }>;
+  recentAnalyses?: string[];
+  moodTrends?: number[];
+}
+
 // Initialize Claude client
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -15,11 +27,12 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, shadowProfile, userId, conversationHistory }: { 
+    const { question, shadowProfile, userId, conversationHistory, enhancedContext }: { 
       question: string; 
       shadowProfile: ShadowProfile; 
       userId?: string;
-      conversationHistory?: Array<{question: string, response: string}>
+      conversationHistory?: Array<{question: string, response: string}>;
+      enhancedContext?: EnhancedContext;
     } = await request.json();
 
     // Validate input
@@ -99,7 +112,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'user',
-            content: createUserPrompt(question, shadowProfile, conversationHistory)
+            content: createUserPrompt(question, shadowProfile, conversationHistory, enhancedContext)
           }
         ]
       });
@@ -266,9 +279,35 @@ SPECIALIZED FOCUS: Eternally Forsaken Shadow Integration
 function createUserPrompt(
   question: string, 
   shadowProfile: ShadowProfile, 
-  conversationHistory?: Array<{question: string, response: string}>
+  conversationHistory?: Array<{question: string, response: string}>,
+  enhancedContext?: EnhancedContext
 ): string {
   let prompt = `I've been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.`;
+
+  // Add enhanced context (journal entries and analyses)
+  if (enhancedContext) {
+    if (enhancedContext.journalEntries && enhancedContext.journalEntries.length > 0) {
+      prompt += `\n\nMY RECENT JOURNAL WORK:\n`;
+      enhancedContext.journalEntries.slice(-5).forEach((entry, index) => {
+        prompt += `\nEntry ${index + 1} (${entry.date}):\n`;
+        prompt += `- Reflection: ${entry.reflection.substring(0, 150)}...\n`;
+        prompt += `- Key Insight: ${entry.insights.substring(0, 150)}...\n`;
+        prompt += `- Mood: ${entry.mood}/5\n`;
+      });
+    }
+
+    if (enhancedContext.recentAnalyses && enhancedContext.recentAnalyses.length > 0) {
+      prompt += `\n\nMY RECENT ANALYSIS INSIGHTS:\n`;
+      enhancedContext.recentAnalyses.slice(-2).forEach((analysis, index) => {
+        prompt += `\nAnalysis ${index + 1}: ${analysis.substring(0, 200)}...\n`;
+      });
+    }
+
+    if (enhancedContext.moodTrends && enhancedContext.moodTrends.length > 0) {
+      const avgMood = enhancedContext.moodTrends.reduce((a, b) => a + b, 0) / enhancedContext.moodTrends.length;
+      prompt += `\n\nMOOD PATTERN: Recent average ${avgMood.toFixed(1)}/5 over ${enhancedContext.moodTrends.length} entries\n`;
+    }
+  }
 
   // Add conversation history if it exists
   if (conversationHistory && conversationHistory.length > 0) {
@@ -281,7 +320,9 @@ function createUserPrompt(
 
   prompt += `\nMy current question: "${question}"
 
-Talk to me like a real friend who gets psychology and shadow work. No formal therapy speak, no roleplay actions like "*adjusts glasses*", just straight talk. Address my actual question directly. Give me insight that's genuinely helpful, not textbook stuff. What would you honestly tell a close friend asking this same thing?`;
+Talk to me like a real friend who gets psychology and shadow work. No formal therapy speak, no roleplay actions like "*adjusts glasses*", just straight talk. Address my actual question directly. Give me insight that's genuinely helpful, not textbook stuff. What would you honestly tell a close friend asking this same thing?
+
+Given my journal work, previous analyses, and conversation history, what patterns do you see that I might be missing?`;
 
   return prompt;
 }

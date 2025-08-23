@@ -7,11 +7,24 @@ export interface ShadowProfile {
   description: string;
 }
 
+export interface EnhancedContext {
+  journalEntries?: Array<{
+    date: string;
+    reflection: string;
+    insights: string;
+    integration: string;
+    mood: number;
+  }>;
+  recentAnalyses?: string[];
+  moodTrends?: number[];
+}
+
 export const askClaude = async (
   question: string, 
   shadowProfile: ShadowProfile, 
   userId?: string,
-  conversationHistory?: Array<{question: string, response: string}>
+  conversationHistory?: Array<{question: string, response: string}>,
+  enhancedContext?: EnhancedContext
 ): Promise<string> => {
   try {
     console.log('🔄 Frontend: Calling /api/claude with:', {
@@ -30,6 +43,7 @@ export const askClaude = async (
         shadowProfile,
         userId,
         conversationHistory,
+        enhancedContext,
       }),
     });
 
