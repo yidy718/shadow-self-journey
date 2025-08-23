@@ -56,8 +56,8 @@ const ShadowQuiz = () => {
       setAnswers(prefs.currentQuizProgress.answers);
       setConversations(prefs.currentQuizProgress.conversations);
       
-      // If quiz was completed, go to results, otherwise continue quiz
-      if (prefs.currentQuizProgress.currentQuestion >= questions.length) {
+      // If quiz was completed (has all answers), go to results, otherwise continue quiz
+      if (Object.keys(prefs.currentQuizProgress.answers).length >= questions.length) {
         setCurrentScreen('results');
       } else {
         setCurrentScreen('quiz');
@@ -197,12 +197,17 @@ const ShadowQuiz = () => {
       // Clear question for next use
       setUserQuestion('');
       
-      // Auto-scroll to bottom after response
+      // Auto-scroll to show the beginning of the new response
       setTimeout(() => {
         if (chatMessagesRef.current) {
-          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+          // Find the last Dr. Shadow response element and scroll to it
+          const responses = chatMessagesRef.current.querySelectorAll('[data-response]');
+          if (responses.length > 0) {
+            const lastResponse = responses[responses.length - 1];
+            lastResponse.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
-      }, 100);
+      }, 200);
       
     } catch (error) {
       const errorResponse = `**Connection Error** ⚠️
@@ -452,7 +457,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: shouldReduceMotion ? 0 : -100, scale: shouldReduceMotion ? 1 : 0.9 }}
             transition={{ duration: shouldReduceMotion ? 0.3 : 0.6, ease: "easeInOut" }}
-            className="relative z-10 max-w-6xl w-full"
+            className="relative z-10 max-w-7xl w-full px-4"
           >
             <div className="text-center mb-20">
               <motion.div
@@ -595,7 +600,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 {archetype.name}
               </h2>
               
-              <div className="max-w-5xl mx-auto space-y-8">
+              <div className="max-w-6xl mx-auto space-y-8">
                 <div className="bg-white/10 rounded-2xl p-10 glass">
                   <h3 className="text-3xl font-semibold text-white mb-6 text-center">The Shadow You Carry</h3>
                   <p className="text-xl text-white/90 leading-relaxed text-center font-light">
@@ -881,7 +886,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex flex-col relative overflow-hidden">
         <ParticleField count={shouldReduceMotion ? 15 : 30} />
         
-        <div className="relative z-10 flex flex-col h-screen max-w-4xl mx-auto w-full">
+        <div className="relative z-10 flex flex-col h-screen max-w-6xl mx-auto w-full px-4">
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur">
             <div>
@@ -909,14 +914,14 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 <div key={index} className="space-y-3">
                   {/* User message */}
                   <div className="flex justify-end">
-                    <div className="bg-purple-600 text-white p-3 rounded-2xl rounded-br-md max-w-[80%]">
+                    <div className="bg-purple-600 text-white p-3 rounded-2xl rounded-br-md max-w-[75%]">
                       {conv.question}
                     </div>
                   </div>
                   
                   {/* Dr. Shadow response */}
                   <div className="flex justify-start">
-                    <div className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md max-w-[85%]">
+                    <div data-response className="bg-gray-800 text-gray-100 p-4 rounded-2xl rounded-bl-md max-w-[80%]">
                       <div className="text-sm text-purple-400 mb-2">Dr. Shadow</div>
                       <div className="whitespace-pre-line">{conv.response}</div>
                       
