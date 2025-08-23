@@ -24,8 +24,13 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleReturnUser = () => {
     if (existingUser) {
-      // If user has assessment history, take them straight to results
-      if (existingUser.assessmentHistory.length > 0) {
+      // Check if user has completed quiz (has quiz progress with full answers) OR assessment history
+      const hasCompletedQuiz = existingUser.currentQuizProgress && 
+        Object.keys(existingUser.currentQuizProgress.answers).length >= 8; // 8 questions in quiz
+      const hasAssessmentHistory = existingUser.assessmentHistory.length > 0;
+      
+      if (hasCompletedQuiz || hasAssessmentHistory) {
+        // Take them straight to results
         onContinue(existingUser);
       } else {
         // No assessments yet, show intro to choose path
