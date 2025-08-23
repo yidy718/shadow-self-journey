@@ -225,7 +225,12 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                   Welcome back{existingUser.name ? `, ${existingUser.name}` : ''}
                 </h3>
                 <p className="text-purple-300 text-sm mb-4">
-                  {existingUser.assessmentHistory.length} previous assessment{existingUser.assessmentHistory.length !== 1 ? 's' : ''}
+                  {(() => {
+                    const hasCompletedQuiz = existingUser.currentQuizProgress && 
+                      Object.keys(existingUser.currentQuizProgress.answers).length >= 8;
+                    const assessmentCount = existingUser.assessmentHistory.length + (hasCompletedQuiz ? 1 : 0);
+                    return `${assessmentCount} previous assessment${assessmentCount !== 1 ? 's' : ''}`;
+                  })()}
                 </p>
                 <div className="flex gap-3">
                   <button
