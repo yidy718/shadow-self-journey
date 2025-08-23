@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, User, UserX, Sparkles, Brain, ArrowRight, AlertTriangle } from 'lucide-react';
 import { ParticleField } from './ParticleField';
-import { getUserPreferences, createNewUser, saveUserPreferences, type UserPreferences } from '../lib/userPreferences';
+import { getUserPreferences, createNewUser, saveUserPreferences, clearUserData, type UserPreferences } from '../lib/userPreferences';
 
 interface WelcomeScreenProps {
   onContinue: (userPrefs: UserPreferences) => void;
@@ -24,7 +24,13 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleReturnUser = () => {
     if (existingUser) {
-      setCurrentStep('intro');
+      // If user has assessment history, take them straight to results
+      if (existingUser.assessmentHistory.length > 0) {
+        onContinue(existingUser);
+      } else {
+        // No assessments yet, show intro to choose path
+        setCurrentStep('intro');
+      }
     }
   };
 
@@ -224,7 +230,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                     Continue Journey
                   </button>
                   <button
-                    onClick={() => setExistingUser(null)}
+                    onClick={() => {
+                      clearUserData(); // Clear all user data including journal
+                      setExistingUser(null);
+                      setCurrentStep('identity');
+                    }}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                   >
                     New Identity

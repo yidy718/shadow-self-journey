@@ -193,7 +193,7 @@ const ShadowQuiz = () => {
           })()
         };
         
-        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext);
+        response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext, userPrefs?.name);
         isFromAPI = true;
         console.log('✅ Using Claude API response with enhanced context:', {
           conversations: apiConversationHistory.length,
@@ -984,7 +984,9 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur">
             <div>
-              <h2 className="text-xl font-semibold text-white">Sage</h2>
+              <h2 className="text-xl font-semibold text-white">
+                Sage {userPrefs?.name ? `& ${userPrefs.name}` : ''}
+              </h2>
               <p className="text-gray-400 text-sm">{archetype?.name || 'Shadow Work Consultation'}</p>
             </div>
             <button
@@ -1000,7 +1002,12 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             {conversations.length === 0 ? (
               <div className="text-center text-gray-400 mt-8">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Start a conversation with Sage</p>
+                <p>
+                  {userPrefs?.name 
+                    ? `Welcome ${userPrefs.name}, ready to chat with Sage?` 
+                    : 'Start a conversation with Sage'
+                  }
+                </p>
                 <p className="text-sm mt-2">Ask about your shadow work, relationships, patterns, or anything on your mind.</p>
               </div>
             ) : (

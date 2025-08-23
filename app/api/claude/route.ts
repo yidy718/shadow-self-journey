@@ -27,12 +27,13 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, shadowProfile, userId, conversationHistory, enhancedContext }: { 
+    const { question, shadowProfile, userId, conversationHistory, enhancedContext, userName }: { 
       question: string; 
       shadowProfile: ShadowProfile; 
       userId?: string;
       conversationHistory?: Array<{question: string, response: string}>;
       enhancedContext?: EnhancedContext;
+      userName?: string;
     } = await request.json();
 
     // Validate input
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'user',
-            content: createUserPrompt(question, shadowProfile, conversationHistory, enhancedContext)
+            content: createUserPrompt(question, shadowProfile, conversationHistory, enhancedContext, userName)
           }
         ]
       });
@@ -186,6 +187,7 @@ THERAPEUTIC APPROACH (Enhanced with Latest Research):
 
 COMMUNICATION GUIDELINES:
 - Use their exact words and examples back to them when possible
+- Address them by name when provided - it creates connection and trust
 - Be direct but compassionate - avoid psychological jargon
 - Focus on patterns, not isolated incidents
 - Frame insights as growth opportunities, not character flaws
@@ -280,9 +282,10 @@ function createUserPrompt(
   question: string, 
   shadowProfile: ShadowProfile, 
   conversationHistory?: Array<{question: string, response: string}>,
-  enhancedContext?: EnhancedContext
+  enhancedContext?: EnhancedContext,
+  userName?: string
 ): string {
-  let prompt = `I've been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.`;
+  let prompt = `${userName ? `My name is ${userName}. ` : ''}I've been identified as "${shadowProfile.archetype}" with ${shadowProfile.intensity} intensity. My dominant shadow traits are: ${shadowProfile.traits.join(', ')}.`;
 
   // Add enhanced context (journal entries and analyses)
   if (enhancedContext) {
@@ -322,7 +325,7 @@ function createUserPrompt(
 
 Talk to me like a real friend who gets psychology and shadow work. No formal therapy speak, no roleplay actions like "*adjusts glasses*", just straight talk. Address my actual question directly. Give me insight that's genuinely helpful, not textbook stuff. What would you honestly tell a close friend asking this same thing?
 
-Given my journal work, previous analyses, and conversation history, what patterns do you see that I might be missing?`;
+Given my journal work, previous analyses, and conversation history, what patterns do you see that I might be missing?${userName ? ` Please address me by my name (${userName}) - it helps me feel more connected to this work.` : ''}`;
 
   return prompt;
 }

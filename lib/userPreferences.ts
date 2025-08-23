@@ -104,9 +104,10 @@ export const updateUserName = (name: string): void => {
 
 export const clearUserData = (): void => {
   localStorage.removeItem(STORAGE_KEY);
-  // Also clear journal and exercise data
+  // Also clear all shadow work data
   localStorage.removeItem('shadowJournalEntries');
   localStorage.removeItem('shadowExerciseProgress');
+  localStorage.removeItem('shadowConversations');
 };
 
 export const exportUserData = () => {

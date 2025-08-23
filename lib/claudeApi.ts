@@ -24,7 +24,8 @@ export const askClaude = async (
   shadowProfile: ShadowProfile, 
   userId?: string,
   conversationHistory?: Array<{question: string, response: string}>,
-  enhancedContext?: EnhancedContext
+  enhancedContext?: EnhancedContext,
+  userName?: string
 ): Promise<string> => {
   try {
     console.log('🔄 Frontend: Calling /api/claude with:', {
@@ -44,6 +45,7 @@ export const askClaude = async (
         userId,
         conversationHistory,
         enhancedContext,
+        userName,
       }),
     });
 
