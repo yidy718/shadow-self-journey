@@ -1,6 +1,6 @@
 # The Abyss - Shadow Self Journey
 
-A sophisticated psychological assessment platform featuring AI-powered shadow work consultation with Dr. Shadow - an advanced psychological AI agent powered by Claude 4 Sonnet. This application combines Carl Jung's shadow archetype theory with modern neuroscience and trauma-informed therapy approaches.
+A sophisticated psychological assessment platform featuring AI-powered shadow work consultation with "Sage" - an advanced psychological AI agent powered by Claude 3.5 Sonnet. This application combines Carl Jung's shadow archetype theory with modern behavioral analysis, featuring hybrid assessment systems, beautiful results presentations, and intelligent context management for personalized guidance.
 
 ## ✨ Features
 
@@ -9,19 +9,28 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 - **6 Shadow Archetypes**: Detailed personality profiles including The Self-Destroyer, Void Walker, Hidden Sadist, and more
 - **Personalized Results**: Comprehensive analysis with integration guidance and deep psychological insights
 
-### Advanced Tools
-- **Shadow Journal**: Personal journaling system to track insights, mood, and integration progress over time
+### Advanced Assessment Systems
+- **Deep Analysis**: Hybrid behavioral assessment with 7 core questions + AI-generated follow-ups, featuring beautiful archetype-style results
+- **ReAnalysis**: Comprehensive data aggregation analyzing your complete shadow work journey with Evolution Analysis and Interactive Deeper Questions
+- **Shadow Journal**: Personal journaling system to track insights, mood, and integration progress over time with smart section parsing
 - **Integration Exercises**: Personalized homework and practices based on your specific shadow archetype
-- **Dr. Shadow AI Consultation**: Advanced Claude 4 Sonnet AI agent with 25+ years of psychological expertise, combining Jungian analysis with neuroplasticity research and somatic therapy
-- **Enhanced Reasoning**: Extended thinking processes for deeper psychological analysis and personalized integration pathways
+
+### AI-Powered Guidance
+- **Sage AI Consultation**: Advanced Claude 3.5 Sonnet AI agent with psychological expertise, direct compassionate communication, and personal name recognition
+- **Enhanced Context Management**: Sage has access to your complete journey including last 8 journal entries, recent analyses, mood patterns, and conversation history
+- **Interactive Deeper Questions**: AI generates personalized questions you can actually answer, not just view
+- **Smart Pattern Recognition**: AI extracts key insights like Deep Truth, Integration Path, and Personal Archetype from responses
 
 ### User Experience
+- **Beautiful Results Pages**: Archetype-style presentation for all assessments with stunning visual design, gradient backgrounds, and elegant typography
+- **Smart Navigation**: Continue Journey button intelligently detects completed assessments and navigates appropriately
+- **Complete Data Persistence**: Multi-layered storage system preserving conversations, journal entries, assessment history, and exercise progress
+- **User Identity Options**: Choose between anonymous sessions or named journey with progress tracking and personalized AI communication
+- **Assessment Count Display**: Accurate counting of both assessment history and completed quiz progress
 - **Mobile-First Design**: Optimized for all devices with responsive layouts
 - **Elegant Animations**: Smooth, purposeful motion design using Framer Motion
-- **User Identity Options**: Choose between anonymous sessions or named journey with progress tracking
-- **Assessment History**: Track multiple assessments over time with local storage
+- **Complete Data Reset**: New Identity option clears ALL data for fresh starts
 - **Accessibility**: Full screen reader support, reduced motion preferences, and keyboard navigation
-- **Progressive Enhancement**: Works without JavaScript, enhanced with it
 
 ## 🛠 Technical Stack
 
@@ -29,7 +38,7 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 - **React 18** with TypeScript and advanced optimization
 - **Tailwind CSS 3.4** with custom design system
 - **Framer Motion 11** for animations
-- **Claude 4 Sonnet AI** with 1M context window and enhanced reasoning
+- **Claude 3.5 Sonnet AI** with advanced context management and personalized communication
 - **Anthropic SDK** for AI integration and rate limiting
 - **Local Storage** for user preferences and assessment history
 
@@ -76,12 +85,14 @@ This tool is based on Carl Jung's analytical psychology enhanced with modern neu
 - **Trauma-Informed Therapy**: Recognizing shadow patterns as intelligent nervous system adaptations
 - **Somatic Experiencing**: Addressing how shadow manifests in the body and nervous system
 
-### Dr. Shadow AI Agent
-The AI consultant combines:
-- **25+ Years Experience**: Depth psychology, neuroplasticity research, and somatic experiencing
-- **Extended Reasoning**: Claude 4's enhanced thinking for multilayered psychological analysis
+### Sage AI Agent
+The AI consultant features:
+- **Advanced Psychology Expertise**: Depth psychology, behavioral analysis, and shadow work specialization
+- **Enhanced Context Awareness**: Access to user's complete shadow work journey for personalized guidance
+- **Personalized Communication**: Addresses users by name, uses their exact words, creates genuine connection
 - **Trauma-Informed Approach**: Understanding shadow as protective adaptations, not pathology
-- **Integration Timeline**: Realistic progression pathways for transformation
+- **Interactive Engagement**: Generates questions users can actually answer for deeper exploration
+- **Pattern Recognition**: Extracts key insights and creates personalized shadow archetypes from behavioral analysis
 
 ### Content Warning
 This application explores deep psychological themes including self-hatred, existential despair, and other intense emotional states. It includes appropriate warnings and recommendations for professional support when needed.
@@ -91,8 +102,10 @@ This application explores deep psychological themes including self-hatred, exist
 ### Component Structure
 ```
 components/
-├── WelcomeScreen.tsx       # Identity selection and content warnings
-├── ShadowQuiz.tsx          # Main application flow with 5 screens
+├── WelcomeScreen.tsx       # Smart user identity selection with Continue Journey
+├── ShadowQuiz.tsx          # Main application flow with 7+ screens
+├── DeepAnalysis.tsx        # Hybrid behavioral assessment with beautiful results
+├── ReAnalysis.tsx          # Comprehensive data analysis and deeper questions
 ├── ShadowJournal.tsx       # Personal journaling system with mood tracking
 ├── IntegrationExercises.tsx # Personalized practice assignments
 ├── ParticleField.tsx       # Atmospheric background effects
@@ -104,26 +117,51 @@ components/
 lib/
 ├── questions.ts            # 8 core assessment questions with shadow trait weighting
 ├── shadowArchetypes.ts     # 6 detailed shadow personality profiles
-├── userPreferences.ts      # User identity and assessment history management
-└── claudeApi.ts           # Claude 4 AI integration and fallback insights
+├── userPreferences.ts      # Comprehensive user data and assessment history management
+├── claudeApi.ts           # Enhanced Claude AI integration with context management
+└── rateLimiter.ts         # Client-side abuse prevention and request limiting
 ```
 
 ### API Architecture
 ```
 app/api/
 └── claude/
-    └── route.ts           # Claude 4 Sonnet API with Dr. Shadow agent
+    └── route.ts           # Claude 3.5 Sonnet API with Sage agent
+                          # - Enhanced context management (journal, mood, history)
                           # - Rate limiting (5/hour per user, 10/hour per IP)
-                          # - Enhanced psychological prompting
-                          # - Fallback response system
+                          # - Personalized prompting with user names
+                          # - Robust fallback response system
+                          # - Advanced psychological safety guidelines
 ```
+
+## 🎯 Recent Major Achievements (2024)
+
+### ✨ Beautiful User Experience
+- **Archetype-Quality Results**: Deep Analysis now features stunning visual presentations matching traditional archetype quality
+- **Smart Navigation Flow**: Continue Journey intelligently detects completed assessments and navigates appropriately  
+- **Accurate Data Display**: Assessment counts now properly include both history and completed quiz progress
+- **Complete Fresh Starts**: New Identity option clears ALL data including journal, conversations, and exercise progress
+
+### 🤖 Enhanced AI Intelligence  
+- **Rich Context Awareness**: Sage AI now accesses complete shadow work journey including journal entries, mood trends, and previous analyses
+- **Personal Connection**: AI addresses users by name when provided, creating stronger therapeutic alliance
+- **Interactive Engagement**: ReAnalysis generates questions users can actually answer, not just view
+- **Smart Conversation Persistence**: Multi-layer storage ensures conversations persist across sessions for proper analysis
+
+### 🔧 Technical Excellence
+- **Robust Data Architecture**: Fixed critical assessment history saving and conversation count issues
+- **Enhanced Question Generation**: Improved AI question parsing to generate only actual questions (ending with ?) 
+- **Pattern Recognition**: Better extraction of key insights like Deep Truth, Integration Path, and Personal Archetype
+- **Error Handling**: Comprehensive fallback systems and graceful degradation throughout
 
 ## 📱 Design Principles
 
 - **Mobile-First**: Designed primarily for mobile with desktop enhancements
+- **Archetype-Quality Visuals**: Every assessment result features beautiful, professional presentation  
 - **Cohesive Visual Language**: Custom design system without stock AI elements
 - **Studio-Quality UX**: Professional interaction patterns and visual hierarchy
 - **Emotional Design**: Color, typography, and motion that matches the psychological depth
+- **Data Integrity**: Comprehensive persistence systems ensuring no user progress is lost
 
 ## 🔒 Privacy & Data
 
