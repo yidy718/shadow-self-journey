@@ -13,7 +13,13 @@ interface ExportButtonProps {
 export const ExportButton = ({ variant = 'secondary', className = '' }: ExportButtonProps) => {
   const [showModal, setShowModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [stats] = useState(getExportStats());
+  const [stats, setStats] = useState(() => getExportStats());
+
+  const handleOpenModal = () => {
+    // Refresh stats when modal opens to ensure they're current
+    setStats(getExportStats());
+    setShowModal(true);
+  };
 
   const handleJSONExport = async () => {
     setIsExporting(true);
@@ -57,7 +63,7 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={() => setShowModal(true)}
+        onClick={handleOpenModal}
         className={`${getButtonStyles()} ${className}`}
         aria-label="Export your shadow work data"
       >
@@ -77,10 +83,12 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
             />
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-gray-900 rounded-3xl p-8 max-w-md w-full mx-4 border border-gray-700"
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="relative bg-gray-900 rounded-3xl p-8 w-full max-w-md mx-4 border border-gray-700 shadow-2xl"
+              style={{ minHeight: '400px' }}
             >
               <button
                 onClick={() => !isExporting && setShowModal(false)}
@@ -102,13 +110,35 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
               {/* Data Summary */}
               <div className="bg-black/40 rounded-2xl p-4 mb-6 text-sm">
                 <h3 className="text-white font-medium mb-3">Your Data Includes:</h3>
-                <div className="grid grid-cols-2 gap-2 text-gray-300">
-                  <div>📊 {stats.assessments} assessments</div>
-                  <div>📝 {stats.journalEntries} journal entries</div>
-                  <div>💬 {stats.conversations} AI conversations</div>
-                  <div>✅ {stats.actionsCompleted} actions completed</div>
-                  {stats.hasDeepAnalysis && <div>🧠 Deep analysis results</div>}
-                  {stats.memberSince && <div>📅 Member since {stats.memberSince}</div>}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">📊 Assessments</span>
+                    <span className="text-white font-medium">{stats.assessments}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">📝 Journal entries</span>
+                    <span className="text-white font-medium">{stats.journalEntries}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">💬 AI conversations</span>
+                    <span className="text-white font-medium">{stats.conversations}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">✅ Actions completed</span>
+                    <span className="text-white font-medium">{stats.actionsCompleted}</span>
+                  </div>
+                  {stats.hasDeepAnalysis && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">🧠 Deep analysis</span>
+                      <span className="text-green-400 font-medium">✓</span>
+                    </div>
+                  )}
+                  {stats.memberSince && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">📅 Member since</span>
+                      <span className="text-white font-medium text-xs">{stats.memberSince}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
