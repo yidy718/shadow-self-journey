@@ -165,6 +165,20 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [currentResponse, setCurrentResponse] = useState('');
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
+  
+  // Get user preferences for intensity level
+  const getUserPreferences = () => {
+    try {
+      const stored = localStorage.getItem('shadowSelfUserPrefs');
+      if (!stored) return null;
+      return JSON.parse(stored);
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+      return null;
+    }
+  };
+  
+  const userPrefs = getUserPreferences();
   const [followUpResponses, setFollowUpResponses] = useState<Record<string, string>>({});
   const [isGeneratingFollowUp, setIsGeneratingFollowUp] = useState(false);
   const [finalAnalysis, setFinalAnalysis] = useState('');
