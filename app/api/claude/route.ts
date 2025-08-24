@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       
       // Call Claude API with latest Claude 4.1 Opus model
       const claudeResponse = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022', // Latest stable model (will auto-upgrade when Claude 4+ available)
+        model: 'claude-opus-4-1-20250805', // Claude Opus 4.1 - most capable model for complex psychological analysis
         max_tokens: 1200, // Increased for more comprehensive responses
         temperature: 0.8, // Optimal for creative, nuanced psychological insights
         system: createShadowWorkSystemPrompt(shadowProfile.archetype, shadowProfile.intensity, context || 'chat'),

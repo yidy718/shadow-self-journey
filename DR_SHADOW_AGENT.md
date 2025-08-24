@@ -4,7 +4,7 @@
 
 **Name:** Sage  
 **Role:** Shadow work specialist & behavioral pattern analyst  
-**Model:** Claude 3.5 Sonnet (claude-3-5-sonnet-20241022) - **Latest Available Model**  
+**Model:** Claude Opus 4.1 (claude-opus-4-1-20250805) - **Most Capable Model for Complex Analysis**  
 **Temperature:** 0.8 (for creative, nuanced responses)  
 **Max Tokens:** 1200 (increased for comprehensive responses)  
 
@@ -136,13 +136,13 @@ You are Dr. Shadow, a renowned depth psychologist...
 - Dominant shadow traits from assessment
 - User's specific question about their shadow work
 
-### API Configuration (Updated for Claude 4)
-- **Model:** claude-4-sonnet-20250308 (Latest 2025 model with 1M context window)
+### API Configuration (Updated for Claude Opus 4.1)
+- **Model:** claude-opus-4-1-20250805 (Most capable Claude model for complex psychological analysis)
 - **Max Tokens:** 1200 (increased for more comprehensive responses)
 - **Temperature:** 0.8 (optimal for creative yet grounded psychological insights)
 - **System Prompt:** Dynamic and archetype-specific with enhanced reasoning instructions
 - **Rate Limiting:** 5 requests/hour per user, 10/hour per IP
-- **Enhanced Features:** Extended thinking, neurobiological analysis, integration timelines
+- **Enhanced Features:** Superior reasoning, deep analysis, enhanced tool use, integration timelines
 - **JSON Output Mode**: Structured Phase 1 & Phase 2 responses with robust parsing and fallback systems
 
 ## Cost & Usage
