@@ -51,7 +51,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   const handleAnonymous = () => {
     const newUser = createNewUser();
     saveUserPreferences(newUser);
-    setCurrentStep('intro');
+    setCurrentStep('intensity');
   };
 
   const handleWithName = () => {
@@ -61,7 +61,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
     }
     const newUser = createNewUser(userName);
     saveUserPreferences(newUser);
-    setCurrentStep('intro');
+    setCurrentStep('intensity');
   };
 
   const handleArchetypeAssessment = () => {
@@ -69,6 +69,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   };
 
   const handleDeepAnalysisStart = () => {
+    // Save intensity level first, then start Deep Analysis
+    const userPrefs = getUserPreferences()!;
+    userPrefs.intensityLevel = selectedIntensity;
+    saveUserPreferences(userPrefs);
+    
     if (onDeepAnalysis) {
       onDeepAnalysis();
     }
@@ -396,10 +401,10 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setCurrentStep('intensity')}
+            onClick={() => setCurrentStep('preview')}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
           >
-            Choose Your Intensity
+            See What to Expect
           </motion.button>
         </motion.div>
       </div>
@@ -425,7 +430,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => setCurrentStep('preparation')}
+              onClick={() => setCurrentStep('identity')}
               className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
             >
               ← Back
@@ -434,10 +439,16 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setCurrentStep('preview')}
+              onClick={() => {
+                // Save intensity level and continue to intro
+                const userPrefs = getUserPreferences()!;
+                userPrefs.intensityLevel = selectedIntensity;
+                saveUserPreferences(userPrefs);
+                setCurrentStep('intro');
+              }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300"
             >
-              Continue to Preview
+              Continue to Assessment Options
             </motion.button>
           </div>
         </motion.div>
@@ -508,7 +519,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => setCurrentStep('intensity')}
+              onClick={() => setCurrentStep('preparation')}
               className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
             >
               ← Back
@@ -666,12 +677,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            const userPrefs = getUserPreferences()!;
-            userPrefs.intensityLevel = selectedIntensity;
-            saveUserPreferences(userPrefs);
-            onContinue(userPrefs);
-          }}
+          onClick={() => onContinue(getUserPreferences()!)}
           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
         >
           Begin Assessment
