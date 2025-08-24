@@ -86,6 +86,9 @@ const ShadowQuiz = () => {
       const nextQuestion = currentQuestion + 1;
       setCurrentQuestion(nextQuestion);
       
+      // Scroll to top smoothly for next question
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       // Save progress with skip (no new answer added)
       if (userPrefs) {
         saveQuizProgress(nextQuestion, answers, conversations);
@@ -150,6 +153,9 @@ const ShadowQuiz = () => {
     if (currentQuestion < questions.length - 1) {
       const nextQuestion = currentQuestion + 1;
       setCurrentQuestion(nextQuestion);
+      
+      // Scroll to top smoothly for next question
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
       // Save progress after each answer
       if (userPrefs) {

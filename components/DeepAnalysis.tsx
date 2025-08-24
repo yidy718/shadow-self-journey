@@ -850,23 +850,46 @@ Analyze for:
             rows={6}
           />
 
-          <div className="flex justify-between mt-6">
-            <button
-              onClick={() => currentQuestionIndex > 0 && setCurrentQuestionIndex(currentQuestionIndex - 1)}
-              disabled={currentQuestionIndex === 0}
-              className="px-6 py-3 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-50 text-white rounded-xl transition-colors"
-            >
-              Previous
-            </button>
+          <div className="flex flex-col space-y-4 mt-6">
+            <div className="flex justify-between">
+              <button
+                onClick={() => currentQuestionIndex > 0 && setCurrentQuestionIndex(currentQuestionIndex - 1)}
+                disabled={currentQuestionIndex === 0}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-50 text-white rounded-xl transition-colors"
+              >
+                Previous
+              </button>
+              
+              <button
+                onClick={handleResponseSubmit}
+                disabled={!currentResponse.trim()}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
+              >
+                <span>{currentQuestionIndex === CORE_BEHAVIORAL_QUESTIONS.length - 1 ? 'Generate Analysis' : 'Next'}</span>
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
             
-            <button
-              onClick={handleResponseSubmit}
-              disabled={!currentResponse.trim()}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
-            >
-              <span>{currentQuestionIndex === CORE_BEHAVIORAL_QUESTIONS.length - 1 ? 'Generate Analysis' : 'Next'}</span>
-              <Send className="w-4 h-4" />
-            </button>
+            {/* Skip Question Button */}
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  setCurrentResponse(''); // Clear current response
+                  handleResponseSubmit(); // Submit empty response
+                }}
+                className="group bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 border border-gray-600/40 hover:border-gray-500/60 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                <span className="flex items-center space-x-2 text-sm">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Skip Question</span>
+                </span>
+              </button>
+              <p className="text-xs text-gray-500 mt-1">
+                Skip if not relevant or too personal
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -937,23 +960,46 @@ Analyze for:
             rows={6}
           />
 
-          <div className="flex justify-between mt-6">
-            <button
-              onClick={() => currentFollowUpIndex > 0 && setCurrentFollowUpIndex(currentFollowUpIndex - 1)}
-              disabled={currentFollowUpIndex === 0}
-              className="px-6 py-3 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-50 text-white rounded-xl transition-colors"
-            >
-              Previous
-            </button>
+          <div className="flex flex-col space-y-4 mt-6">
+            <div className="flex justify-between">
+              <button
+                onClick={() => currentFollowUpIndex > 0 && setCurrentFollowUpIndex(currentFollowUpIndex - 1)}
+                disabled={currentFollowUpIndex === 0}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-50 text-white rounded-xl transition-colors"
+              >
+                Previous
+              </button>
+              
+              <button
+                onClick={handleFollowUpSubmit}
+                disabled={!currentResponse.trim()}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
+              >
+                <span>{currentFollowUpIndex === followUpQuestions.length - 1 ? 'Complete Analysis' : 'Next'}</span>
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
             
-            <button
-              onClick={handleFollowUpSubmit}
-              disabled={!currentResponse.trim()}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl transition-all duration-300 flex items-center space-x-2"
-            >
-              <span>{currentFollowUpIndex === followUpQuestions.length - 1 ? 'Complete Analysis' : 'Next'}</span>
-              <Send className="w-4 h-4" />
-            </button>
+            {/* Skip Follow-up Question Button */}
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  setCurrentResponse(''); // Clear current response
+                  handleFollowUpSubmit(); // Submit empty response
+                }}
+                className="group bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 border border-gray-600/40 hover:border-gray-500/60 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                <span className="flex items-center space-x-2 text-sm">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Skip Question</span>
+                </span>
+              </button>
+              <p className="text-xs text-gray-500 mt-1">
+                Not relevant or prefer to skip this one
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
