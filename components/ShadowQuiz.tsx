@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle } from 'lucide-react';
+import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
@@ -770,39 +770,116 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           </motion.div>
 
           {/* Claude AI Integration */}
-          {/* Primary Action - Deep Analysis CTA */}
+          {/* Primary Action - Deep Analysis CTA or Progress Dashboard */}
           <motion.div 
             variants={itemVariants}
             className="mb-8"
           >
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
-              <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to Go Deeper? 🧠</h3>
-                  <p className="text-lg text-purple-200">
-                    You've discovered your shadow archetype. Now unlock the full power of behavioral analysis 
-                    with personalized exercises and ultra-specific guidance.
-                  </p>
-                </div>
+            {(() => {
+              const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
+              const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+              const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+              
+              if (hasPhase2Data) {
+                // Show Progress Dashboard if they have Deep Analysis data
+                const phase2Data = JSON.parse(hasPhase2Data);
+                const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
+                const exercisesCompleted = completedExercises ? JSON.parse(completedExercises).length : 0;
+                const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
+                const totalExercises = phase2Data?.integration_exercises?.length || 0;
                 
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={openDeepAnalysis}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  aria-label="Take comprehensive behavioral analysis"
-                >
-                  <div className="flex items-center justify-center space-x-3">
-                    <Eye className="w-8 h-8" />
-                    <span>Start Deep Analysis</span>
-                    <ArrowRight className="w-8 h-8" />
+                return (
+                  <div className="bg-gradient-to-r from-green-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Your Progress Dashboard 📊</h3>
+                        <p className="text-lg text-green-200">
+                          Track your shadow work journey with interactive exercises and personalized actions.
+                        </p>
+                      </div>
+                      
+                      {/* Progress Stats */}
+                      <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="text-center bg-black/30 rounded-2xl p-4">
+                          <div className="text-3xl font-bold text-green-400">
+                            {actionsCompleted}/{totalActions}
+                          </div>
+                          <div className="text-sm text-green-300">Actions Completed</div>
+                          <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                            <div 
+                              className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${totalActions > 0 ? (actionsCompleted / totalActions) * 100 : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="text-center bg-black/30 rounded-2xl p-4">
+                          <div className="text-3xl font-bold text-blue-400">
+                            {exercisesCompleted}/{totalExercises}
+                          </div>
+                          <div className="text-sm text-blue-300">Exercises Started</div>
+                          <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${totalExercises > 0 ? (exercisesCompleted / totalExercises) * 100 : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={openDeepAnalysis}
+                        className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-green-500/30 focus:outline-none focus:ring-2 focus:ring-green-400"
+                        aria-label="View your progress and continue exercises"
+                      >
+                        <div className="flex items-center justify-center space-x-3">
+                          <CheckSquare className="w-8 h-8" />
+                          <span>View Progress & Continue</span>
+                          <ArrowRight className="w-8 h-8" />
+                        </div>
+                        <div className="text-sm opacity-90 mt-2">
+                          Access your interactive exercises and track completion
+                        </div>
+                      </motion.button>
+                    </div>
                   </div>
-                  <div className="text-sm opacity-90 mt-2">
-                    Get interactive exercises & Claude Opus 4.1 insights
+                );
+              } else {
+                // Show Deep Analysis CTA if they haven't done it yet
+                return (
+                  <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to Go Deeper? 🧠</h3>
+                        <p className="text-lg text-purple-200">
+                          You've discovered your shadow archetype. Now unlock the full power of behavioral analysis 
+                          with personalized exercises and ultra-specific guidance.
+                        </p>
+                      </div>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={openDeepAnalysis}
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        aria-label="Take comprehensive behavioral analysis"
+                      >
+                        <div className="flex items-center justify-center space-x-3">
+                          <Eye className="w-8 h-8" />
+                          <span>Start Deep Analysis</span>
+                          <ArrowRight className="w-8 h-8" />
+                        </div>
+                        <div className="text-sm opacity-90 mt-2">
+                          Get interactive exercises & Claude Opus 4.1 insights
+                        </div>
+                      </motion.button>
+                    </div>
                   </div>
-                </motion.button>
-              </div>
-            </div>
+                );
+              }
+            })()}
           </motion.div>
 
           {/* Secondary Action Buttons */}
