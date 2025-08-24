@@ -118,6 +118,13 @@ Heavy use of:
 - **Robust Fallback Systems**: Multiple parsing methods ensure AI-generated questions are properly formatted
 - **Pattern Recognition**: Better extraction of key insights (Deep Truth, Integration Path, Personal Archetype) from AI responses
 
+### Hybrid Shadow Work System (Latest Enhancement)
+- **Phase 1 JSON Structure**: Structured follow-up question generation with `initial_pattern_analysis`, categorized questions by purpose, and confidence levels
+- **Phase 2 JSON Structure**: Comprehensive analysis format with `behavioral_patterns`, `shadow_elements`, `root_analysis`, `integration_plan`, and `overall_assessment`
+- **Smart Progress Tracking**: Interactive checkboxes for immediate actions and integration exercises with localStorage persistence
+- **Structured UI Components**: Beautiful visual display of analysis sections with color-coded difficulty levels, frequency indicators, and completion tracking
+- **Enhanced Data Utilization**: Easy filtering by difficulty, timeline, frequency - enabling future features like personalized recommendations and progress analytics
+
 ## Development Notes
 
 - Application uses client-side rendering ('use client' directives)
@@ -127,3 +134,97 @@ Heavy use of:
 - Built-in responsive design for mobile and desktop
 - Animation-heavy UI requiring performance considerations
 - Enhanced error handling and graceful degradation throughout
+
+## Hybrid Shadow Work JSON Implementation
+
+### Overview
+The Deep Analysis system now uses a sophisticated two-phase JSON structure that transforms behavioral analysis into actionable, trackable insights. This implementation follows the hybrid shadow work methodology with structured data output.
+
+### Phase 1: Follow-up Question Generation
+```typescript
+interface Phase1Response {
+  phase: number;
+  initial_pattern_analysis: string;
+  follow_up_questions: Array<{
+    id: number;
+    question: string;
+    purpose: 'behavioral_specifics' | 'contradiction_exploration' | 'emotional_excavation' | 'pattern_confirmation' | 'shadow_exploration';
+  }>;
+  preliminary_observations: string;
+  confidence_level: 'high' | 'medium' | 'low';
+  recommended_followups: number;
+}
+```
+
+### Phase 2: Comprehensive Analysis
+```typescript
+interface Phase2Response {
+  phase: number;
+  behavioral_patterns: Array<{
+    pattern: string;
+    description: string;
+    frequency: 'high' | 'medium' | 'low';
+    impact_areas: string[];
+  }>;
+  shadow_elements: Array<{
+    element: string;
+    manifestation: string;
+    projection: string;
+  }>;
+  root_analysis: {
+    primary_wound: string;
+    secondary_wound?: string;
+    core_fear: string;
+    defense_mechanism: string;
+  };
+  integration_plan: {
+    immediate_actions: Array<{
+      action: string;
+      timeline: 'this week' | 'daily' | 'ongoing';
+      difficulty: 'easy' | 'moderate' | 'challenging';
+    }>;
+    ongoing_awareness: Array<{
+      practice: string;
+      trigger_signs: string[];
+      intervention: string;
+    }>;
+    communication_shifts: Array<{
+      old_pattern: string;
+      new_approach: string;
+      practice_area: string;
+    }>;
+    core_mindset_shift: string;
+  };
+  integration_exercises: Array<{
+    exercise: string;
+    description: string;
+    frequency: 'daily' | 'weekly' | 'as-needed';
+    purpose: string;
+  }>;
+  overall_assessment: {
+    growth_readiness: 'high' | 'medium' | 'low';
+    resistance_level: 'high' | 'medium' | 'low';
+    support_needed: 'professional' | 'peer' | 'self-directed';
+    timeline_estimate: 'weeks' | 'months' | 'ongoing';
+  };
+}
+```
+
+### Key Implementation Features
+- **Robust JSON Parsing**: Multiple fallback strategies for malformed responses
+- **Backward Compatibility**: Graceful degradation to text-based display
+- **Progress Tracking**: Interactive checkboxes with localStorage persistence
+- **Visual Enhancement**: Color-coded difficulty, frequency, and completion indicators
+- **Data Utilization**: Easy filtering, sorting, and analytics preparation
+
+### Development Benefits
+```javascript
+// Easy data manipulation
+const easyActions = phase2Data.integration_plan.immediate_actions.filter(a => a.difficulty === 'easy');
+const dailyExercises = phase2Data.integration_exercises.filter(ex => ex.frequency === 'daily');
+const completionRate = completedActions.size / totalActions.length;
+
+// Future feature enablement
+const highResistanceUsers = assessments.filter(a => a.overall_assessment.resistance_level === 'high');
+const professionalSupportRecommendations = assessments.filter(a => a.overall_assessment.support_needed === 'professional');
+```

@@ -17,6 +17,57 @@ export interface EnhancedContext {
   }>;
   recentAnalyses?: string[];
   moodTrends?: number[];
+  phase2Analysis?: {
+    behavioral_patterns?: Array<{
+      pattern: string;
+      description: string;
+      frequency: string;
+      impact_areas: string[];
+    }>;
+    shadow_elements?: Array<{
+      element: string;
+      manifestation: string;
+      projection: string;
+    }>;
+    root_analysis?: {
+      primary_wound: string;
+      secondary_wound?: string;
+      core_fear: string;
+      defense_mechanism: string;
+    };
+    integration_plan?: {
+      immediate_actions: Array<{
+        action: string;
+        timeline: string;
+        difficulty: string;
+      }>;
+      ongoing_awareness: Array<{
+        practice: string;
+        trigger_signs: string[];
+        intervention: string;
+      }>;
+      communication_shifts: Array<{
+        old_pattern: string;
+        new_approach: string;
+        practice_area: string;
+      }>;
+      core_mindset_shift: string;
+    };
+    integration_exercises?: Array<{
+      exercise: string;
+      description: string;
+      frequency: string;
+      purpose: string;
+    }>;
+    overall_assessment?: {
+      growth_readiness: string;
+      resistance_level: string;
+      support_needed: string;
+      timeline_estimate: string;
+    };
+  };
+  completedActions?: string[];
+  completedExercises?: string[];
 }
 
 export type ConversationContext = 'chat' | 'assessment' | 'analysis' | 'reanalysis';

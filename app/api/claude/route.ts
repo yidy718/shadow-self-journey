@@ -18,6 +18,57 @@ export interface EnhancedContext {
   }>;
   recentAnalyses?: string[];
   moodTrends?: number[];
+  phase2Analysis?: {
+    behavioral_patterns?: Array<{
+      pattern: string;
+      description: string;
+      frequency: string;
+      impact_areas: string[];
+    }>;
+    shadow_elements?: Array<{
+      element: string;
+      manifestation: string;
+      projection: string;
+    }>;
+    root_analysis?: {
+      primary_wound: string;
+      secondary_wound?: string;
+      core_fear: string;
+      defense_mechanism: string;
+    };
+    integration_plan?: {
+      immediate_actions: Array<{
+        action: string;
+        timeline: string;
+        difficulty: string;
+      }>;
+      ongoing_awareness: Array<{
+        practice: string;
+        trigger_signs: string[];
+        intervention: string;
+      }>;
+      communication_shifts: Array<{
+        old_pattern: string;
+        new_approach: string;
+        practice_area: string;
+      }>;
+      core_mindset_shift: string;
+    };
+    integration_exercises?: Array<{
+      exercise: string;
+      description: string;
+      frequency: string;
+      purpose: string;
+    }>;
+    overall_assessment?: {
+      growth_readiness: string;
+      resistance_level: string;
+      support_needed: string;
+      timeline_estimate: string;
+    };
+  };
+  completedActions?: string[];
+  completedExercises?: string[];
 }
 
 // Initialize Claude client
@@ -102,7 +153,7 @@ export async function POST(request: NextRequest) {
       
       // Call Claude API with latest Claude 4.1 Opus model
       const claudeResponse = await anthropic.messages.create({
-        model: 'claude-opus-4-1', // Latest available Claude Opus 4.1 (August 2025)
+        model: 'claude-3-5-sonnet-20241022', // Latest stable model (will auto-upgrade when Claude 4+ available)
         max_tokens: 1200, // Increased for more comprehensive responses
         temperature: 0.8, // Optimal for creative, nuanced psychological insights
         system: createShadowWorkSystemPrompt(shadowProfile.archetype, shadowProfile.intensity, context || 'chat'),
@@ -177,6 +228,14 @@ CHAT CONVERSATION STYLE:
 - Build on their previous message, don't give generic responses
 - Stay curious about their specific experience
 
+ULTRA-SPECIFIC EXERCISE CREATION (When they mention specific situations):
+- If they mention ANY specific scenario (barista, meeting, family dinner, etc.), create a MICRO-EXERCISE for that exact situation
+- Use their Core Fear, Primary Wound, and Defense Mechanism to tailor the exercise
+- Reference their completed/uncompleted actions to avoid repetition
+- Format as: "Next time you [specific situation], try this 3-step micro-practice: 1) Before... 2) During... 3) After..."
+- Connect it back to their behavioral patterns and what they're trying to heal
+- Make it feel doable and specific to their exact scenario
+
 AVOID in chat:
 - Long paragraphs or lists
 - Multiple questions at once
@@ -233,6 +292,55 @@ function createUserPrompt(
     if (enhancedContext.moodTrends && enhancedContext.moodTrends.length > 0) {
       const avgMood = enhancedContext.moodTrends.reduce((a, b) => a + b, 0) / enhancedContext.moodTrends.length;
       prompt += `\n\nMOOD PATTERN: Recent average ${avgMood.toFixed(1)}/5 over ${enhancedContext.moodTrends.length} entries\n`;
+    }
+
+    // Add Phase 2 analysis data for ultra-specific exercise generation
+    if (enhancedContext.phase2Analysis) {
+      const analysis = enhancedContext.phase2Analysis;
+      prompt += `\n\nMY DEEP BEHAVIORAL ANALYSIS (For Ultra-Specific Exercise Creation):\n`;
+      
+      if (analysis.behavioral_patterns && analysis.behavioral_patterns.length > 0) {
+        prompt += `\nBEHAVIORAL PATTERNS:\n`;
+        analysis.behavioral_patterns.slice(0, 2).forEach((pattern, i) => {
+          prompt += `${i + 1}. ${pattern.pattern} (${pattern.frequency} frequency)\n`;
+          prompt += `   - ${pattern.description.substring(0, 150)}...\n`;
+          prompt += `   - Impact areas: ${pattern.impact_areas.join(', ')}\n`;
+        });
+      }
+
+      if (analysis.root_analysis) {
+        const root = analysis.root_analysis;
+        prompt += `\nROOT ANALYSIS:\n`;
+        prompt += `- Core Fear: ${root.core_fear}\n`;
+        prompt += `- Primary Wound: ${root.primary_wound}\n`;
+        prompt += `- Defense Mechanism: ${root.defense_mechanism}\n`;
+      }
+
+      if (analysis.integration_plan && analysis.integration_plan.immediate_actions) {
+        const completedActions = enhancedContext.completedActions || [];
+        const uncompletedActions = analysis.integration_plan.immediate_actions
+          .filter(action => !completedActions.includes(action.action));
+        
+        if (uncompletedActions.length > 0) {
+          prompt += `\nUNCOMPLETED ACTIONS (for reference in creating new exercises):\n`;
+          uncompletedActions.slice(0, 3).forEach((action, i) => {
+            prompt += `${i + 1}. ${action.action} (${action.difficulty}, ${action.timeline})\n`;
+          });
+        }
+      }
+
+      if (analysis.integration_exercises) {
+        const completedExercises = enhancedContext.completedExercises || [];
+        const uncompletedExercises = analysis.integration_exercises
+          .filter(exercise => !completedExercises.includes(exercise.exercise));
+        
+        if (uncompletedExercises.length > 0) {
+          prompt += `\nUNCOMPLETED EXERCISES (avoid duplicating these):\n`;
+          uncompletedExercises.slice(0, 2).forEach((exercise, i) => {
+            prompt += `${i + 1}. ${exercise.exercise} (${exercise.frequency}) - Purpose: ${exercise.purpose}\n`;
+          });
+        }
+      }
     }
   }
 

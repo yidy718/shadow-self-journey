@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye, Check, Square } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
 
 interface DeepAnalysisProps {
@@ -22,6 +22,70 @@ interface AnalysisQuestion {
   id: string;
   question: string;
   category: 'relationship' | 'self-worth' | 'conflict' | 'patterns' | 'triggers' | 'projection' | 'general';
+}
+
+interface Phase1Response {
+  phase: number;
+  initial_pattern_analysis: string;
+  follow_up_questions: Array<{
+    id: number;
+    question: string;
+    purpose: 'behavioral_specifics' | 'contradiction_exploration' | 'emotional_excavation' | 'pattern_confirmation' | 'shadow_exploration';
+  }>;
+  preliminary_observations: string;
+  confidence_level: 'high' | 'medium' | 'low';
+  recommended_followups: number;
+}
+
+interface Phase2Response {
+  phase: number;
+  behavioral_patterns: Array<{
+    pattern: string;
+    description: string;
+    frequency: 'high' | 'medium' | 'low';
+    impact_areas: string[];
+  }>;
+  shadow_elements: Array<{
+    element: string;
+    manifestation: string;
+    projection: string;
+  }>;
+  root_analysis: {
+    primary_wound: string;
+    secondary_wound?: string;
+    core_fear: string;
+    defense_mechanism: string;
+  };
+  integration_plan: {
+    immediate_actions: Array<{
+      action: string;
+      timeline: 'this week' | 'daily' | 'ongoing';
+      difficulty: 'easy' | 'moderate' | 'challenging';
+    }>;
+    ongoing_awareness: Array<{
+      practice: string;
+      trigger_signs: string[];
+      intervention: string;
+    }>;
+    communication_shifts: Array<{
+      old_pattern: string;
+      new_approach: string;
+      practice_area: string;
+    }>;
+    core_mindset_shift: string;
+  };
+  integration_exercises: Array<{
+    exercise: string;
+    description: string;
+    frequency: 'daily' | 'weekly' | 'as-needed';
+    purpose: string;
+  }>;
+  overall_assessment: {
+    growth_readiness: 'high' | 'medium' | 'low';
+    resistance_level: 'high' | 'medium' | 'low';
+    support_needed: 'professional' | 'peer' | 'self-directed';
+    timeline_estimate: 'weeks' | 'months' | 'ongoing';
+  };
 }
 
 const CORE_BEHAVIORAL_QUESTIONS: AnalysisQuestion[] = [
@@ -73,6 +137,153 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   const [finalAnalysis, setFinalAnalysis] = useState('');
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
   const [currentFollowUpIndex, setCurrentFollowUpIndex] = useState(0);
+  
+  // New structured data states
+  const [phase1Data, setPhase1Data] = useState<Phase1Response | null>(null);
+  const [phase2Data, setPhase2Data] = useState<Phase2Response | null>(null);
+  const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+
+  // Load progress from localStorage
+  useEffect(() => {
+    const savedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+    const savedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+    
+    if (savedActions) {
+      setCompletedActions(new Set(JSON.parse(savedActions)));
+    }
+    if (savedExercises) {
+      setCompletedExercises(new Set(JSON.parse(savedExercises)));
+    }
+  }, []);
+
+  // Save progress to localStorage
+  const saveProgress = () => {
+    localStorage.setItem('shadowAnalysisCompletedActions', JSON.stringify([...completedActions]));
+    localStorage.setItem('shadowAnalysisCompletedExercises', JSON.stringify([...completedExercises]));
+  };
+
+  // Toggle action completion
+  const toggleActionCompletion = (actionText: string) => {
+    const newCompleted = new Set(completedActions);
+    if (newCompleted.has(actionText)) {
+      newCompleted.delete(actionText);
+    } else {
+      newCompleted.add(actionText);
+    }
+    setCompletedActions(newCompleted);
+    
+    // Save immediately
+    localStorage.setItem('shadowAnalysisCompletedActions', JSON.stringify([...newCompleted]));
+  };
+
+  // Toggle exercise completion
+  const toggleExerciseCompletion = (exerciseName: string) => {
+    const newCompleted = new Set(completedExercises);
+    if (newCompleted.has(exerciseName)) {
+      newCompleted.delete(exerciseName);
+    } else {
+      newCompleted.add(exerciseName);
+    }
+    setCompletedExercises(newCompleted);
+    
+    // Save immediately
+    localStorage.setItem('shadowAnalysisCompletedExercises', JSON.stringify([...newCompleted]));
+  };
+
+  // JSON parsing utility with fallbacks
+  const parseJSONResponse = (response: string, expectedPhase: 1 | 2): Phase1Response | Phase2Response | null => {
+    try {
+      // Remove any markdown formatting
+      let cleanResponse = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Try parsing the clean response
+      const parsed = JSON.parse(cleanResponse);
+      
+      // Validate phase
+      if (parsed.phase !== expectedPhase) {
+        console.warn(`Expected phase ${expectedPhase}, got ${parsed.phase}`);
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.error('JSON parsing failed:', error);
+      console.log('Raw response:', response);
+      return null;
+    }
+  };
+
+  // Format Phase 2 structured data for display
+  const formatPhase2ForDisplay = (data: Phase2Response): string => {
+    let display = '';
+    
+    // Create a personalized archetype name from the first behavioral pattern
+    const primaryPattern = data.behavioral_patterns[0];
+    if (primaryPattern) {
+      display += `**YOUR SHADOW PATTERN:** ${primaryPattern.pattern}\n\n`;
+    }
+    
+    display += `**DEEP TRUTH:**\n${data.root_analysis.core_fear} drives your ${data.root_analysis.defense_mechanism}.\n\n`;
+    
+    display += `**BEHAVIORAL PATTERNS IDENTIFIED:**\n`;
+    data.behavioral_patterns.forEach((pattern, i) => {
+      display += `${i + 1}. **${pattern.pattern}** (${pattern.frequency} frequency)\n`;
+      display += `   ${pattern.description}\n`;
+      display += `   Impact areas: ${pattern.impact_areas.join(', ')}\n\n`;
+    });
+    
+    display += `**SHADOW ELEMENTS:**\n`;
+    data.shadow_elements.forEach((element, i) => {
+      display += `${i + 1}. **${element.element}**\n`;
+      display += `   Manifestation: ${element.manifestation}\n`;
+      display += `   Projection: ${element.projection}\n\n`;
+    });
+    
+    display += `**ROOT ANALYSIS:**\n`;
+    display += `- **Primary Wound:** ${data.root_analysis.primary_wound}\n`;
+    if (data.root_analysis.secondary_wound) {
+      display += `- **Secondary Wound:** ${data.root_analysis.secondary_wound}\n`;
+    }
+    display += `- **Core Fear:** ${data.root_analysis.core_fear}\n`;
+    display += `- **Defense Mechanism:** ${data.root_analysis.defense_mechanism}\n\n`;
+    
+    display += `**INTEGRATION PLAN:**\n`;
+    display += `- **Immediate Actions:**\n`;
+    data.integration_plan.immediate_actions.forEach((action, i) => {
+      display += `  ${i + 1}. ${action.action} (${action.timeline}, ${action.difficulty})\n`;
+    });
+    
+    display += `- **Ongoing Awareness:**\n`;
+    data.integration_plan.ongoing_awareness.forEach((awareness, i) => {
+      display += `  ${i + 1}. ${awareness.practice}\n`;
+      display += `     Triggers: ${awareness.trigger_signs.join(', ')}\n`;
+      display += `     Intervention: ${awareness.intervention}\n`;
+    });
+    
+    display += `- **Communication Shifts:**\n`;
+    data.integration_plan.communication_shifts.forEach((shift, i) => {
+      display += `  ${i + 1}. From: ${shift.old_pattern}\n`;
+      display += `     To: ${shift.new_approach}\n`;
+      display += `     Practice in: ${shift.practice_area}\n`;
+    });
+    
+    display += `- **Core Mindset Shift:** ${data.integration_plan.core_mindset_shift}\n\n`;
+    
+    display += `**INTEGRATION EXERCISES:**\n`;
+    data.integration_exercises.forEach((exercise, i) => {
+      display += `${i + 1}. **${exercise.exercise}** (${exercise.frequency})\n`;
+      display += `   ${exercise.description}\n`;
+      display += `   Purpose: ${exercise.purpose}\n\n`;
+    });
+    
+    display += `**OVERALL ASSESSMENT:**\n`;
+    display += `- Growth Readiness: ${data.overall_assessment.growth_readiness}\n`;
+    display += `- Resistance Level: ${data.overall_assessment.resistance_level}\n`;
+    display += `- Support Needed: ${data.overall_assessment.support_needed}\n`;
+    display += `- Timeline Estimate: ${data.overall_assessment.timeline_estimate}\n`;
+    
+    return display;
+  };
 
   const handleStartAnalysis = () => {
     setCurrentPhase('questions');
@@ -101,26 +312,62 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     setIsGeneratingFollowUp(true);
     
     try {
-      const analysisPrompt = `You are Sage, analyzing behavioral patterns. Based on these responses, generate exactly 3 targeted follow-up questions that dig deeper into patterns and contradictions.
+      const analysisPrompt = `You are a psychological analyst conducting Phase 1 shadow work assessment. Analyze the patterns and generate targeted follow-up questions.
 
-RESPONSES:
+RESPONSES TO CORE QUESTIONS:
 ${CORE_BEHAVIORAL_QUESTIONS.map(q => `Q: ${q.question}\nA: ${allResponses[q.id] || 'No response'}`).join('\n\n')}
 
 ${shadowProfile ? `ARCHETYPE CONTEXT: ${shadowProfile.archetype}` : ''}
 ${journalEntries?.length ? `JOURNAL CONTEXT: User has ${journalEntries.length} previous journal entries` : ''}
 
-Generate follow-up questions that:
-- Explore contradictions between what they say vs. behavior patterns
-- Dig deeper into emotional triggers they mentioned  
-- Challenge their self-perception where appropriate
+CRITICAL: Your entire response must be a single, valid JSON object. Do not include any text outside of the JSON structure, including backticks or explanations. DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.
+
+Analyze their responses for:
+- Recurring themes across different relationship contexts
+- Where they take responsibility vs. blame others
+- Contradictions between what they say vs. what their behavior suggests
+- Emotional blind spots or defensive responses
+
+Generate 3-5 specific follow-up questions that:
+- Dig deeper into identified patterns
+- Challenge contradictions or blind spots
+- Explore emotional triggers they mentioned
 - Investigate behaviors they might not fully own
 
-IMPORTANT: Return ONLY 3 questions in this exact format:
-1. [Complete question here]
-2. [Complete question here] 
-3. [Complete question here]
-
-No other text, no explanations, just the numbered questions.`;
+{
+  "phase": 1,
+  "initial_pattern_analysis": "2-3 sentence summary of key patterns observed",
+  "follow_up_questions": [
+    {
+      "id": 1,
+      "question": "Targeted question based on their specific responses",
+      "purpose": "behavioral_specifics"
+    },
+    {
+      "id": 2,
+      "question": "Question exploring contradiction or blind spot",
+      "purpose": "contradiction_exploration"
+    },
+    {
+      "id": 3,
+      "question": "Question digging into emotional patterns",
+      "purpose": "emotional_excavation"
+    },
+    {
+      "id": 4,
+      "question": "Question about recurring themes",
+      "purpose": "pattern_confirmation"
+    },
+    {
+      "id": 5,
+      "question": "Question challenging their self-perception",
+      "purpose": "shadow_exploration"
+    }
+  ],
+  "preliminary_observations": "Brief note on potential shadow elements to explore in final analysis",
+  "confidence_level": "high",
+  "recommended_followups": 3
+}`;
 
       const followUpResponse = await askClaude(analysisPrompt, shadowProfile || {
         archetype: 'General Analysis',
@@ -129,42 +376,40 @@ No other text, no explanations, just the numbered questions.`;
         description: 'Behavioral pattern analysis'
       }, undefined, undefined, undefined, undefined, 'analysis');
 
-      // Parse the follow-up questions with improved logic
+      // Try to parse as structured JSON first
+      const parsedPhase1 = parseJSONResponse(followUpResponse, 1) as Phase1Response;
       
-      // First try numbered format (1. 2. 3.)
-      let questions = followUpResponse.split('\n')
-        .filter(line => line.match(/^\d+\./))
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(q => q.length > 0 && q.includes('?')) // Must be actual questions
-        .slice(0, 3);
-
-      // Second try: look for question marks in the response
-      if (questions.length === 0) {
-        const sentences = followUpResponse.split(/[.!?]+/)
-          .map(s => s.trim())
-          .filter(s => s.length > 20 && s.includes('?') || s.toLowerCase().includes('what') || s.toLowerCase().includes('how') || s.toLowerCase().includes('why'))
-          .slice(0, 3);
+      let questions: string[] = [];
+      
+      if (parsedPhase1 && parsedPhase1.follow_up_questions) {
+        setPhase1Data(parsedPhase1);
+        questions = parsedPhase1.follow_up_questions
+          .slice(0, parsedPhase1.recommended_followups || 3)
+          .map(fq => fq.question);
+        console.log('Using structured Phase 1 data:', parsedPhase1);
+      } else {
+        // Fallback to original parsing logic for backwards compatibility
+        console.warn('Failed to parse structured response, using fallback logic');
         
-        questions = sentences.map(s => s.endsWith('?') ? s : s + '?');
-      }
+        // First try numbered format (1. 2. 3.)
+        questions = followUpResponse.split('\n')
+          .filter(line => line.match(/^\d+\./))
+          .map(line => line.replace(/^\d+\.\s*/, '').trim())
+          .filter(q => q.length > 0 && q.includes('?'))
+          .slice(0, 3);
 
-      // If response is advice (not questions), use targeted follow-ups based on the advice topic
-      if (questions.length === 0) {
-        const responseText = followUpResponse.toLowerCase();
-        if (responseText.includes('relationship') || responseText.includes('connection')) {
-          questions = [
-            "What specific relationship pattern mentioned resonates most with you, and where else do you see it showing up?",
-            "When you feel that urge to sabotage connections, what exactly goes through your mind in that moment?",
-            "How do you think your closest relationships would describe the way you handle conflict or intimacy?"
-          ];
-        } else if (responseText.includes('self-worth') || responseText.includes('confidence')) {
-          questions = [
-            "What would you say to a friend who talked about themselves the way you talk about yourself?",
-            "In what specific situations do you notice your self-criticism becoming loudest?",
-            "What evidence exists that contradicts the harsh stories you tell yourself about your worth?"
-          ];
-        } else {
-          // Generic but personalized fallback
+        // Second try: look for question marks in the response
+        if (questions.length === 0) {
+          const sentences = followUpResponse.split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 20 && s.includes('?') || s.toLowerCase().includes('what') || s.toLowerCase().includes('how') || s.toLowerCase().includes('why'))
+            .slice(0, 3);
+          
+          questions = sentences.map(s => s.endsWith('?') ? s : s + '?');
+        }
+
+        // Final fallback questions
+        if (questions.length === 0) {
           questions = [
             "What specific pattern from your responses feels most uncomfortable to acknowledge?",
             "When you're defensive or triggered, what are you usually trying to protect?",
@@ -173,7 +418,7 @@ No other text, no explanations, just the numbered questions.`;
         }
       }
 
-      console.log('Parsed follow-up questions:', questions);
+      console.log('Final follow-up questions:', questions);
       setFollowUpQuestions(questions);
       setCurrentPhase('followup');
     } catch (error) {
@@ -215,47 +460,89 @@ No other text, no explanations, just the numbered questions.`;
     setCurrentPhase('analysis');
 
     try {
-      const analysisPrompt = `Conduct comprehensive shadow work analysis using this structured framework:
+      const analysisPrompt = `You are conducting Phase 2 comprehensive shadow work analysis. Analyze all responses and provide structured insights.
 
-CORE RESPONSES:
+CORE BEHAVIORAL QUESTION RESPONSES:
 ${CORE_BEHAVIORAL_QUESTIONS.map(q => `${q.question}\n→ ${coreResponses[q.id] || 'No response'}`).join('\n\n')}
 
-FOLLOW-UP RESPONSES:
+FOLLOW-UP QUESTION RESPONSES:
 ${followUpQuestions.map((q, i) => `${q}\n→ ${followUpResponses[i] || 'No response'}`).join('\n\n')}
+
+${phase1Data ? `PHASE 1 ANALYSIS: ${phase1Data.initial_pattern_analysis}\nPRELIMINARY OBSERVATIONS: ${phase1Data.preliminary_observations}\nCONFIDENCE LEVEL: ${phase1Data.confidence_level}` : ''}
 
 ${shadowProfile ? `ARCHETYPE CONTEXT: ${shadowProfile.archetype} - ${shadowProfile.description}` : ''}
 ${journalEntries?.length ? `JOURNAL CONTEXT: Analyze patterns from ${journalEntries.length} journal entries` : ''}
 
-Provide comprehensive analysis in this structure:
+CRITICAL: Your entire response must be a single, valid JSON object. Do not include any text outside of the JSON structure, including backticks or explanations. DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.
 
-**YOUR SHADOW PATTERN:** 
-[Give them a personalized archetype-style name/description based on their specific pattern, like "The Hidden Perfectionist" or "The Wounded Protector"]
+Analyze for:
+- Deep Pattern Recognition: Synthesize all responses to identify 2-3 core behavioral patterns
+- Shadow Element Identification: What traits do they reject in others but likely exhibit themselves?
+- Root Cause Analysis: Identify 1-2 core wounds or limiting beliefs driving surface behaviors
+- Practical Integration: Specific behavioral changes they can implement immediately
 
-**DEEP TRUTH:**
-[The fundamental truth about their patterns - what their behavior is really protecting or trying to achieve]
-
-**BEHAVIORAL PATTERNS IDENTIFIED:**
-[3-4 specific patterns with examples from their responses]
-
-**SHADOW ELEMENTS:**
-[What they're not seeing about themselves - the disowned parts]
-
-**ROOT ANALYSIS:**
-[The 1-2 core issues driving everything - their deepest fears/wounds]
-
-**INTEGRATION PATH:**
-[The core transformation needed - their path from shadow to integration]
-
-**INTEGRATION PLAN:**
-- **Immediate Actions:** [3 specific things they can do this week]
-- **Ongoing Awareness:** [How to catch these patterns in real-time]  
-- **Boundary/Communication Shifts:** [How they need to show up differently]
-- **Core Mindset Shift:** [The one perspective change that could transform everything]
-
-**INTEGRATION EXERCISES:**
-[2-3 specific practices to work with their shadow elements]
-
-Use their exact words and examples. Be direct but compassionate. Focus on patterns, not isolated incidents. Frame as growth opportunities. Make the "Your Shadow Pattern" section feel like a personalized archetype.`;
+{
+  "phase": 2,
+  "behavioral_patterns": [
+    {
+      "pattern": "Name of pattern",
+      "description": "Detailed explanation with examples from responses",
+      "frequency": "high",
+      "impact_areas": ["relationships", "work", "self-esteem"]
+    }
+  ],
+  "shadow_elements": [
+    {
+      "element": "What they're not seeing about themselves",
+      "manifestation": "How this shows up in their behavior",
+      "projection": "How they might see this in others instead"
+    }
+  ],
+  "root_analysis": {
+    "primary_wound": "The main core issue driving behaviors",
+    "secondary_wound": "Supporting core issue if applicable",
+    "core_fear": "What they're ultimately afraid of",
+    "defense_mechanism": "Primary way they protect themselves"
+  },
+  "integration_plan": {
+    "immediate_actions": [
+      {
+        "action": "Specific thing they can do this week",
+        "timeline": "this week",
+        "difficulty": "easy"
+      }
+    ],
+    "ongoing_awareness": [
+      {
+        "practice": "How to catch patterns in real-time",
+        "trigger_signs": ["What to watch for"],
+        "intervention": "What to do when they notice it"
+      }
+    ],
+    "communication_shifts": [
+      {
+        "old_pattern": "How they currently communicate",
+        "new_approach": "How to show up differently",
+        "practice_area": "Where to try this first"
+      }
+    ],
+    "core_mindset_shift": "The one perspective change that could transform everything"
+  },
+  "integration_exercises": [
+    {
+      "exercise": "Name of exercise",
+      "description": "What to do",
+      "frequency": "daily",
+      "purpose": "What shadow element this addresses"
+    }
+  ],
+  "overall_assessment": {
+    "growth_readiness": "high",
+    "resistance_level": "medium",
+    "support_needed": "self-directed",
+    "timeline_estimate": "months"
+  }
+}`;
 
       const analysis = await askClaude(analysisPrompt, shadowProfile || {
         archetype: 'Comprehensive Analysis',
@@ -264,7 +551,23 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
         description: 'Complete behavioral shadow analysis'
       }, undefined, undefined, undefined, undefined, 'analysis');
 
-      setFinalAnalysis(analysis);
+      // Try to parse as structured JSON first
+      const parsedPhase2 = parseJSONResponse(analysis, 2) as Phase2Response;
+      
+      if (parsedPhase2) {
+        setPhase2Data(parsedPhase2);
+        console.log('Using structured Phase 2 data:', parsedPhase2);
+        
+        // Save Phase 2 data to localStorage for chat integration
+        localStorage.setItem('shadowDeepAnalysisPhase2', JSON.stringify(parsedPhase2));
+        
+        // Create a formatted display version for backward compatibility
+        const formattedAnalysis = formatPhase2ForDisplay(parsedPhase2);
+        setFinalAnalysis(formattedAnalysis);
+      } else {
+        console.warn('Failed to parse structured Phase 2 response, using raw text');
+        setFinalAnalysis(analysis);
+      }
     } catch (error) {
       console.error('Error generating final analysis:', error);
       setFinalAnalysis('Unable to generate analysis at this time. Please try again later.');
@@ -535,6 +838,324 @@ Use their exact words and examples. Be direct but compassionate. Focus on patter
 
     const insights = parseInsights(finalAnalysis);
 
+    // Render structured UI if Phase 2 data is available
+    if (phase2Data) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black/50 to-black"></div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 max-w-6xl w-full"
+          >
+            <div className="text-center mb-16">
+              <motion.h1 
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                className="text-4xl sm:text-5xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-white to-gray-300 mb-6 tracking-tight hover:scale-105 transition-transform duration-300 cursor-default text-center"
+              >
+                Your Shadow Analysis
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-lg sm:text-2xl text-purple-200 font-light text-center"
+              >
+                Deep behavioral insights revealed
+              </motion.p>
+            </div>
+            
+            {/* Progress Indicator */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gray-800/60 rounded-3xl p-6 mb-8 glass"
+            >
+              <h3 className="text-xl font-semibold text-white mb-4 text-center">Your Progress</h3>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-400">
+                    {completedActions.size} / {phase2Data.integration_plan.immediate_actions.length}
+                  </div>
+                  <div className="text-sm text-green-300">Actions Completed</div>
+                  <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(completedActions.size / phase2Data.integration_plan.immediate_actions.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-400">
+                    {completedExercises.size} / {phase2Data.integration_exercises.length}
+                  </div>
+                  <div className="text-sm text-blue-300">Exercises Started</div>
+                  <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(completedExercises.size / phase2Data.integration_exercises.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Structured Analysis Sections */}
+            <div className="space-y-8 mb-12">
+              {/* Primary Pattern */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-gradient-to-br from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500"
+              >
+                <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-12 glass">
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 5, -5, 0],
+                      scale: [1, 1.05, 1]
+                    }}
+                    transition={{ 
+                      duration: 6, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                  >
+                    <Brain className="w-24 h-24 text-white mb-10 mx-auto" />
+                  </motion.div>
+                  
+                  <h2 className="text-4xl md:text-6xl font-bold text-white text-center mb-10 text-glow">
+                    {phase2Data.behavioral_patterns[0]?.pattern || 'Your Shadow Pattern'}
+                  </h2>
+                  
+                  <div className="bg-white/10 rounded-2xl p-10 glass">
+                    <h3 className="text-3xl font-semibold text-white mb-6 text-center">Core Fear & Defense</h3>
+                    <p className="text-xl text-white/90 leading-relaxed text-center font-light">
+                      {phase2Data.root_analysis.core_fear} drives your {phase2Data.root_analysis.defense_mechanism}.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Behavioral Patterns */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-black/40 rounded-3xl p-8 glass"
+              >
+                <h3 className="text-3xl font-semibold text-white mb-6 text-center">Behavioral Patterns</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {phase2Data.behavioral_patterns.map((pattern, i) => (
+                    <div key={i} className="bg-purple-900/30 rounded-2xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-xl font-semibold text-white">{pattern.pattern}</h4>
+                        <span className={`px-3 py-1 rounded-full text-sm ${
+                          pattern.frequency === 'high' ? 'bg-red-500/30 text-red-200' :
+                          pattern.frequency === 'medium' ? 'bg-yellow-500/30 text-yellow-200' :
+                          'bg-green-500/30 text-green-200'
+                        }`}>
+                          {pattern.frequency} frequency
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm mb-3">{pattern.description}</p>
+                      <div className="text-xs text-purple-200">
+                        Impact: {pattern.impact_areas.join(', ')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Immediate Actions */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-green-900/30 rounded-3xl p-8 glass"
+              >
+                <h3 className="text-3xl font-semibold text-green-200 mb-6 text-center">Immediate Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {phase2Data.integration_plan.immediate_actions.map((action, i) => {
+                    const isCompleted = completedActions.has(action.action);
+                    return (
+                      <div 
+                        key={i} 
+                        onClick={() => toggleActionCompletion(action.action)}
+                        className={`bg-black/40 rounded-2xl p-6 hover:bg-black/60 transition-colors cursor-pointer border-2 ${
+                          isCompleted ? 'border-green-500/50 bg-green-900/20' : 'border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            {isCompleted ? (
+                              <Check className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <Square className="w-4 h-4 text-gray-400" />
+                            )}
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              action.difficulty === 'easy' ? 'bg-green-500/30 text-green-200' :
+                              action.difficulty === 'moderate' ? 'bg-yellow-500/30 text-yellow-200' :
+                              'bg-red-500/30 text-red-200'
+                            }`}>
+                              {action.difficulty}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-400">{action.timeline}</span>
+                        </div>
+                        <p className={`font-medium transition-colors ${
+                          isCompleted ? 'text-green-200 line-through' : 'text-white'
+                        }`}>
+                          {action.action}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Integration Exercises */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="bg-blue-900/30 rounded-3xl p-8 glass"
+              >
+                <h3 className="text-3xl font-semibold text-blue-200 mb-6 text-center">Integration Exercises</h3>
+                <div className="space-y-4">
+                  {phase2Data.integration_exercises.map((exercise, i) => {
+                    const isCompleted = completedExercises.has(exercise.exercise);
+                    return (
+                      <div 
+                        key={i} 
+                        onClick={() => toggleExerciseCompletion(exercise.exercise)}
+                        className={`bg-black/40 rounded-2xl p-6 hover:bg-black/60 transition-colors cursor-pointer border-2 ${
+                          isCompleted ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            {isCompleted ? (
+                              <Check className="w-4 h-4 text-blue-400" />
+                            ) : (
+                              <Square className="w-4 h-4 text-gray-400" />
+                            )}
+                            <h4 className={`text-lg font-semibold transition-colors ${
+                              isCompleted ? 'text-blue-200 line-through' : 'text-white'
+                            }`}>
+                              {exercise.exercise}
+                            </h4>
+                          </div>
+                          <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-1 rounded-full">
+                            {exercise.frequency}
+                          </span>
+                        </div>
+                        <p className={`text-sm mb-2 transition-colors ${
+                          isCompleted ? 'text-blue-300' : 'text-gray-300'
+                        }`}>
+                          {exercise.description}
+                        </p>
+                        <p className="text-xs text-blue-200">Purpose: {exercise.purpose}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Assessment Summary */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="bg-orange-900/30 rounded-3xl p-8 glass"
+              >
+                <h3 className="text-2xl font-semibold text-orange-200 mb-6 text-center">Your Journey Forward</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">Growth Readiness</div>
+                    <div className={`text-lg font-semibold ${
+                      phase2Data.overall_assessment.growth_readiness === 'high' ? 'text-green-200' :
+                      phase2Data.overall_assessment.growth_readiness === 'medium' ? 'text-yellow-200' :
+                      'text-red-200'
+                    }`}>
+                      {phase2Data.overall_assessment.growth_readiness}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">Support Needed</div>
+                    <div className="text-lg font-semibold text-orange-200">
+                      {phase2Data.overall_assessment.support_needed}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">Timeline</div>
+                    <div className="text-lg font-semibold text-orange-200">
+                      {phase2Data.overall_assessment.timeline_estimate}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">Resistance</div>
+                    <div className={`text-lg font-semibold ${
+                      phase2Data.overall_assessment.resistance_level === 'low' ? 'text-green-200' :
+                      phase2Data.overall_assessment.resistance_level === 'medium' ? 'text-yellow-200' :
+                      'text-red-200'
+                    }`}>
+                      {phase2Data.overall_assessment.resistance_level}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 p-4 bg-purple-900/30 rounded-2xl">
+                  <h4 className="text-lg font-semibold text-purple-200 mb-2">Core Mindset Shift</h4>
+                  <p className="text-purple-100 text-center font-light italic">
+                    {phase2Data.integration_plan.core_mindset_shift}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Action Buttons */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onClose}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30 text-xl"
+              >
+                ← Back to Journey
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentScreen ? setCurrentScreen('journal') : onClose()}
+                className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-green-500/30 text-xl"
+              >
+                📖 Journal This
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentScreen ? setCurrentScreen('chat') : onClose()}
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-orange-500/30 text-xl"
+              >
+                💬 Chat with Sage
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Fallback to original display for non-structured responses
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black/50 to-black"></div>

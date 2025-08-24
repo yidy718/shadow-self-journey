@@ -218,6 +218,27 @@ const ShadowQuiz = () => {
             if (!journalData) return [];
             const entries = JSON.parse(journalData);
             return entries.slice(-10).map((entry: any) => entry.mood || 3);
+          })(),
+          phase2Analysis: (() => {
+            // Load the most recent Deep Analysis Phase 2 data from localStorage
+            const savedPhase2 = localStorage.getItem('shadowDeepAnalysisPhase2');
+            if (savedPhase2) {
+              try {
+                return JSON.parse(savedPhase2);
+              } catch (error) {
+                console.error('Error parsing Phase 2 data:', error);
+                return null;
+              }
+            }
+            return null;
+          })(),
+          completedActions: (() => {
+            const savedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+            return savedActions ? JSON.parse(savedActions) : [];
+          })(),
+          completedExercises: (() => {
+            const savedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+            return savedExercises ? JSON.parse(savedExercises) : [];
           })()
         };
         

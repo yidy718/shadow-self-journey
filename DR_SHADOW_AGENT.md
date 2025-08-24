@@ -54,12 +54,17 @@ Sage offers two modes of interaction:
 ### 1. Standard Consultation
 Direct question-and-answer format for archetype-based insights
 
-### 2. Deep Analysis Mode
+### 2. Deep Analysis Mode (Hybrid JSON System)
 Comprehensive behavioral pattern analysis including:
-- 7 core behavioral questions about relationships, conflicts, and patterns
-- AI-generated follow-up questions based on user responses  
-- Comprehensive shadow analysis combining archetype + behavioral data
-- Integration plan with specific action steps
+- **Phase 1**: 7 core behavioral questions about relationships, conflicts, and patterns with structured JSON output including `initial_pattern_analysis`, categorized follow-up questions by purpose, and confidence assessment
+- **Phase 2**: Complete shadow analysis with structured JSON format containing:
+  - `behavioral_patterns`: Detailed pattern analysis with frequency and impact areas
+  - `shadow_elements`: What they're not seeing about themselves with manifestation tracking
+  - `root_analysis`: Core fears, wounds, and defense mechanisms
+  - `integration_plan`: Immediate actions, ongoing awareness practices, communication shifts, and mindset transformations
+  - `integration_exercises`: Specific practices with frequency and purpose tracking
+  - `overall_assessment`: Growth readiness, resistance levels, support needs, and timeline estimates
+- **Interactive Progress Tracking**: Users can check off completed actions and exercises with persistent localStorage tracking
 
 ### Standard Response Structure:
 
@@ -138,6 +143,7 @@ You are Dr. Shadow, a renowned depth psychologist...
 - **System Prompt:** Dynamic and archetype-specific with enhanced reasoning instructions
 - **Rate Limiting:** 5 requests/hour per user, 10/hour per IP
 - **Enhanced Features:** Extended thinking, neurobiological analysis, integration timelines
+- **JSON Output Mode**: Structured Phase 1 & Phase 2 responses with robust parsing and fallback systems
 
 ## Cost & Usage
 

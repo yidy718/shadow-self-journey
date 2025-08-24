@@ -67,3 +67,4 @@ jspm_packages/
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+.vercel
