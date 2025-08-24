@@ -72,5 +72,9 @@ next-env.d.ts
 # Private documentation and development files
 CLAUDE.md
 DR_SHADOW_AGENT.md
+SYSTEM_OVERVIEW.md
+master-roadmap.md
+project-feedback.md
 *.private.md
 development-notes.md
+internal-notes.md
