@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus } from 'lucide-react';
+import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
@@ -10,6 +10,7 @@ import ShadowJournal from './ShadowJournal';
 import IntegrationExercises from './IntegrationExercises';
 import DeepAnalysis from './DeepAnalysis';
 import ReAnalysis from './ReAnalysis';
+import UserGuide from './UserGuide';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
@@ -27,7 +28,7 @@ interface Conversation {
 }
 
 const ShadowQuiz = () => {
-  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat' | 'deepanalysis' | 'reanalysis'>('identity');
+  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat' | 'deepanalysis' | 'reanalysis' | 'guide'>('identity');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -389,6 +390,14 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   const openReAnalysis = useCallback(() => {
     setCurrentScreen('reanalysis');
+  }, []);
+  
+  const openGuide = useCallback(() => {
+    setCurrentScreen('guide');
+  }, []);
+  
+  const closeGuide = useCallback(() => {
+    setCurrentScreen('results');
   }, []);
   
   const closeJournal = useCallback(() => {
@@ -761,7 +770,42 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           </motion.div>
 
           {/* Claude AI Integration */}
-          {/* Action Buttons */}
+          {/* Primary Action - Deep Analysis CTA */}
+          <motion.div 
+            variants={itemVariants}
+            className="mb-8"
+          >
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
+              <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to Go Deeper? 🧠</h3>
+                  <p className="text-lg text-purple-200">
+                    You've discovered your shadow archetype. Now unlock the full power of behavioral analysis 
+                    with personalized exercises and ultra-specific guidance.
+                  </p>
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={openDeepAnalysis}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  aria-label="Take comprehensive behavioral analysis"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <Eye className="w-8 h-8" />
+                    <span>Start Deep Analysis</span>
+                    <ArrowRight className="w-8 h-8" />
+                  </div>
+                  <div className="text-sm opacity-90 mt-2">
+                    Get interactive exercises & Claude Opus 4.1 insights
+                  </div>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Secondary Action Buttons */}
           <motion.div 
             variants={itemVariants}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12"
@@ -800,6 +844,18 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <Target className="w-6 h-6 mx-auto mb-2" />
               <div className="text-lg font-bold">Exercises</div>
               <div className="text-sm opacity-90">Integration Work</div>
+            </motion.button>
+
+            <motion.button
+              onClick={openGuide}
+              whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+              whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              aria-label="User guide and best practices"
+            >
+              <HelpCircle className="w-6 h-6 mx-auto mb-2" />
+              <div className="text-lg font-bold">User Guide</div>
+              <div className="text-sm opacity-90">How to Use</div>
             </motion.button>
 
             <motion.button
@@ -1191,6 +1247,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
         } : undefined}
       />
     );
+  }
+
+  // Handle user guide screen
+  if (currentScreen === 'guide') {
+    return <UserGuide onClose={closeGuide} />;
   }
 
   return null;
