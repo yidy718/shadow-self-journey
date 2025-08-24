@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileText, Database, X } from 'lucide-react';
 import { exportAsJSON, exportAsText, getExportStats } from '../lib/dataExport';
@@ -15,6 +16,12 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
   const [isExporting, setIsExporting] = useState(false);
   const [stats, setStats] = useState(() => getExportStats());
   const [statsLoading, setStatsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before using portals
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -74,47 +81,37 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
     }
   };
 
-  return (
-    <>
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleOpenModal}
-        className={`${getButtonStyles()} ${className}`}
-        aria-label="Export your shadow work data"
-      >
-        <Download className="w-4 h-4" />
-        <span>Export Data</span>
-      </motion.button>
-
-      <AnimatePresence>
-        {showModal && (
-          <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-            style={{ pointerEvents: 'auto' }}
+  // Create modal content
+  const modalContent = (
+    <AnimatePresence>
+      {showModal && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ 
+            zIndex: 10000,
+            pointerEvents: 'auto'
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => !isExporting && setShowModal(false)}
+          />
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="relative bg-gray-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg mx-4 border border-gray-700 shadow-2xl"
+            style={{ 
+              minHeight: '400px',
+              zIndex: 10001
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-              onClick={() => !isExporting && setShowModal(false)}
-              style={{ pointerEvents: 'auto' }}
-            />
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative bg-gray-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg mx-4 border border-gray-700 shadow-2xl"
-              style={{ 
-                minHeight: '400px',
-                pointerEvents: 'auto',
-                zIndex: 1
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
               <button
                 onClick={() => !isExporting && setShowModal(false)}
                 disabled={isExporting}
@@ -220,6 +217,24 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
           </div>
         )}
       </AnimatePresence>
+    );
+
+  return (
+    <>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleOpenModal}
+        className={`${getButtonStyles()} ${className}`}
+        aria-label="Export your shadow work data"
+      >
+        <Download className="w-4 h-4" />
+        <span>Export Data</span>
+      </motion.button>
+
+      {mounted && typeof document !== 'undefined' && 
+        createPortal(modalContent, document.getElementById('modal-root') || document.body)
+      }
     </>
   );
 };
