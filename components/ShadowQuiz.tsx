@@ -346,6 +346,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
   const [selectedConversationForExercise, setSelectedConversationForExercise] = useState<Conversation | null>(null);
+  const [deepAnalysisForJournal, setDeepAnalysisForJournal] = useState<{summary: string, insights: string} | null>(null);
 
   const createJournalFromConversation = useCallback((conversation: Conversation) => {
     setSelectedConversationForJournal(conversation);
@@ -355,6 +356,12 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   const createExerciseFromConversation = useCallback((conversation: Conversation) => {
     setSelectedConversationForExercise(conversation);
     setCurrentScreen('exercises');
+  }, []);
+
+  const createJournalFromDeepAnalysis = useCallback((analysisData: {summary: string, insights: string}) => {
+    setDeepAnalysisForJournal(analysisData);
+    setSelectedConversationForJournal(null); // Clear conversation journal data
+    setCurrentScreen('journal');
   }, []);
 
   const restart = useCallback(() => {
@@ -1124,10 +1131,15 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
       <ShadowJournal 
         currentArchetype={Object.keys(answers).length > 0 ? getShadowArchetype(calculateShadow.dominantTraits, calculateShadow.totalDarkness).name : undefined}
         onClose={closeJournal}
-        initialContent={selectedConversationForJournal ? {
-          question: selectedConversationForJournal.question,
-          response: selectedConversationForJournal.response
-        } : undefined}
+        initialContent={
+          selectedConversationForJournal ? {
+            question: selectedConversationForJournal.question,
+            response: selectedConversationForJournal.response
+          } : deepAnalysisForJournal ? {
+            question: 'Deep Shadow Analysis Results',
+            response: `${deepAnalysisForJournal.summary}\n\n${deepAnalysisForJournal.insights}`
+          } : undefined
+        }
       />
     );
   }
@@ -1299,6 +1311,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
         } : undefined}
         journalEntries={parsedEntries}
         setCurrentScreen={setCurrentScreen}
+        onCreateJournal={createJournalFromDeepAnalysis}
       />
     );
   }

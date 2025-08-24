@@ -68,3 +68,9 @@ jspm_packages/
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# Private documentation and development files
+CLAUDE.md
+DR_SHADOW_AGENT.md
+*.private.md
+development-notes.md

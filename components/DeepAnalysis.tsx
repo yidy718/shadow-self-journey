@@ -16,6 +16,7 @@ interface DeepAnalysisProps {
     integration: string;
   }>;
   setCurrentScreen?: (screen: 'results' | 'identity' | 'exercises' | 'journal' | 'chat' | 'welcome' | 'quiz' | 'deepanalysis' | 'reanalysis') => void;
+  onCreateJournal?: (analysisData: {summary: string, insights: string}) => void;
 }
 
 interface AnalysisQuestion {
@@ -157,7 +158,7 @@ const generateRandomizedQuestions = (): AnalysisQuestion[] => {
 // Generate questions once per component mount to maintain consistency during session
 const CORE_BEHAVIORAL_QUESTIONS: AnalysisQuestion[] = generateRandomizedQuestions();
 
-export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurrentScreen }: DeepAnalysisProps) => {
+export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurrentScreen, onCreateJournal }: DeepAnalysisProps) => {
   const [currentPhase, setCurrentPhase] = useState<'intro' | 'questions' | 'followup' | 'analysis'>('intro');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -167,6 +168,7 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   const [isGeneratingFollowUp, setIsGeneratingFollowUp] = useState(false);
   const [finalAnalysis, setFinalAnalysis] = useState('');
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [currentFollowUpIndex, setCurrentFollowUpIndex] = useState(0);
   
   // New structured data states
@@ -174,6 +176,7 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   const [phase2Data, setPhase2Data] = useState<Phase2Response | null>(null);
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+  const [retryAttempts, setRetryAttempts] = useState(0);
 
   // Load progress from localStorage
   useEffect(() => {
@@ -227,11 +230,24 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     localStorage.setItem('shadowAnalysisCompletedExercises', JSON.stringify([...newCompleted]));
   };
 
-  // JSON parsing utility with fallbacks
+  // Enhanced JSON parsing utility with multiple fallback strategies
   const parseJSONResponse = (response: string, expectedPhase: 1 | 2): Phase1Response | Phase2Response | null => {
     try {
-      // Remove any markdown formatting
+      // Strategy 1: Remove markdown and extra text
       let cleanResponse = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Strategy 2: Extract JSON from between braces if there's extra text
+      const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanResponse = jsonMatch[0];
+      }
+      
+      // Strategy 3: Remove text before first { and after last }
+      const firstBrace = cleanResponse.indexOf('{');
+      const lastBrace = cleanResponse.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanResponse = cleanResponse.slice(firstBrace, lastBrace + 1);
+      }
       
       // Try parsing the clean response
       const parsed = JSON.parse(cleanResponse);
@@ -245,6 +261,20 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     } catch (error) {
       console.error('JSON parsing failed:', error);
       console.log('Raw response:', response);
+      
+      // Try one more aggressive cleanup
+      try {
+        // Remove everything before first { and after last }
+        const braceStart = response.indexOf('{');
+        const braceEnd = response.lastIndexOf('}');
+        if (braceStart !== -1 && braceEnd !== -1 && braceEnd > braceStart) {
+          const jsonOnly = response.slice(braceStart, braceEnd + 1);
+          return JSON.parse(jsonOnly);
+        }
+      } catch (secondError) {
+        console.error('Second parsing attempt also failed:', secondError);
+      }
+      
       return null;
     }
   };
@@ -356,7 +386,12 @@ ${CORE_BEHAVIORAL_QUESTIONS.map(q => `Q: ${q.question}\nA: ${allResponses[q.id] 
 ${shadowProfile ? `ARCHETYPE CONTEXT: ${shadowProfile.archetype}` : ''}
 ${journalEntries?.length ? `JOURNAL CONTEXT: User has ${journalEntries.length} previous journal entries` : ''}
 
-CRITICAL: Your entire response must be a single, valid JSON object. Do not include any text outside of the JSON structure, including backticks or explanations. DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.
+CRITICAL FORMATTING REQUIREMENT: 
+- Your response must be ONLY a valid JSON object
+- Start immediately with { and end with }
+- No explanations, no markdown, no backticks, no additional text
+- If you add ANY text outside the JSON, the system will fail
+- Example format: {"phase": 2, "behavioral_patterns": [...]}
 
 Analyze their responses for:
 - Recurring themes across different relationship contexts
@@ -494,6 +529,7 @@ Generate 3-5 specific follow-up questions that:
   const generateFinalAnalysis = async (coreResponses: Record<string, string>, followUpResponses: Record<string, string>) => {
     setIsGeneratingAnalysis(true);
     setCurrentPhase('analysis');
+    setAnalysisError(null);
 
     try {
       const analysisPrompt = `You are conducting Phase 2 comprehensive shadow work analysis. Analyze all responses and provide structured insights.
@@ -509,7 +545,12 @@ ${phase1Data ? `PHASE 1 ANALYSIS: ${phase1Data.initial_pattern_analysis}\nPRELIM
 ${shadowProfile ? `ARCHETYPE CONTEXT: ${shadowProfile.archetype} - ${shadowProfile.description}` : ''}
 ${journalEntries?.length ? `JOURNAL CONTEXT: Analyze patterns from ${journalEntries.length} journal entries` : ''}
 
-CRITICAL: Your entire response must be a single, valid JSON object. Do not include any text outside of the JSON structure, including backticks or explanations. DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.
+CRITICAL FORMATTING REQUIREMENT: 
+- Your response must be ONLY a valid JSON object
+- Start immediately with { and end with }
+- No explanations, no markdown, no backticks, no additional text
+- If you add ANY text outside the JSON, the system will fail
+- Example format: {"phase": 2, "behavioral_patterns": [...]}
 
 Analyze for:
 - Deep Pattern Recognition: Synthesize all responses to identify 2-3 core behavioral patterns
@@ -600,16 +641,81 @@ Analyze for:
         // Create a formatted display version for backward compatibility
         const formattedAnalysis = formatPhase2ForDisplay(parsedPhase2);
         setFinalAnalysis(formattedAnalysis);
+        setRetryAttempts(0); // Reset retry count on success
       } else {
         console.warn('Failed to parse structured Phase 2 response, using raw text');
+        setAnalysisError('Failed to parse structured response. The analysis was generated but may not display properly.');
         setFinalAnalysis(analysis);
       }
     } catch (error) {
       console.error('Error generating final analysis:', error);
-      setFinalAnalysis('Unable to generate analysis at this time. Please try again later.');
+      setAnalysisError('Unable to generate analysis at this time. Please try the refresh button.');
+      setFinalAnalysis('Analysis generation failed. Use the refresh button to try again.');
     } finally {
       setIsGeneratingAnalysis(false);
     }
+  };
+
+  // Retry function for Phase 2 analysis
+  const retryPhase2Analysis = async () => {
+    if (retryAttempts >= 3) {
+      setAnalysisError('Maximum retry attempts reached. Please start a new analysis.');
+      return;
+    }
+    
+    setRetryAttempts(prev => prev + 1);
+    await generateFinalAnalysis(responses, followUpResponses);
+  };
+
+  // Create journal content from analysis
+  const createJournalFromAnalysis = () => {
+    if (!onCreateJournal) {
+      // Fallback to setCurrentScreen if no onCreateJournal function
+      setCurrentScreen?.('journal');
+      return;
+    }
+
+    let summary = '';
+    let insights = '';
+
+    if (phase2Data) {
+      // Use structured Phase 2 data
+      const primaryPattern = phase2Data.behavioral_patterns[0];
+      summary = `Deep Shadow Analysis - ${primaryPattern?.pattern || 'Your Shadow Pattern'}`;
+      
+      insights = `🎯 **Core Pattern:** ${primaryPattern?.pattern || 'Your behavioral pattern'}\n\n`;
+      insights += `💭 **Deep Truth:** ${phase2Data.root_analysis.core_fear} drives your ${phase2Data.root_analysis.defense_mechanism}.\n\n`;
+      
+      if (phase2Data.integration_plan.immediate_actions.length > 0) {
+        insights += `✨ **Key Actions to Take:**\n`;
+        phase2Data.integration_plan.immediate_actions.slice(0, 3).forEach((action, i) => {
+          insights += `${i + 1}. ${action.action} (${action.timeline})\n`;
+        });
+        insights += '\n';
+      }
+      
+      if (phase2Data.integration_plan.core_mindset_shift) {
+        insights += `🧠 **Mindset Shift:** ${phase2Data.integration_plan.core_mindset_shift}\n\n`;
+      }
+      
+      insights += `📈 **Growth Assessment:** ${phase2Data.overall_assessment.growth_readiness} readiness, ${phase2Data.overall_assessment.timeline_estimate} timeline\n`;
+      insights += `🤝 **Support Needed:** ${phase2Data.overall_assessment.support_needed}`;
+      
+    } else if (finalAnalysis) {
+      // Fallback to text analysis
+      const insights_match = finalAnalysis.match(/\*\*DEEP TRUTH[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i);
+      const pattern_match = finalAnalysis.match(/\*\*YOUR SHADOW PATTERN[^*]*:\*\*\s*([^*]+?)(?=\*\*|$)/i);
+      
+      summary = 'Deep Shadow Analysis Results';
+      insights = pattern_match ? `🎯 **Your Pattern:** ${pattern_match[1].trim()}\n\n` : '';
+      insights += insights_match ? `💭 **Deep Truth:** ${insights_match[1].trim()}\n\n` : '';
+      insights += `📝 **Full Analysis:** See complete analysis in Deep Analysis section`;
+    }
+
+    onCreateJournal({
+      summary: summary || 'Deep Shadow Analysis',
+      insights: insights || 'Your deep analysis insights are available in the Deep Analysis section.'
+    });
   };
 
   const renderIntroPhase = () => (
@@ -895,6 +1001,73 @@ Analyze for:
     };
 
     const insights = parseInsights(finalAnalysis);
+
+    // Show error state with retry option
+    if (analysisError && !isGeneratingAnalysis) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto p-8 text-center"
+        >
+          <div className="bg-red-900/30 rounded-3xl p-8 glass border border-red-500/30">
+            <div className="text-red-300 mb-6">
+              <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <h2 className="text-2xl font-semibold mb-4">Analysis Processing Issue</h2>
+              <p className="text-red-200 mb-6">{analysisError}</p>
+              
+              <div className="space-y-4">
+                <div className="bg-black/40 rounded-2xl p-4">
+                  <p className="text-sm text-gray-300 mb-4">
+                    This sometimes happens with complex analysis. Your responses are saved - you can retry without losing progress.
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Retry attempt: {retryAttempts} / 3
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={retryPhase2Analysis}
+                    disabled={retryAttempts >= 3 || isGeneratingAnalysis}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-6 py-3 rounded-xl transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>{isGeneratingAnalysis ? 'Retrying...' : 'Refresh Analysis'}</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      // Reset everything to start fresh
+                      setCurrentPhase('intro');
+                      setCurrentQuestionIndex(0);
+                      setResponses({});
+                      setFollowUpQuestions([]);
+                      setFollowUpResponses({});
+                      setCurrentFollowUpIndex(0);
+                      setAnalysisError(null);
+                      setRetryAttempts(0);
+                      setPhase2Data(null);
+                      setFinalAnalysis('');
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Start Fresh Analysis</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
 
     // Render structured UI if Phase 2 data is available
     if (phase2Data) {
@@ -1193,7 +1366,7 @@ Analyze for:
               <motion.button
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setCurrentScreen ? setCurrentScreen('journal') : onClose()}
+                onClick={createJournalFromAnalysis}
                 className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-green-500/30 text-xl"
               >
                 📖 Journal This
@@ -1345,7 +1518,7 @@ Analyze for:
             <motion.button
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setCurrentScreen ? setCurrentScreen('journal') : onClose()}
+              onClick={createJournalFromAnalysis}
               className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-6 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-green-500/30 text-xl"
             >
               📖 Journal This

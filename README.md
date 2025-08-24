@@ -16,7 +16,7 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 - **Integration Exercises**: Personalized homework and practices based on your specific shadow archetype with completion tracking
 
 ### AI-Powered Guidance
-- **Sage AI Consultation**: Advanced Claude Opus 4.1 AI agent with superior reasoning, psychological expertise, and personal connection capabilities
+- **Sage AI Consultation**: Advanced Claude 4.1 AI agent with superior reasoning, psychological expertise, and personal connection capabilities
 - **Enhanced Context Management**: Sage has access to your complete journey including last 8 journal entries, recent analyses, mood patterns, and conversation history
 - **Interactive Deeper Questions**: AI generates personalized questions you can actually answer, not just view
 - **Smart Pattern Recognition**: AI extracts key insights like Deep Truth, Integration Path, and Personal Archetype from responses
@@ -38,7 +38,7 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 - **React 18** with TypeScript and advanced optimization
 - **Tailwind CSS 3.4** with custom design system
 - **Framer Motion 11** for animations
-- **Claude Opus 4.1 AI** with superior reasoning capabilities and advanced context management
+- **Claude 4.1 AI** with superior reasoning capabilities and advanced context management
 - **Anthropic SDK** for AI integration and rate limiting
 - **Local Storage** for user preferences and assessment history
 
@@ -126,7 +126,7 @@ lib/
 ```
 app/api/
 └── claude/
-    └── route.ts           # Claude 3.5 Sonnet API with Sage agent
+    └── route.ts           # Claude 4.1 API with Sage agent
                           # - Enhanced context management (journal, mood, history)
                           # - Rate limiting (5/hour per user, 10/hour per IP)
                           # - Personalized prompting with user names

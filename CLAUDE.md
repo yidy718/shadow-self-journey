@@ -82,7 +82,7 @@ Heavy use of:
 ### Sage AI Integration
 
 - **AI Agent**: "Sage" - wise, friendly psychological AI specializing in shadow work and behavioral analysis
-- **Model**: Claude 3.5 Sonnet (claude-3-5-sonnet-20241022) - latest and most advanced
+- **Model**: Claude 4.1 (claude-4-1) - latest and most advanced
 - **Communication Style**: Direct but compassionate, addresses users by name for connection, uses exact words, avoids jargon
 - **Safety Guidelines**: Professional support recommendations, non-diagnostic approach
 - **Enhanced Context Management**: Includes last 8 journal entries, 3 recent analyses, mood patterns, and conversation history
