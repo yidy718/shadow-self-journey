@@ -88,43 +88,74 @@ interface Phase2Response {
   };
 }
 
-const CORE_BEHAVIORAL_QUESTIONS: AnalysisQuestion[] = [
-  {
-    id: '1',
-    question: 'Describe your last 3 relationship endings - what happened and what role did you play?',
-    category: 'relationship'
-  },
-  {
-    id: '2', 
-    question: 'What do people consistently criticize or complain about regarding your behavior?',
-    category: 'patterns'
-  },
-  {
-    id: '3',
-    question: 'When do you feel most misunderstood? What do others "get wrong" about you?',
-    category: 'projection'
-  },
-  {
-    id: '4',
-    question: 'What patterns do you notice in your dating/romantic life that frustrate you?',
-    category: 'relationship'
-  },
-  {
-    id: '5',
-    question: 'Describe a recent conflict or disagreement. What was your role and how did you handle it?',
-    category: 'conflict'
-  },
-  {
-    id: '6',
-    question: 'What traits in other people irritate you most? Give specific examples.',
-    category: 'projection'
-  },
-  {
-    id: '7',
-    question: 'When do you feel most anxious or defensive in relationships?',
-    category: 'triggers'
-  }
-];
+// Question pools - each core question has 2-3 alternatives that accomplish the same analytical goal
+const QUESTION_POOLS = {
+  relationship_patterns: [
+    'Describe your last 3 relationship endings - what happened and what role did you play?',
+    'Think about your closest relationships that ended. What patterns do you notice in how they concluded?',
+    'Tell me about relationships where you felt disappointed or hurt. What was your part in what happened?'
+  ],
+  behavioral_feedback: [
+    'What do people consistently criticize or complain about regarding your behavior?',
+    'What feedback do you hear repeatedly from friends, family, or partners about how you act?',
+    'If your closest people were honest, what would they say you need to work on?'
+  ],
+  misunderstood_feelings: [
+    'When do you feel most misunderstood? What do others "get wrong" about you?',
+    'Describe times when people completely missed the point about who you are or what you meant.',
+    'What do you wish people understood about you that they seem to miss?'
+  ],
+  romantic_frustrations: [
+    'What patterns do you notice in your dating/romantic life that frustrate you?',
+    'What keeps happening in your love life that drives you crazy?',
+    'Looking at your romantic relationships, what cycles do you find yourself stuck in?'
+  ],
+  conflict_handling: [
+    'Describe a recent conflict or disagreement. What was your role and how did you handle it?',
+    'Tell me about a time you argued with someone important to you. How did you show up in that fight?',
+    'Think of your last big disagreement - what did you do well and what could you have handled better?'
+  ],
+  projection_triggers: [
+    'What traits in other people irritate you most? Give specific examples.',
+    'What behaviors in others instantly get under your skin? Be specific about recent examples.',
+    'Describe the types of people who trigger your strongest negative reactions.'
+  ],
+  defensive_patterns: [
+    'When do you feel most anxious or defensive in relationships?',
+    'What situations with people make you want to put your guard up or pull away?',
+    'In what moments do you feel most threatened or unsafe emotionally with others?'
+  ]
+};
+
+// Function to generate randomized questions from pools
+const generateRandomizedQuestions = (): AnalysisQuestion[] => {
+  // Map pool keys to valid category types
+  const categoryMapping: Record<keyof typeof QUESTION_POOLS, AnalysisQuestion['category']> = {
+    relationship_patterns: 'relationship',
+    behavioral_feedback: 'patterns', 
+    misunderstood_feelings: 'projection',
+    romantic_frustrations: 'relationship',
+    conflict_handling: 'conflict',
+    projection_triggers: 'projection',
+    defensive_patterns: 'triggers'
+  };
+  
+  const poolKeys = Object.keys(QUESTION_POOLS) as (keyof typeof QUESTION_POOLS)[];
+  
+  return poolKeys.map((poolKey, index) => {
+    const questions = QUESTION_POOLS[poolKey];
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    
+    return {
+      id: (index + 1).toString(),
+      question: randomQuestion,
+      category: categoryMapping[poolKey]
+    };
+  });
+};
+
+// Generate questions once per component mount to maintain consistency during session
+const CORE_BEHAVIORAL_QUESTIONS: AnalysisQuestion[] = generateRandomizedQuestions();
 
 export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurrentScreen }: DeepAnalysisProps) => {
   const [currentPhase, setCurrentPhase] = useState<'intro' | 'questions' | 'followup' | 'analysis'>('intro');
@@ -156,6 +187,11 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
       setCompletedExercises(new Set(JSON.parse(savedExercises)));
     }
   }, []);
+
+  // Scroll to top when question or phase changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentQuestionIndex, currentFollowUpIndex, currentPhase]);
 
   // Save progress to localStorage
   const saveProgress = () => {
@@ -649,6 +685,28 @@ Analyze for:
   );
 
   const renderQuestionsPhase = () => {
+    // Show loading state when generating follow-up questions
+    if (isGeneratingFollowUp) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="max-w-4xl mx-auto p-8 text-center"
+        >
+          <div className="bg-black/40 rounded-3xl p-12 glass">
+            <Loader className="w-12 h-12 animate-spin text-blue-400 mx-auto mb-6" />
+            <h2 className="text-2xl font-semibold text-white mb-4">Sage is Thinking... 🧠</h2>
+            <p className="text-gray-300">
+              Analyzing your responses to generate personalized follow-up questions. This usually takes 10-15 seconds.
+            </p>
+            <div className="mt-6 text-sm text-gray-400">
+              ✨ Creating targeted questions based on your unique patterns
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
     const currentQuestion = CORE_BEHAVIORAL_QUESTIONS[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / CORE_BEHAVIORAL_QUESTIONS.length) * 100;
 
