@@ -4,31 +4,31 @@
 
 A breakthrough psychological platform that guides you through Carl Jung's shadow work with AI-powered insight. Uncover your hidden patterns, integrate rejected aspects of yourself, and transform unconscious behaviors into conscious strengths.
 
-🌐 **Experience your journey at: [shadowself.app](https://www.shadowself.app)**
+**Experience your journey at: [shadowself.app](https://www.shadowself.app)**
 
 ---
 
 ## What You'll Discover
 
-### 🎭 Your Shadow Archetype
+### Your Shadow Archetype
 - **6 Profound Archetypes**: The Self-Destroyer, Void Walker, Hidden Sadist, and more
 - **Personalized Analysis**: Deep psychological insights tailored to your unique patterns  
 - **Integration Guidance**: Transform shadow traits into conscious strengths
 - **Beautiful Results**: Stunning visual presentations of your psychological landscape
 
-### 🧠 AI-Powered Guidance with Sage
+### AI-Powered Guidance with Sage
 - **Your Personal Psychology AI**: Meet Sage, your wise and compassionate guide through shadow work
 - **Deep Understanding**: Sage learns from your complete journey - journal entries, assessments, and conversations
 - **Personal Connection**: Addresses you by name, remembers your insights, builds genuine rapport
 - **Interactive Exploration**: Generates personalized questions that deepen your self-understanding
 
-### 🎚️ Choose Your Intensity
+### Choose Your Intensity
 - **Gentle**: Supportive exploration for sensitive souls
 - **Moderate**: Balanced insight for steady growth  
 - **Deep**: Confrontational truth for serious seekers
 - **Intense**: Transformational breakthroughs for the courageous
 
-### 📊 Comprehensive Assessment Options
+### Comprehensive Assessment Options
 
 **Quick Archetype Assessment**
 - 4 profound questions adapted to your chosen intensity
@@ -45,13 +45,13 @@ A breakthrough psychological platform that guides you through Carl Jung's shadow
 - Evolution tracking showing your psychological growth
 - Interactive deeper questions for continued exploration
 
-### 📝 Personal Shadow Journal
+### Personal Shadow Journal
 - **Mood Tracking**: Monitor your emotional patterns over time
 - **Insight Recording**: Capture breakthroughs and revelations
 - **Integration Notes**: Track how you're applying shadow work in daily life
 - **AI Analysis**: Sage reviews your journal for deeper patterns
 
-### 🎯 Personalized Integration Exercises
+### Personalized Integration Exercises
 - **Custom Homework**: Practices tailored to your specific archetype
 - **Progress Tracking**: Visual completion indicators
 - **Graduated Difficulty**: Exercises that grow with your development
@@ -61,13 +61,13 @@ A breakthrough psychological platform that guides you through Carl Jung's shadow
 
 ## Your Privacy & Safety
 
-### 🔒 Complete Privacy
+### Complete Privacy
 - **Your Data Stays Yours**: Everything stored locally on your device
 - **No Accounts Required**: Start immediately, no signup needed
 - **Optional Identity**: Choose anonymous exploration or named journey
 - **Export Anytime**: Download your complete journey as backup
 
-### 🛡️ Psychological Safety
+### Psychological Safety
 - **Professional Boundaries**: Sage provides guidance, not therapy
 - **Crisis Support**: Clear recommendations for professional help when needed
 - **Age-Appropriate**: Safety guidelines for different life stages
@@ -77,22 +77,22 @@ A breakthrough psychological platform that guides you through Carl Jung's shadow
 
 ## Who This Is For
 
-### 🌱 Personal Growth Seekers
+### Personal Growth Seekers
 Transform unconscious patterns holding you back into conscious strengths
 
-### 🧘 Spiritual Practitioners  
+### Spiritual Practitioners  
 Deepen your self-awareness through Jungian depth psychology
 
-### 💼 Leaders & Professionals
+### Leaders & Professionals
 Understand your triggers, improve relationships, lead with authenticity
 
-### 🎨 Creatives & Artists
+### Creatives & Artists
 Access the creative power hidden in your rejected aspects
 
-### 👥 Relationship Builders
+### Relationship Builders
 Recognize projections, communicate authentically, love more deeply
 
-### 🔬 Psychology Enthusiasts
+### Psychology Enthusiasts
 Explore cutting-edge AI-assisted depth psychology
 
 ---
@@ -111,17 +111,17 @@ Based on Carl Jung's analytical psychology, enhanced with modern neuroscience:
 
 ## What Makes This Different
 
-### 🤖 Advanced AI Integration
+### Advanced AI Integration
 - **Claude 4.1**: The most sophisticated AI for psychological insight
 - **Context Awareness**: Remembers your entire journey for personalized guidance
 - **Interactive Experience**: Generate questions, track progress, evolve understanding
 
-### 🎨 Beautiful Design
+### Beautiful Design
 - **Archetype-Quality Visuals**: Professional, stunning result presentations
 - **Emotional Design**: Colors, typography, and motion that match psychological depth
 - **Mobile-First**: Optimized for intimate, personal exploration
 
-### 🔬 Hybrid Methodology
+### Hybrid Methodology
 - **Structured Assessment**: Scientifically-grounded psychological evaluation
 - **AI Enhancement**: Dynamic follow-up questions and personalized insights
 - **Progress Tracking**: Interactive tools to monitor your integration journey
