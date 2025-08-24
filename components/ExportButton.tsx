@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileText, Database, X } from 'lucide-react';
 import { exportAsJSON, exportAsText, getExportStats } from '../lib/dataExport';
@@ -15,6 +15,16 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
   const [isExporting, setIsExporting] = useState(false);
   const [stats, setStats] = useState(() => getExportStats());
   const [statsLoading, setStatsLoading] = useState(false);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [showModal]);
 
   const handleOpenModal = async () => {
     setShowModal(true);
@@ -79,13 +89,17 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
 
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            style={{ pointerEvents: 'auto' }}
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => !isExporting && setShowModal(false)}
+              style={{ pointerEvents: 'auto' }}
             />
             
             <motion.div
@@ -93,8 +107,13 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative bg-gray-900 rounded-3xl p-8 w-full max-w-md mx-4 border border-gray-700 shadow-2xl"
-              style={{ minHeight: '400px' }}
+              className="relative bg-gray-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg mx-4 border border-gray-700 shadow-2xl"
+              style={{ 
+                minHeight: '400px',
+                pointerEvents: 'auto',
+                zIndex: 1
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => !isExporting && setShowModal(false)}
