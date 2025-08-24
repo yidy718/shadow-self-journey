@@ -366,12 +366,29 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     };
     setResponses(newResponses);
     setCurrentResponse('');
+    
+    await proceedToNextQuestion(newResponses);
+  };
 
+  const handleSkipQuestion = async () => {
+    // Save an empty response to indicate this question was skipped
+    const currentQuestion = CORE_BEHAVIORAL_QUESTIONS[currentQuestionIndex];
+    const newResponses = {
+      ...responses,
+      [currentQuestion.id]: '[SKIPPED]' // Marker for skipped questions
+    };
+    setResponses(newResponses);
+    setCurrentResponse('');
+    
+    await proceedToNextQuestion(newResponses);
+  };
+
+  const proceedToNextQuestion = async (updatedResponses: Record<string, string>) => {
     if (currentQuestionIndex < CORE_BEHAVIORAL_QUESTIONS.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // All core questions completed, generate follow-up questions
-      await generateFollowUpQuestions(newResponses);
+      await generateFollowUpQuestions(updatedResponses);
     }
   };
 
@@ -519,11 +536,27 @@ Generate 3-5 specific follow-up questions that:
     setFollowUpResponses(newFollowUpResponses);
     setCurrentResponse('');
 
+    await proceedToNextFollowUp(newFollowUpResponses);
+  };
+
+  const handleSkipFollowUp = async () => {
+    // Save a skip marker for this follow-up question
+    const newFollowUpResponses = {
+      ...followUpResponses,
+      [currentFollowUpIndex]: '[SKIPPED]'
+    };
+    setFollowUpResponses(newFollowUpResponses);
+    setCurrentResponse('');
+
+    await proceedToNextFollowUp(newFollowUpResponses);
+  };
+
+  const proceedToNextFollowUp = async (updatedResponses: Record<string, string>) => {
     if (currentFollowUpIndex < followUpQuestions.length - 1) {
       setCurrentFollowUpIndex(currentFollowUpIndex + 1);
     } else {
       // All follow-up questions completed, generate final analysis
-      await generateFinalAnalysis(responses, newFollowUpResponses);
+      await generateFinalAnalysis(responses, updatedResponses);
     }
   };
 
@@ -874,10 +907,7 @@ Analyze for:
             {/* Skip Question Button */}
             <div className="text-center">
               <button
-                onClick={() => {
-                  setCurrentResponse(''); // Clear current response
-                  handleResponseSubmit(); // Submit empty response
-                }}
+                onClick={handleSkipQuestion}
                 className="group bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 border border-gray-600/40 hover:border-gray-500/60 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
                 <span className="flex items-center space-x-2 text-sm">
@@ -984,10 +1014,7 @@ Analyze for:
             {/* Skip Follow-up Question Button */}
             <div className="text-center">
               <button
-                onClick={() => {
-                  setCurrentResponse(''); // Clear current response
-                  handleFollowUpSubmit(); // Submit empty response
-                }}
+                onClick={handleSkipFollowUp}
                 className="group bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 border border-gray-600/40 hover:border-gray-500/60 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
                 <span className="flex items-center space-x-2 text-sm">
