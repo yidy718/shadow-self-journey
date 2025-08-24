@@ -525,12 +525,13 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                 </h3>
                 <div className="space-y-3 text-gray-300 text-sm">
                   <div className="bg-green-900/30 rounded-xl p-4">
-                    <p className="font-medium text-green-100">Crisis Text Line</p>
-                    <p>Text HOME to 741741 (US)</p>
+                    <p className="font-medium text-green-100">Crisis Support</p>
+                    <p>🇺🇸 USA: Text HOME to 741741</p>
+                    <p>🇨🇦 Canada: Text CONNECT to 686868</p>
                   </div>
                   <div className="bg-green-900/30 rounded-xl p-4">
-                    <p className="font-medium text-green-100">National Suicide Prevention Lifeline</p>
-                    <p>988 or 1-800-273-8255 (US)</p>
+                    <p className="font-medium text-green-100">Suicide Prevention Lifeline</p>
+                    <p>🇺🇸🇨🇦 Call or Text 988 (USA & Canada)</p>
                   </div>
                   <p className="text-xs text-green-200 mt-4">
                     If this work brings up overwhelming feelings, consider speaking with a mental health professional.

@@ -75,6 +75,55 @@ const ShadowQuiz = () => {
     }
   }, []);
 
+  const handleSkipQuestion = useCallback(async () => {
+    setIsTransitioning(true);
+    setSelectedOption(null);
+    
+    // Skip to next question without saving answer
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    if (currentQuestion < questions.length - 1) {
+      const nextQuestion = currentQuestion + 1;
+      setCurrentQuestion(nextQuestion);
+      
+      // Save progress with skip (no new answer added)
+      if (userPrefs) {
+        saveQuizProgress(nextQuestion, answers, conversations);
+      }
+    } else {
+      // Last question skipped - go to results with whatever answers we have
+      setCurrentScreen('results');
+      
+      // Save any completed answers to history (even if incomplete)
+      if (Object.keys(answers).length > 0) {
+        const shadowTraits: Record<string, number> = {};
+        Object.values(answers).forEach(answer => {
+          Object.entries(answer.shadow).forEach(([trait, value]) => {
+            shadowTraits[trait] = (shadowTraits[trait] || 0) + value;
+          });
+        });
+        
+        const dominantTraits = Object.entries(shadowTraits)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 3) as [string, number][];
+        const totalDarkness = Object.values(shadowTraits).reduce((sum, val) => sum + val, 0);
+        const archetype = getShadowArchetype(dominantTraits, totalDarkness);
+        
+        if (userPrefs) {
+          addAssessmentResult({
+            archetype: archetype.name,
+            intensity: totalDarkness > 15 ? 'intense' : totalDarkness > 10 ? 'deep' : totalDarkness > 5 ? 'moderate' : 'gentle',
+            dominantTraits: dominantTraits.map(([trait]) => trait),
+            totalDarkness
+          });
+          clearQuizProgress();
+        }
+      }
+    }
+    
+    setIsTransitioning(false);
+  }, [currentQuestion, questions.length, answers, userPrefs, conversations]);
+
   const handleAnswer = useCallback(async (questionId: number, optionId: string, shadow: Record<string, number>) => {
     // Immediate visual feedback
     setSelectedOption(optionId);
@@ -662,6 +711,33 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 );
               })}
             </div>
+            
+            {/* Skip Question Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="text-center mt-12"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSkipQuestion}
+                disabled={isTransitioning}
+                className="group bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 border border-gray-600/40 hover:border-gray-500/60 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Skip this question"
+              >
+                <span className="flex items-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Skip Question</span>
+                </span>
+              </motion.button>
+              <p className="text-xs text-gray-500 mt-2 max-w-md mx-auto">
+                If this question feels too overwhelming right now, you can skip it and continue your journey.
+              </p>
+            </motion.div>
           </motion.div>
         </AnimatePresence>
       </div>
