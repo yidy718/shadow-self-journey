@@ -397,14 +397,22 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   const closeDeepAnalysis = useCallback(() => {
     // Smart navigation based on user's journey
-    if (Object.keys(answers).length > 0) {
-      // User has archetype - go to results with both assessments
+    const hasQuizAnswers = Object.keys(answers).length > 0;
+    const hasAssessmentHistory = userPrefs?.assessmentHistory && userPrefs.assessmentHistory.length > 0;
+    const hasDeepAnalysisData = localStorage.getItem('shadowDeepAnalysisPhase2');
+    
+    if (hasQuizAnswers || hasAssessmentHistory) {
+      // User has completed some form of assessment - go to results
       setCurrentScreen('results');
+    } else if (hasDeepAnalysisData) {
+      // User only completed deep analysis but no main assessments
+      // Ask them if they want to take the main assessment or continue with just deep analysis
+      setCurrentScreen('results'); // Still show results but with guidance to take main assessment
     } else {
-      // User only has deep analysis - create a minimal "results" state for deep analysis only
-      setCurrentScreen('results');
+      // No assessments completed at all - go back to welcome to choose path
+      setCurrentScreen('welcome');
     }
-  }, [answers]);
+  }, [answers, userPrefs]);
 
   const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
   const [selectedConversationForExercise, setSelectedConversationForExercise] = useState<Conversation | null>(null);

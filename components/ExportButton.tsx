@@ -14,11 +14,17 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
   const [showModal, setShowModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [stats, setStats] = useState(() => getExportStats());
+  const [statsLoading, setStatsLoading] = useState(false);
 
-  const handleOpenModal = () => {
-    // Refresh stats when modal opens to ensure they're current
-    setStats(getExportStats());
+  const handleOpenModal = async () => {
     setShowModal(true);
+    // Refresh stats asynchronously after modal is open to avoid blocking
+    setStatsLoading(true);
+    // Use setTimeout to avoid blocking the UI thread
+    setTimeout(() => {
+      setStats(getExportStats());
+      setStatsLoading(false);
+    }, 100);
   };
 
   const handleJSONExport = async () => {
@@ -110,36 +116,43 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
               {/* Data Summary */}
               <div className="bg-black/40 rounded-2xl p-4 mb-6 text-sm">
                 <h3 className="text-white font-medium mb-3">Your Data Includes:</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">📊 Assessments</span>
-                    <span className="text-white font-medium">{stats.assessments}</span>
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-3"></div>
+                    <span className="text-gray-300">Loading data summary...</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">📝 Journal entries</span>
-                    <span className="text-white font-medium">{stats.journalEntries}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">💬 AI conversations</span>
-                    <span className="text-white font-medium">{stats.conversations}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">✅ Actions completed</span>
-                    <span className="text-white font-medium">{stats.actionsCompleted}</span>
-                  </div>
-                  {stats.hasDeepAnalysis && (
+                ) : (
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-300">🧠 Deep analysis</span>
-                      <span className="text-green-400 font-medium">✓</span>
+                      <span className="text-gray-300">📊 Assessments</span>
+                      <span className="text-white font-medium">{stats.assessments}</span>
                     </div>
-                  )}
-                  {stats.memberSince && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-300">📅 Member since</span>
-                      <span className="text-white font-medium text-xs">{stats.memberSince}</span>
+                      <span className="text-gray-300">📝 Journal entries</span>
+                      <span className="text-white font-medium">{stats.journalEntries}</span>
                     </div>
-                  )}
-                </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">💬 AI conversations</span>
+                      <span className="text-white font-medium">{stats.conversations}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">✅ Actions completed</span>
+                      <span className="text-white font-medium">{stats.actionsCompleted}</span>
+                    </div>
+                    {stats.hasDeepAnalysis && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">🧠 Deep analysis</span>
+                        <span className="text-green-400 font-medium">✓</span>
+                      </div>
+                    )}
+                    {stats.memberSince && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">📅 Member since</span>
+                        <span className="text-white font-medium text-xs">{stats.memberSince}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">

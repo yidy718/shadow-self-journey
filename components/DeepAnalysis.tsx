@@ -461,9 +461,9 @@ Generate 3-5 specific follow-up questions that:
       const followUpResponse = await askClaude(analysisPrompt, shadowProfile || {
         archetype: 'General Analysis',
         traits: ['self-reflection'],
-        intensity: 'moderate',
+        intensity: userPrefs?.intensityLevel || 'moderate',
         description: 'Behavioral pattern analysis'
-      }, undefined, undefined, undefined, undefined, 'analysis');
+      }, undefined, undefined, {intensityLevel: userPrefs?.intensityLevel}, undefined, 'analysis');
 
       // Try to parse as structured JSON first
       const parsedPhase1 = parseJSONResponse(followUpResponse, 1) as Phase1Response;
@@ -658,9 +658,9 @@ Analyze for:
       const analysis = await askClaude(analysisPrompt, shadowProfile || {
         archetype: 'Comprehensive Analysis',
         traits: ['pattern-recognition', 'integration'],
-        intensity: 'deep',
+        intensity: userPrefs?.intensityLevel || 'deep',
         description: 'Complete behavioral shadow analysis'
-      }, undefined, undefined, undefined, undefined, 'analysis');
+      }, undefined, undefined, {intensityLevel: userPrefs?.intensityLevel}, undefined, 'analysis');
 
       // Try to parse as structured JSON first
       const parsedPhase2 = parseJSONResponse(analysis, 2) as Phase2Response;
