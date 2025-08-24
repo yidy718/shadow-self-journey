@@ -227,6 +227,7 @@ CHAT CONVERSATION STYLE:
 - Talk like texting with a wise friend - casual, warm, genuine
 - Build on their previous message, don't give generic responses
 - Stay curious about their specific experience
+- Use their name NATURALLY when it flows (not every message - like real friends do)
 
 ULTRA-SPECIFIC EXERCISE CREATION (When they mention specific situations):
 - If they mention ANY specific scenario (barista, meeting, family dinner, etc.), create a MICRO-EXERCISE for that exact situation
@@ -357,7 +358,7 @@ function createUserPrompt(
 
 Talk to me like a real friend who gets psychology and shadow work. No formal therapy speak, no roleplay actions like "*adjusts glasses*", just straight talk. Address my actual question directly. Give me insight that's genuinely helpful, not textbook stuff. What would you honestly tell a close friend asking this same thing?
 
-Given my journal work, previous analyses, and conversation history, what patterns do you see that I might be missing?${userName ? ` Please address me by my name (${userName}) - it helps me feel more connected to this work.` : ''}`;
+Given my journal work, previous analyses, and conversation history, what patterns do you see that I might be missing?${userName ? ` (Feel free to use my name ${userName} naturally in conversation when it feels right - not every message, just when it flows naturally like friends do.)` : ''}`;
 
   return prompt;
 }
