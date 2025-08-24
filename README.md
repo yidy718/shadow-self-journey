@@ -5,7 +5,8 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 ## ✨ Features
 
 ### Core Assessment
-- **8 Profound Questions**: Carefully crafted psychological prompts that explore the deepest aspects of the shadow self
+- **Intensity-Adaptive Questions**: 4 carefully crafted questions with 4 intensity levels (gentle, moderate, deep, intense) that dynamically adapt to your comfort level
+- **Personalized Depth Selection**: Choose your shadow work intensity from supportive gentle exploration to confrontational intense breakthroughs
 - **6 Shadow Archetypes**: Detailed personality profiles including The Self-Destroyer, Void Walker, Hidden Sadist, and more
 - **Personalized Results**: Comprehensive analysis with integration guidance and deep psychological insights
 
@@ -22,11 +23,14 @@ A sophisticated psychological assessment platform featuring AI-powered shadow wo
 - **Smart Pattern Recognition**: AI extracts key insights like Deep Truth, Integration Path, and Personal Archetype from responses
 
 ### User Experience
+- **Intensity Personalization**: Beautiful intensity slider with visual indicators, examples, and descriptions to choose your comfort level
+- **Adaptive Content**: All questions and AI responses dynamically adapt to your selected intensity level
 - **Beautiful Results Pages**: Archetype-style presentation for all assessments with stunning visual design, gradient backgrounds, and elegant typography
 - **Smart Navigation**: Continue Journey button intelligently detects completed assessments and navigates appropriately
-- **Complete Data Persistence**: Multi-layered storage system preserving conversations, journal entries, assessment history, and exercise progress
+- **Complete Data Persistence**: Multi-layered storage system preserving conversations, journal entries, assessment history, exercise progress, and intensity preferences
 - **User Identity Options**: Choose between anonymous sessions or named journey with progress tracking and personalized AI communication
 - **Assessment Count Display**: Accurate counting of both assessment history and completed quiz progress
+- **Comprehensive Data Export**: Export your complete journey as JSON or formatted text report with usage statistics
 - **Mobile-First Design**: Optimized for all devices with responsive layouts
 - **Elegant Animations**: Smooth, purposeful motion design using Framer Motion
 - **Complete Data Reset**: New Identity option clears ALL data for fresh starts

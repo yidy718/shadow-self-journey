@@ -30,8 +30,9 @@ npm run lint
 
 ### Core Components Structure
 
-- **ShadowQuiz**: Main application component handling seven screens (identity, welcome, quiz, results, journal, exercises, chat, deepanalysis, reanalysis)
-- **WelcomeScreen**: Smart user identity selection with returning user recognition, assessment count display, and Continue Journey functionality
+- **ShadowQuiz**: Main application component handling seven screens (identity, welcome, quiz, results, journal, exercises, chat, deepanalysis, reanalysis) with dynamic intensity-based question selection
+- **WelcomeScreen**: Smart user identity selection with intensity slider, returning user recognition, assessment count display, and Continue Journey functionality  
+- **IntensitySlider**: Beautiful intensity selection component with 4 levels (gentle, moderate, deep, intense) featuring visual indicators, descriptions, and examples
 - **DeepAnalysis**: Hybrid behavioral assessment with 7 core questions + AI-generated follow-ups, featuring beautiful archetype-style results
 - **ReAnalysis**: Comprehensive data aggregation and pattern analysis with Evolution Analysis and Interactive Deeper Questions
 - **ShadowJournal**: Personal journaling system with mood tracking, insight recording, and analysis integration
@@ -41,13 +42,14 @@ npm run lint
 
 ### Data Architecture
 
-- **Questions System**: Located in `lib/questions.ts` - contains 8 deep psychological questions with weighted shadow trait responses
+- **Intensity System**: Located in `lib/questions.ts` - hybrid intensity system with 4 levels (gentle, moderate, deep, intense) featuring dynamic question selection and adaptive AI responses
+- **Questions System**: Contains 4 core questions with intensity variations plus 8 legacy deep psychological questions with weighted shadow trait responses
 - **Shadow Archetypes**: Defined in `lib/shadowArchetypes.ts` - 6 primary archetypes with detailed integration guidance
-- **User Preferences**: `lib/userPreferences.ts` - comprehensive local storage system for user identity, assessment history, and data persistence
+- **User Preferences**: `lib/userPreferences.ts` - comprehensive local storage system for user identity, assessment history, intensity preferences, and data persistence
 - **Rate Limiting**: `lib/rateLimiter.ts` - client-side abuse prevention with enhanced protection
-- **Claude API Integration**: `lib/claudeApi.ts` - enhanced context management with journal entries, mood trends, and conversation history
+- **Claude API Integration**: `lib/claudeApi.ts` - enhanced context management with intensity-aware system prompts, journal entries, mood trends, and conversation history
 - **Scoring Algorithm**: Accumulates shadow traits from quiz responses and determines dominant archetype with proper persistence
-- **Data Persistence**: Multi-layered storage system with conversations, journal entries, assessment history, and exercise progress
+- **Data Persistence**: Multi-layered storage system with conversations, journal entries, assessment history, exercise progress, and intensity preferences
 
 ### Key Libraries & Dependencies
 

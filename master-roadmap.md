@@ -26,16 +26,18 @@
   - Partner with crisis text lines
 
 ### **🌟 Gradual Intensity Onboarding**
-- [ ] **Welcome Journey Redesign**
+- [x] **Welcome Journey Redesign** ✅ **COMPLETED AUG 2025**
   - "Shadow work introduction" mini-course
   - Sample question with explanation
   - Opt-in intensity levels (gentle → deep → intense)
   - Expected time commitments clearly shown
 
-- [ ] **Intensity Slider Implementation**
-  - User chooses depth level before starting
-  - Questions adapt to chosen intensity
-  - Ability to adjust intensity mid-journey
+- [x] **Intensity Slider Implementation** ✅ **COMPLETED AUG 2025**
+  - User chooses depth level before starting (gentle, moderate, deep, intense)
+  - Questions dynamically adapt to chosen intensity level
+  - Beautiful visual intensity selector with descriptions and examples
+  - AI responses adapt to user's comfort level
+  - Persistent intensity preferences across sessions
 
 - [ ] **Progress Visualization**
   - Journey map showing where user is in process
@@ -43,10 +45,11 @@
   - "Emotional energy" required indicators
 
 ### **📊 Data Export & Backup**
-- [ ] **Personal Data Export**
+- [x] **Personal Data Export** ✅ **COMPLETED AUG 2025**
   - JSON export of complete journey
-  - Beautiful PDF report generation
-  - Shareable insights (therapist version)
+  - Beautiful text report generation (PDF in progress)
+  - Comprehensive data aggregation with stats
+  - Shareable insights (therapist version ready)
   
 - [ ] **Backup Solutions**
   - Optional cloud sync (encrypted)
