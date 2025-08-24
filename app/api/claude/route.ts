@@ -18,6 +18,7 @@ export interface EnhancedContext {
   }>;
   recentAnalyses?: string[];
   moodTrends?: number[];
+  intensityLevel?: 'gentle' | 'moderate' | 'deep' | 'intense';
   phase2Analysis?: {
     behavioral_patterns?: Array<{
       pattern: string;
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
         model: 'claude-opus-4-1-20250805', // Claude Opus 4.1 - most capable model for complex psychological analysis
         max_tokens: 1200, // Increased for more comprehensive responses
         temperature: 0.8, // Optimal for creative, nuanced psychological insights
-        system: createShadowWorkSystemPrompt(shadowProfile.archetype, shadowProfile.intensity, context || 'chat'),
+        system: createShadowWorkSystemPrompt(shadowProfile.archetype, shadowProfile.intensity, context || 'chat', enhancedContext?.intensityLevel),
         messages: [
           {
             role: 'user',
@@ -202,7 +203,48 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function createShadowWorkSystemPrompt(archetype: string, intensity: string, context: string = 'chat'): string {
+function getIntensityGuidance(intensityLevel: 'gentle' | 'moderate' | 'deep' | 'intense'): string {
+  const intensityMap = {
+    gentle: `INTENSITY LEVEL: GENTLE
+- User prefers soft self-reflection with supportive guidance
+- Focus on gentle exploration and compassionate insights
+- Avoid confrontational language or harsh truths
+- Emphasize self-acceptance and gradual growth
+- Use encouraging, nurturing tone throughout
+- Frame challenges as opportunities for gentle self-discovery`,
+    
+    moderate: `INTENSITY LEVEL: MODERATE
+- User wants balanced introspection with gentle challenges
+- Mix supportive guidance with mild confrontation when helpful
+- Can handle moderate psychological depth and insights
+- Encourage stepping slightly outside comfort zone
+- Balance comfort with growth-oriented perspectives
+- Use direct but caring communication style`,
+    
+    deep: `INTENSITY LEVEL: DEEP
+- User seeks profound psychological exploration
+- Can handle deep truths and challenging insights
+- Comfortable with intense self-examination
+- Push boundaries while maintaining safety
+- Address core wounds and shadow elements directly
+- Use penetrating but compassionate analysis`,
+    
+    intense: `INTENSITY LEVEL: INTENSE
+- User wants maximum depth confrontational shadow work
+- Can handle harsh psychological truths and direct confrontation
+- Seeks transformational breakthroughs through intensity
+- Don't hold back on difficult insights or challenging perspectives
+- Address deepest fears, wounds, and shadow aspects directly
+- Use powerful, direct language while maintaining care
+- WARNING: Monitor for overwhelm and suggest professional support when needed`
+  };
+  
+  return intensityMap[intensityLevel];
+}
+
+function createShadowWorkSystemPrompt(archetype: string, intensity: string, context: string = 'chat', intensityLevel?: 'gentle' | 'moderate' | 'deep' | 'intense'): string {
+  const intensityGuidance = intensityLevel ? getIntensityGuidance(intensityLevel) : '';
+  
   const basePrompt = `You are Sage - a wise friend and psychological analyst who understands shadow work deeply. You've done your own inner work and genuinely care about helping people grow.
 
 YOUR CORE IDENTITY:
@@ -214,7 +256,9 @@ YOUR CORE IDENTITY:
 ARCHETYPE CONTEXT:
 - Client archetype: ${archetype}
 - Shadow intensity: ${intensity}
-- Understand their specific patterns and core wounds`;
+- Understand their specific patterns and core wounds
+
+${intensityGuidance}`;
 
   // Add context-specific style instructions
   if (context === 'chat') {
@@ -301,6 +345,16 @@ function createUserPrompt(
     if (enhancedContext.moodTrends && enhancedContext.moodTrends.length > 0) {
       const avgMood = enhancedContext.moodTrends.reduce((a, b) => a + b, 0) / enhancedContext.moodTrends.length;
       prompt += `\n\nMOOD PATTERN: Recent average ${avgMood.toFixed(1)}/5 over ${enhancedContext.moodTrends.length} entries\n`;
+    }
+    
+    if (enhancedContext.intensityLevel) {
+      const intensityDescriptions = {
+        gentle: 'soft self-reflection with supportive guidance',
+        moderate: 'balanced introspection with gentle challenges',  
+        deep: 'profound psychological exploration',
+        intense: 'maximum depth confrontational shadow work'
+      };
+      prompt += `\n\nMY CHOSEN INTENSITY LEVEL: ${enhancedContext.intensityLevel.toUpperCase()} - I prefer ${intensityDescriptions[enhancedContext.intensityLevel]}`;
     }
 
     // Add Phase 2 analysis data for ultra-specific exercise generation

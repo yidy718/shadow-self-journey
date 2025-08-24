@@ -17,6 +17,7 @@ export interface EnhancedContext {
   }>;
   recentAnalyses?: string[];
   moodTrends?: number[];
+  intensityLevel?: 'gentle' | 'moderate' | 'deep' | 'intense';
   phase2Analysis?: {
     behavioral_patterns?: Array<{
       pattern: string;

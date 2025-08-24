@@ -4,6 +4,7 @@ export interface UserPreferences {
   id: string;
   name?: string;
   isAnonymous: boolean;
+  intensityLevel?: 'gentle' | 'moderate' | 'deep' | 'intense';
   assessmentHistory: AssessmentResult[];
   createdAt: Date;
   lastUsed: Date;

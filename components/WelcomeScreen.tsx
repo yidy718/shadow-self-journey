@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, User, UserX, Sparkles, Brain, ArrowRight, AlertTriangle, BookOpen, Clock, Heart, Shield, Phone } from 'lucide-react';
 import { ParticleField } from './ParticleField';
+import { IntensitySlider } from './IntensitySlider';
 import { getUserPreferences, createNewUser, saveUserPreferences, clearUserData, type UserPreferences } from '../lib/userPreferences';
+import type { IntensityLevel } from '../lib/questions';
 
 interface WelcomeScreenProps {
   onContinue: (userPrefs: UserPreferences) => void;
@@ -12,10 +14,11 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps) => {
-  const [currentStep, setCurrentStep] = useState<'identity' | 'intro' | 'preparation' | 'preview' | 'safety' | 'warning'>('identity');
+  const [currentStep, setCurrentStep] = useState<'identity' | 'intro' | 'preparation' | 'intensity' | 'preview' | 'safety' | 'warning'>('identity');
   const [userName, setUserName] = useState('');
   const [existingUser, setExistingUser] = useState<UserPreferences | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
+  const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel>('moderate');
 
   useEffect(() => {
     const existing = getUserPreferences();
@@ -393,11 +396,50 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setCurrentStep('preview')}
+            onClick={() => setCurrentStep('intensity')}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
           >
-            See What to Expect
+            Choose Your Intensity
           </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Intensity Selection Step
+  if (currentStep === 'intensity') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
+        <ParticleField count={25} />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 max-w-6xl mx-auto"
+        >
+          <IntensitySlider 
+            value={selectedIntensity}
+            onChange={setSelectedIntensity}
+            className="mb-8"
+          />
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => setCurrentStep('preparation')}
+              className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+            >
+              ← Back
+            </button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentStep('preview')}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+            >
+              Continue to Preview
+            </motion.button>
+          </div>
         </motion.div>
       </div>
     );
@@ -466,7 +508,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => setCurrentStep('preparation')}
+              onClick={() => setCurrentStep('intensity')}
               className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
             >
               ← Back
@@ -624,7 +666,12 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => onContinue(getUserPreferences()!)}
+          onClick={() => {
+            const userPrefs = getUserPreferences()!;
+            userPrefs.intensityLevel = selectedIntensity;
+            saveUserPreferences(userPrefs);
+            onContinue(userPrefs);
+          }}
           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
         >
           Begin Assessment

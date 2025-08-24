@@ -12,7 +12,7 @@ import DeepAnalysis from './DeepAnalysis';
 import ReAnalysis from './ReAnalysis';
 import UserGuide from './UserGuide';
 import ExportButton from './ExportButton';
-import { questions } from '../lib/questions';
+import { questions, getQuestionsByIntensity } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
 import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, addAssessmentResult, type UserPreferences } from '../lib/userPreferences';
@@ -42,6 +42,7 @@ const ShadowQuiz = () => {
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showConversationHistory, setShowConversationHistory] = useState(false);
+  const [currentQuestions, setCurrentQuestions] = useState(questions);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   
   const shouldReduceMotion = useReducedMotion();
@@ -54,6 +55,10 @@ const ShadowQuiz = () => {
   const handleUserPreferences = useCallback((prefs: UserPreferences) => {
     setUserPrefs(prefs);
     
+    // Set questions based on intensity level
+    const questionsToUse = prefs.intensityLevel ? getQuestionsByIntensity(prefs.intensityLevel) : questions;
+    setCurrentQuestions(questionsToUse);
+    
     // Load saved quiz progress if it exists
     if (prefs.currentQuizProgress) {
       setCurrentQuestion(prefs.currentQuizProgress.currentQuestion);
@@ -61,7 +66,7 @@ const ShadowQuiz = () => {
       setConversations(prefs.currentQuizProgress.conversations);
       
       // If quiz was completed (has all answers), go to results, otherwise continue quiz
-      if (Object.keys(prefs.currentQuizProgress.answers).length >= questions.length) {
+      if (Object.keys(prefs.currentQuizProgress.answers).length >= questionsToUse.length) {
         setCurrentScreen('results');
       } else {
         setCurrentScreen('quiz');
@@ -83,7 +88,7 @@ const ShadowQuiz = () => {
     // Skip to next question without saving answer
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < currentQuestions.length - 1) {
       const nextQuestion = currentQuestion + 1;
       setCurrentQuestion(nextQuestion);
       
@@ -126,7 +131,7 @@ const ShadowQuiz = () => {
     }
     
     setIsTransitioning(false);
-  }, [currentQuestion, questions.length, answers, userPrefs, conversations]);
+  }, [currentQuestion, currentQuestions.length, answers, userPrefs, conversations]);
 
   const handleAnswer = useCallback(async (questionId: number, optionId: string, shadow: Record<string, number>) => {
     // Immediate visual feedback
@@ -151,7 +156,7 @@ const ShadowQuiz = () => {
     // Optimized transition timing
     await new Promise(resolve => setTimeout(resolve, shouldReduceMotion ? 200 : 400));
     
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < currentQuestions.length - 1) {
       const nextQuestion = currentQuestion + 1;
       setCurrentQuestion(nextQuestion);
       
@@ -191,7 +196,7 @@ const ShadowQuiz = () => {
       
       // Clear quiz progress when completed and save final state
       if (userPrefs) {
-        saveQuizProgress(questions.length, finalAnswers, conversations);
+        saveQuizProgress(currentQuestions.length, finalAnswers, conversations);
       }
     }
     setIsTransitioning(false);
@@ -296,7 +301,8 @@ const ShadowQuiz = () => {
           completedExercises: (() => {
             const savedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
             return savedExercises ? JSON.parse(savedExercises) : [];
-          })()
+          })(),
+          intensityLevel: userPrefs?.intensityLevel
         };
         
         response = await askClaude(userQuestion, shadowProfile, userPrefs?.id, apiConversationHistory, enhancedContext, userPrefs?.name, 'chat');
@@ -609,11 +615,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }
 
   if (currentScreen === 'quiz') {
-    const question = questions[currentQuestion];
-    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const question = currentQuestions[currentQuestion];
+    const progress = ((currentQuestion + 1) / currentQuestions.length) * 100;
     
     // Preload next question for smoother transitions
-    const nextQuestion = currentQuestion < questions.length - 1 ? questions[currentQuestion + 1] : null;
+    const nextQuestion = currentQuestion < currentQuestions.length - 1 ? currentQuestions[currentQuestion + 1] : null;
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-red-900/10 to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
@@ -624,7 +630,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
         </div>
         
         <div className="absolute top-8 right-8 text-red-300 font-medium text-xl z-20 bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm">
-          {currentQuestion + 1} / {questions.length}
+          {currentQuestion + 1} / {currentQuestions.length}
         </div>
         
         <AnimatePresence mode="wait">
