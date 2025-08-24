@@ -71,6 +71,12 @@ npm run type-check
 
 Open [http://localhost:3000](http://localhost:3000) to begin your shadow journey.
 
+## 🌐 Live Application
+
+**The Abyss - Shadow Self Journey** is live at: **https://www.shadowself.app**
+
+Experience the complete intensity-adaptive shadow work platform with AI-powered consultation, crisis support integration, and comprehensive data export capabilities.
+
 ### Environment Variables
 
 Create a `.env.local` file in the root directory:
@@ -185,11 +191,13 @@ app/api/
 
 ## 🚀 Deployment
 
-Optimized for Vercel deployment:
-1. Connect GitHub repository to Vercel
-2. Add environment variable: `ANTHROPIC_API_KEY`
-3. Enable automatic deployments
-4. Add custom domain (e.g., `shadowself.app`, `abyssmirror.com`)
+**Live at: https://www.shadowself.app** 
+
+Deployed on Vercel with:
+1. GitHub repository connected to Vercel
+2. Environment variable: `ANTHROPIC_API_KEY` configured
+3. Automatic deployments enabled
+4. Custom domain: `shadowself.app` connected with SSL
 
 ### Cost Estimation
 - **Claude API**: ~$0.003 per insight (600 input + 600 output tokens)

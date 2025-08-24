@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   keywords: 'psychology, shadow self, Carl Jung, personality, self-discovery, shadow work, psychological assessment',
   authors: [{ name: 'Shadow Self App' }],
   robots: 'index, follow',
+  metadataBase: new URL('https://www.shadowself.app'),
   openGraph: {
     title: 'The Abyss - Shadow Self Journey',
     description: 'Explore the hidden depths of your psyche through a transformative psychological journey.',
+    url: 'https://www.shadowself.app',
+    siteName: 'The Abyss - Shadow Self Journey',
     type: 'website',
     locale: 'en_US',
   },
@@ -18,6 +21,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'The Abyss - Shadow Self Journey',
     description: 'Explore the hidden depths of your psyche through a transformative psychological journey.',
+    site: '@shadowself_app',
   },
 }
 

@@ -302,4 +302,14 @@ Long-Term (2+ years):
 
 *This system represents a fusion of cutting-edge AI technology with time-tested psychological wisdom, designed to make shadow work both accessible and profoundly safe. Every technical decision serves the ultimate goal of authentic psychological growth and integration.*
 
+---
+
+## 🌐 **Live Application**
+
+**The Abyss - Shadow Self Journey** is live at: **https://www.shadowself.app**
+
+A professionally deployed shadow work platform featuring intensity-adaptive assessments, AI-powered consultation, crisis support integration, and comprehensive data export capabilities.
+
+---
+
 **Last Updated**: August 24, 2025
