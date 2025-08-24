@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye, Check, Square } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
+import ExportButton from './ExportButton';
 
 interface DeepAnalysisProps {
   onClose: () => void;
@@ -1398,7 +1399,7 @@ Analyze for:
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-4 gap-4"
             >
               <motion.button
                 whileHover={{ scale: 1.05, y: -5 }}
@@ -1426,6 +1427,15 @@ Analyze for:
               >
                 💬 Chat with Sage
               </motion.button>
+              
+              <motion.div
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-blue-500/30 text-center"
+              >
+                <div className="text-lg mb-2">📊 Export</div>
+                <ExportButton variant="minimal" className="w-full justify-center text-sm px-2 py-1 bg-black/30 hover:bg-black/50 border-blue-400/30" />
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>

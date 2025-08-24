@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle, CheckSquare } from 'lucide-react';
+import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle, CheckSquare, Download } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
@@ -11,6 +11,7 @@ import IntegrationExercises from './IntegrationExercises';
 import DeepAnalysis from './DeepAnalysis';
 import ReAnalysis from './ReAnalysis';
 import UserGuide from './UserGuide';
+import ExportButton from './ExportButton';
 import { questions } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
@@ -976,6 +977,17 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             variants={itemVariants}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12"
           >
+            {/* Export Data Button */}
+            <motion.div
+              whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+              whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-green-500/30"
+            >
+              <Download className="w-6 h-6 mx-auto mb-2" />
+              <div className="text-lg font-bold">Export Data</div>
+              <div className="text-sm opacity-90 mb-3">Download Journey</div>
+              <ExportButton variant="minimal" className="w-full justify-center text-xs px-2 py-1 bg-black/30 hover:bg-black/50 border-green-400/30" />
+            </motion.div>
             <motion.button
               onClick={openChat}
               whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}

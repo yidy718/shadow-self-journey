@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Plus, Trash2, Calendar, Heart, Save, ArrowLeft, Edit3 } from 'lucide-react';
+import ExportButton from './ExportButton';
 
 interface JournalEntry {
   id: string;
@@ -120,13 +121,17 @@ export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: Sha
             <h1 className="text-3xl sm:text-4xl font-bold text-white">Shadow Journal</h1>
           </div>
           
-          <button
-            onClick={() => setIsAddingEntry(true)}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl flex items-center"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            New Entry
-          </button>
+          <div className="flex items-center space-x-4">
+            <ExportButton variant="secondary" />
+            
+            <button
+              onClick={() => setIsAddingEntry(true)}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl flex items-center"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Entry
+            </button>
+          </div>
         </motion.div>
 
         {/* Add New Entry Modal */}
