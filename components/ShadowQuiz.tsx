@@ -248,7 +248,10 @@ const ShadowQuiz = () => {
           conversations: apiConversationHistory.length,
           journalEntries: enhancedContext.journalEntries.length,
           analyses: enhancedContext.recentAnalyses.length,
-          moods: enhancedContext.moodTrends.length
+          moods: enhancedContext.moodTrends.length,
+          phase2Analysis: !!enhancedContext.phase2Analysis,
+          completedActions: enhancedContext.completedActions?.length || 0,
+          completedExercises: enhancedContext.completedExercises?.length || 0
         });
       } catch (error) {
         // Fallback to demo insights if API fails
