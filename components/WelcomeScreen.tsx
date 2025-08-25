@@ -153,12 +153,54 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           
           <motion.p 
             variants={itemVariants}
-            className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 max-w-4xl mx-auto leading-relaxed font-light italic px-4"
+            className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-10 max-w-4xl mx-auto leading-relaxed font-light italic px-4"
           >
             "He who fights monsters should be careful lest he thereby become a monster. 
             And if you gaze long into an abyss, the abyss also gazes into you." — Nietzsche
           </motion.p>
 
+          <motion.div 
+            variants={itemVariants}
+            className="mb-8 sm:mb-10 max-w-3xl mx-auto px-4"
+          >
+            <div className="bg-black/30 backdrop-blur-sm border border-red-900/30 rounded-2xl p-6 sm:p-8">
+              <h2 className="text-xl sm:text-2xl text-red-200 font-semibold mb-4 text-center">Your Journey Awaits</h2>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-300">
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-red-200 font-bold">1</span>
+                  </div>
+                  <p className="text-sm font-medium">Choose Intensity</p>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-red-200 font-bold">2</span>
+                  </div>
+                  <p className="text-sm font-medium">Explore Questions</p>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-red-200 font-bold">3</span>
+                  </div>
+                  <p className="text-sm font-medium">Discover Archetype</p>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-red-200 font-bold">4</span>
+                  </div>
+                  <p className="text-sm font-medium">AI Integration</p>
+                </div>
+              </div>
+              
+              <p className="text-center text-gray-400 text-sm mt-4 italic">
+                A safe space for psychological exploration and growth
+              </p>
+            </div>
+          </motion.div>
 
           <motion.div 
             variants={itemVariants}
