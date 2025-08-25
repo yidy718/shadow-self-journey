@@ -14,16 +14,64 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps) => {
-  const [currentStep, setCurrentStep] = useState<'identity' | 'intro' | 'preparation' | 'intensity' | 'preview' | 'safety' | 'warning'>('identity');
+  const [currentStep, setCurrentStep] = useState<'splash' | 'quote' | 'identity' | 'intro' | 'preparation' | 'intensity' | 'preview' | 'safety' | 'warning'>('splash');
   const [userName, setUserName] = useState('');
   const [existingUser, setExistingUser] = useState<UserPreferences | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
   const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel>('moderate');
 
+  // Inspiring quotes for the quote screen
+  const quotes = [
+    {
+      text: "The privilege of a lifetime is being who you are.",
+      author: "Joseph Campbell"
+    },
+    {
+      text: "Everything that irritates us about others can lead us to an understanding of ourselves.",
+      author: "Carl Jung"
+    },
+    {
+      text: "The most terrifying thing is to accept oneself completely.",
+      author: "Carl Jung"
+    },
+    {
+      text: "What we know of ourselves is only a small part of what we are.",
+      author: "Carl Jung"
+    },
+    {
+      text: "Your task is not to seek for love, but to find all the barriers within yourself that you have built against it.",
+      author: "Rumi"
+    },
+    {
+      text: "The wound is the place where the Light enters you.",
+      author: "Rumi"
+    }
+  ];
+
+  // Random quote selection
+  const [selectedQuote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
+
   useEffect(() => {
     const existing = getUserPreferences();
     setExistingUser(existing);
   }, []);
+
+  // Auto-progression timing for splash and quote screens
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (currentStep === 'splash') {
+      timer = setTimeout(() => {
+        setCurrentStep('quote');
+      }, 2500); // Show splash for 2.5 seconds (slightly longer to appreciate the animation)
+    } else if (currentStep === 'quote') {
+      timer = setTimeout(() => {
+        setCurrentStep('identity');
+      }, 4500); // Show quote for 4.5 seconds (longer to read and appreciate)
+    }
+    
+    return () => clearTimeout(timer);
+  }, [currentStep]);
 
   const handleReturnUser = () => {
     if (existingUser) {
@@ -106,385 +154,264 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
     }
   };
 
-  if (currentStep === 'intro') {
+  // Splash Screen - Clean opening
+  if (currentStep === 'splash') {
     return (
-      <div className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden">
-        <ParticleField count={40} />
+      <div 
+        className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden cursor-pointer"
+        onClick={() => setCurrentStep('quote')}
+        role="button"
+        aria-label="Skip to quote"
+      >
+        <ParticleField count={30} />
         
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="relative z-10 text-center max-w-5xl"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="relative z-10 text-center"
         >
-          <motion.div variants={itemVariants} className="mb-12 relative">
-            <motion.div
-              animate={{ 
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-            >
-              <Eye className="w-32 h-32 text-red-400 mx-auto mb-6" />
-            </motion.div>
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-black rounded-full w-32 h-32 mx-auto opacity-20 animate-pulse-glow" />
-            <Sparkles className="w-6 h-6 text-red-300 absolute top-4 right-1/3 animate-pulse" />
-            <Sparkles className="w-4 h-4 text-red-200 absolute bottom-8 left-1/4 animate-pulse" style={{ animationDelay: '1s' }} />
-          </motion.div>
-          
-          <motion.h1 
-            variants={itemVariants}
-            className="text-5xl sm:text-7xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-200 via-white to-black mb-6 sm:mb-8 tracking-tight hover:scale-105 transition-transform duration-300 cursor-default"
-          >
-            THE ABYSS
-          </motion.h1>
-          
-          <motion.p 
-            variants={itemVariants}
-            className="text-2xl sm:text-3xl lg:text-4xl text-red-200 mb-6 sm:mb-8 font-light tracking-wide"
-          >
-            Gazes Back
-          </motion.p>
-          
-          <motion.p 
-            variants={itemVariants}
-            className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-10 max-w-4xl mx-auto leading-relaxed font-light italic px-4"
-          >
-            "He who fights monsters should be careful lest he thereby become a monster. 
-            And if you gaze long into an abyss, the abyss also gazes into you." — Nietzsche
-          </motion.p>
-
-          <motion.div 
-            variants={itemVariants}
-            className="mb-8 sm:mb-10 max-w-3xl mx-auto px-4"
-          >
-            <div className="bg-abyss-charcoal/50 backdrop-blur-sm border border-depth-steel/40 rounded-2xl p-6 sm:p-8">
-              <h2 className="text-xl sm:text-2xl text-light-mist font-semibold mb-4 text-center text-glow-soft">Your Journey Awaits</h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-warmth-pearl">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
-                    <span className="text-light-dawn font-bold">1</span>
-                  </div>
-                  <p className="text-sm font-medium">Choose Intensity</p>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
-                    <span className="text-light-dawn font-bold">2</span>
-                  </div>
-                  <p className="text-sm font-medium">Explore Questions</p>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
-                    <span className="text-light-dawn font-bold">3</span>
-                  </div>
-                  <p className="text-sm font-medium">Discover Archetype</p>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
-                    <span className="text-light-dawn font-bold">4</span>
-                  </div>
-                  <p className="text-sm font-medium">AI Integration</p>
-                </div>
-              </div>
-              
-              <p className="text-center text-light-sage text-sm mt-4 italic">
-                A safe space for psychological exploration and growth
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 sm:gap-6 max-w-4xl mx-auto"
-          >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleArchetypeAssessment}
-                className="group btn-supportive text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1"
-                aria-label="Begin the shadow archetype assessment"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  <Brain className="mr-2 sm:mr-3 w-6 h-6" />
-                  Archetype Assessment
-                  <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform relative z-10" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </motion.button>
-
-              {onDeepAnalysis && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleDeepAnalysisStart}
-                  className="group btn-gentle text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1 rounded-2xl"
-                  aria-label="Begin deep behavioral analysis"
-                >
-                  <span className="relative z-10 flex items-center justify-center">
-                    <Eye className="mr-2 sm:mr-3 w-6 h-6" />
-                    Deep Analysis
-                    <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform relative z-10" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                </motion.button>
-              )}
-          </motion.div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (currentStep === 'identity') {
-    return (
-      <div className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden">
-        <ParticleField count={50} />
-        
-        {/* Central mystical eye/portal effect */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <motion.div
             animate={{ 
               rotate: [0, 360],
               scale: [1, 1.1, 1],
             }}
             transition={{ 
-              duration: 20, 
+              duration: 8, 
               repeat: Infinity, 
               ease: "linear" 
             }}
-            className="w-96 h-96 border border-light-dawn/20 rounded-full"
-          />
-          <motion.div
-            animate={{ 
-              rotate: [0, -360],
-              scale: [1.05, 0.95, 1.05],
-            }}
-            transition={{ 
-              duration: 15, 
-              repeat: Infinity, 
-              ease: "linear" 
-            }}
-            className="absolute w-80 h-80 border border-light-sage/30 rounded-full"
-          />
-          <motion.div
-            animate={{ 
-              rotate: [0, 360],
-              scale: [0.9, 1.2, 0.9],
-            }}
-            transition={{ 
-              duration: 12, 
-              repeat: Infinity, 
-              ease: "linear" 
-            }}
-            className="absolute w-64 h-64 border border-shadow-rose/40 rounded-full"
-          />
-        </div>
-        
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative z-10 text-center max-w-4xl"
-        >
-          {/* Dramatic title with mystical styling */}
-          <motion.div
-            variants={itemVariants}
             className="mb-8"
           >
-            <motion.div
-              animate={{ 
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.02, 1]
-              }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="mb-6"
-            >
-              <Eye className="w-24 h-24 text-light-dawn mx-auto glow-warm" />
-            </motion.div>
-            
-            <h1 className="text-6xl sm:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-light-dawn via-light-mist to-shadow-rose mb-4 font-display tracking-tight">
-              THE ABYSS
-            </h1>
-            
-            <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="text-2xl sm:text-3xl text-light-sage font-light italic mb-6"
-            >
-              Gazes Into You
-            </motion.div>
+            <Eye className="w-32 h-32 text-light-dawn mx-auto glow-warm" />
           </motion.div>
           
-          <motion.p 
-            variants={itemVariants}
-            className="text-xl sm:text-2xl text-warmth-pearl mb-4 leading-relaxed max-w-3xl mx-auto"
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-light-dawn via-light-mist to-shadow-rose font-display tracking-tight"
           >
-            "He who fights monsters should be careful lest he thereby become a monster."
-          </motion.p>
+            THE ABYSS
+          </motion.h1>
           
-          <motion.p 
-            variants={itemVariants}
-            className="text-lg text-light-mist mb-12 font-light italic"
-          >
-            — Friedrich Nietzsche
-          </motion.p>
-
           <motion.div
-            variants={itemVariants}
-            className="mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0.7] }}
+            transition={{ delay: 1, duration: 2, ease: "easeInOut" }}
+            className="text-2xl text-light-sage font-light italic mt-4"
           >
-            <h2 className="text-2xl sm:text-3xl font-semibold text-light-mist mb-4 text-glow-soft">
-              How shall we address you in the darkness?
-            </h2>
-            <p className="text-warmth-pearl opacity-90">
-              Your choice affects only your local experience. No data leaves your device.
-            </p>
+            Gazes Into You
           </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 2, duration: 1 }}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-warmth-pearl/60 animate-subtle-pulse"
+          >
+            tap to continue
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
-          <AnimatePresence>
-            {existingUser && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-12 p-8 bg-abyss-charcoal/60 backdrop-blur-sm border border-light-dawn/30 rounded-3xl max-w-lg mx-auto glow-warm"
+  // Quote Screen - Inspiring wisdom  
+  if (currentStep === 'quote') {
+    return (
+      <div 
+        className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden cursor-pointer"
+        onClick={() => setCurrentStep('identity')}
+        role="button"
+        aria-label="Skip to identity selection"
+      >
+        <ParticleField count={20} />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative z-10 text-center max-w-4xl mx-auto"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="mb-8"
+          >
+            <Sparkles className="w-16 h-16 text-light-dawn mx-auto glow-warm" />
+          </motion.div>
+          
+          <motion.blockquote
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1.5 }}
+            className="text-2xl sm:text-3xl lg:text-4xl text-light-mist font-light leading-relaxed mb-8 text-glow-soft italic"
+          >
+            "{selectedQuote.text}"
+          </motion.blockquote>
+          
+          <motion.cite
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 1 }}
+            className="text-xl text-light-sage font-medium"
+          >
+            — {selectedQuote.author}
+          </motion.cite>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.5, duration: 0.5 }}
+            className="mt-12 text-warmth-pearl text-sm opacity-60"
+          >
+            Preparing your journey...
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 2.8, duration: 0.8 }}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-warmth-pearl/60 animate-subtle-pulse"
+          >
+            tap to continue
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'intro') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4">
+        <div className="text-center max-w-4xl mx-auto bg-gray-800/80 p-8 rounded-xl">
+          <div className="mb-8">
+            <Eye className="w-24 h-24 text-red-400 mx-auto mb-4" />
+            <h1 className="text-6xl font-bold text-white mb-4">THE ABYSS</h1>
+            <p className="text-2xl text-red-200 mb-4">Gazes Back</p>
+            <p className="text-gray-300 text-lg italic">
+              "He who fights monsters should be careful lest he thereby become a monster."
+            </p>
+          </div>
+          
+          <div className="mb-8 p-6 bg-gray-700/50 rounded-lg">
+            <h2 className="text-xl text-white font-semibold mb-4">Your Journey Awaits</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300">
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold">1</div>
+                <p>Choose Intensity</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold">2</div>
+                <p>Explore Questions</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold">3</div>
+                <p>Discover Archetype</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold">4</div>
+                <p>AI Integration</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+            <button
+              onClick={handleArchetypeAssessment}
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            >
+              <Brain className="mr-2 w-5 h-5" />
+              Archetype Assessment
+            </button>
+            
+            {onDeepAnalysis && (
+              <button
+                onClick={handleDeepAnalysisStart}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center"
               >
-                <div className="text-center mb-6">
-                  <Sparkles className="w-8 h-8 text-light-dawn mx-auto mb-3 glow-warm" />
-                  <h3 className="text-2xl text-light-mist font-semibold mb-2 text-glow-soft">
-                    The Abyss Remembers You{existingUser.name ? `, ${existingUser.name}` : ''}
-                  </h3>
-                  <p className="text-light-sage text-lg">
-                    {(() => {
-                      const hasCompletedQuiz = existingUser.currentQuizProgress && 
-                        Object.keys(existingUser.currentQuizProgress.answers).length >= 8;
-                      const assessmentCount = existingUser.assessmentHistory.length + (hasCompletedQuiz ? 1 : 0);
-                      return `${assessmentCount} journey${assessmentCount !== 1 ? 's' : ''} into the depths`;
-                    })()}
-                  </p>
-                </div>
-                
-                <div className="flex gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleReturnUser}
-                    className="flex-1 btn-integration text-base font-semibold py-3 px-6"
-                  >
-                    Continue Journey
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      clearUserData();
-                      setExistingUser(null);
-                      setCurrentStep('identity');
-                    }}
-                    className="flex-1 btn-gentle text-base font-semibold py-3 px-6"
-                  >
-                    New Identity
-                  </motion.button>
-                </div>
-              </motion.div>
+                <Eye className="mr-2 w-5 h-5" />
+                Deep Analysis
+              </button>
             )}
-          </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-          {/* Only show identity options if there's no existing user */}
-          {!existingUser && (
-            <div className="grid gap-8 max-w-2xl mx-auto">
-            <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleAnonymous}
-              className="group relative p-8 rounded-3xl transition-all duration-500 overflow-hidden bg-gradient-to-br from-abyss-charcoal/80 to-depth-midnight/80 backdrop-blur-sm border border-warmth-ash/40 hover:border-light-mist/60 glow-depth hover:shadow-2xl"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-warmth-ash/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10 text-center">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="mb-4"
+  if (currentStep === 'identity') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="text-center max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl">
+          <h2 className="text-4xl font-bold text-white mb-8">
+            How shall we address you?
+          </h2>
+          
+          <p className="text-gray-300 mb-8">
+            Your choice affects only your local experience. No data leaves your device.
+          </p>
+          
+          {existingUser && (
+            <div className="mb-8 p-4 bg-blue-900/30 rounded-lg border border-blue-500/40">
+              <h3 className="text-xl text-white font-semibold mb-2">
+                Welcome Back{existingUser.name ? `, ${existingUser.name}` : ''}!
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleReturnUser}
+                  className="flex-1 bg-green-600 hover:bg-green-500 text-white p-3 rounded-lg transition-colors"
                 >
-                  <UserX className="w-12 h-12 text-light-mist mx-auto glow-depth" />
-                </motion.div>
-                <h3 className="text-2xl font-bold text-light-mist mb-3 text-glow-soft">Anonymous Wanderer</h3>
-                <p className="text-warmth-pearl group-hover:text-light-pearl transition-colors leading-relaxed">
-                  Enter the abyss nameless and formless. Your journey leaves no trace, only transformation.
-                </p>
-              </div>
-            </motion.button>
-
-            <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowNameInput(!showNameInput)}
-              className="group relative p-8 rounded-3xl transition-all duration-500 overflow-hidden bg-gradient-to-br from-shadow-wine/60 to-light-sage/40 backdrop-blur-sm border border-light-dawn/40 hover:border-light-sage/60 glow-sage hover:shadow-2xl"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-light-dawn/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10 text-center">
-                <motion.div
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    rotate: [0, -5, 5, 0] 
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="mb-4"
+                  Continue Journey
+                </button>
+                <button
+                  onClick={handleNewIdentity}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-lg transition-colors"
                 >
-                  <User className="w-12 h-12 text-light-dawn mx-auto glow-warm" />
-                </motion.div>
-                <h3 className="text-2xl font-bold text-light-pearl mb-3 text-glow-warm">Named Seeker</h3>
-                <p className="text-light-mist group-hover:text-light-pearl transition-colors leading-relaxed">
-                  Carry your chosen name through the depths. Your progress preserved, your journey remembered.
-                </p>
+                  New Identity
+                </button>
               </div>
-            </motion.button>
-
-            <AnimatePresence>
-                {showNameInput && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-4 space-y-4"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Enter your name or chosen identity..."
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      className="w-full bg-gray-800/80 text-white p-4 rounded-xl border border-purple-500/30 focus:border-purple-400/70 transition-colors text-center"
-                      onKeyPress={(e) => e.key === 'Enter' && handleWithName()}
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleWithName}
-                      disabled={!userName.trim()}
-                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
-                    >
-                      Begin Named Journey
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           )}
-        </motion.div>
+          
+          {!existingUser && (
+            <div className="grid gap-4">
+              <button
+                onClick={handleAnonymous}
+                className="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg transition-colors"
+              >
+                🕶️ Anonymous Journey
+              </button>
+              
+              <button
+                onClick={() => setShowNameInput(!showNameInput)}
+                className="bg-purple-700 hover:bg-purple-600 text-white p-4 rounded-lg transition-colors"
+              >
+                👤 Named Journey
+              </button>
+            </div>
+          )}
+          
+          {showNameInput && (
+            <div className="mt-6 space-y-4">
+              <input
+                type="text"
+                placeholder="Enter your name..."
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600"
+              />
+              <button
+                onClick={handleWithName}
+                disabled={!userName.trim()}
+                className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white p-3 rounded-lg transition-colors"
+              >
+                Begin Journey
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -597,10 +524,15 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
               whileTap={{ scale: 0.95 }}
               onClick={() => {
                 // Save intensity level and continue to intro
-                const userPrefs = getUserPreferences()!;
-                userPrefs.intensityLevel = selectedIntensity;
-                saveUserPreferences(userPrefs);
-                setCurrentStep('intro');
+                const userPrefs = getUserPreferences();
+                if (userPrefs) {
+                  userPrefs.intensityLevel = selectedIntensity;
+                  saveUserPreferences(userPrefs);
+                  setCurrentStep('intro');
+                } else {
+                  console.error('No user preferences found');
+                  setCurrentStep('identity');
+                }
               }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300"
             >
