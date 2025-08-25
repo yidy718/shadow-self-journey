@@ -43,6 +43,7 @@ const ShadowQuiz = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showConversationHistory, setShowConversationHistory] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState(questions);
+  const [questionsReady, setQuestionsReady] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   
   const shouldReduceMotion = useReducedMotion();
@@ -50,7 +51,11 @@ const ShadowQuiz = () => {
   // Preload next screen data for better performance
   useEffect(() => {
     setIsReady(true);
-  }, []);
+    // If no user preferences are loaded, use default questions
+    if (!userPrefs) {
+      setQuestionsReady(true);
+    }
+  }, [userPrefs]);
 
   const handleUserPreferences = useCallback((prefs: UserPreferences) => {
     setUserPrefs(prefs);
@@ -58,6 +63,7 @@ const ShadowQuiz = () => {
     // Set questions based on intensity level
     const questionsToUse = prefs.intensityLevel ? getQuestionsByIntensity(prefs.intensityLevel) : questions;
     setCurrentQuestions(questionsToUse);
+    setQuestionsReady(true);
     
     // Load saved quiz progress if it exists
     if (prefs.currentQuizProgress) {
@@ -623,7 +629,27 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   }
 
   if (currentScreen === 'quiz') {
+    // Wait for questions to be ready before rendering
+    if (!questionsReady || currentQuestions.length === 0) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-black via-red-900/10 to-gray-900 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-red-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Loading questions...</p>
+          </div>
+        </div>
+      );
+    }
+
     const question = currentQuestions[currentQuestion];
+    
+    // Safety check: if question is undefined or malformed, return to welcome screen
+    if (!question || !question.text || !question.options || !Array.isArray(question.options)) {
+      console.error('Question is undefined or malformed at index:', currentQuestion, 'Question:', question, 'Total questions:', currentQuestions.length);
+      setCurrentScreen('welcome');
+      return null;
+    }
+    
     const progress = ((currentQuestion + 1) / currentQuestions.length) * 100;
     
     // Preload next question for smoother transitions
@@ -675,7 +701,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             </div>
             
             <div className="grid gap-8">
-              {question.options.map((option, index) => {
+              {question.options.filter(option => option && option.text).map((option, index) => {
                 const isSelected = selectedOption === option.id;
                 return (
                   <motion.button
