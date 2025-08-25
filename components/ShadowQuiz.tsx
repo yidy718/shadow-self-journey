@@ -67,7 +67,14 @@ const ShadowQuiz = () => {
     
     // Load saved quiz progress if it exists
     if (prefs.currentQuizProgress) {
-      setCurrentQuestion(prefs.currentQuizProgress.currentQuestion);
+      // Ensure currentQuestion is within bounds of current questions
+      const savedCurrentQuestion = Math.min(
+        prefs.currentQuizProgress.currentQuestion, 
+        questionsToUse.length - 1
+      );
+      const boundedCurrentQuestion = Math.max(0, savedCurrentQuestion);
+      
+      setCurrentQuestion(boundedCurrentQuestion);
       setAnswers(prefs.currentQuizProgress.answers);
       setConversations(prefs.currentQuizProgress.conversations);
       
@@ -646,6 +653,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     // Safety check: if question is undefined or malformed, return to welcome screen
     if (!question || !question.text || !question.options || !Array.isArray(question.options)) {
       console.error('Question is undefined or malformed at index:', currentQuestion, 'Question:', question, 'Total questions:', currentQuestions.length);
+      // Reset to first question if out of bounds
+      if (currentQuestion >= currentQuestions.length) {
+        setCurrentQuestion(0);
+        return null;
+      }
       setCurrentScreen('welcome');
       return null;
     }
