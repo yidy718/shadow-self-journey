@@ -32,14 +32,20 @@ export const getUserPreferences = (): UserPreferences | null => {
     if (!stored) return null;
     
     const parsed = JSON.parse(stored);
+    
+    // Ensure assessmentHistory is always an array
+    const assessmentHistory = Array.isArray(parsed.assessmentHistory) 
+      ? parsed.assessmentHistory.map((assessment: any) => ({
+          ...assessment,
+          date: new Date(assessment.date)
+        }))
+      : [];
+    
     return {
       ...parsed,
       createdAt: new Date(parsed.createdAt),
       lastUsed: new Date(parsed.lastUsed),
-      assessmentHistory: parsed.assessmentHistory.map((assessment: any) => ({
-        ...assessment,
-        date: new Date(assessment.date)
-      }))
+      assessmentHistory
     };
   } catch (error) {
     console.error('Error loading user preferences:', error);

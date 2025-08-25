@@ -29,8 +29,9 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
     if (existingUser) {
       // Check if user has completed quiz (has quiz progress with full answers) OR assessment history
       const hasCompletedQuiz = existingUser.currentQuizProgress && 
+        existingUser.currentQuizProgress.answers &&
         Object.keys(existingUser.currentQuizProgress.answers).length >= 8; // 8 questions in quiz
-      const hasAssessmentHistory = existingUser.assessmentHistory.length > 0;
+      const hasAssessmentHistory = existingUser.assessmentHistory && existingUser.assessmentHistory.length > 0;
       
       if (hasCompletedQuiz || hasAssessmentHistory) {
         // Take them straight to results
@@ -70,9 +71,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleDeepAnalysisStart = () => {
     // Save intensity level first, then start Deep Analysis
-    const userPrefs = getUserPreferences()!;
-    userPrefs.intensityLevel = selectedIntensity;
-    saveUserPreferences(userPrefs);
+    const userPrefs = getUserPreferences();
+    if (userPrefs) {
+      userPrefs.intensityLevel = selectedIntensity;
+      saveUserPreferences(userPrefs);
+    }
     
     if (onDeepAnalysis) {
       onDeepAnalysis();
