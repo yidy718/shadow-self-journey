@@ -44,6 +44,8 @@ const ShadowQuiz = () => {
   const [showConversationHistory, setShowConversationHistory] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState(questions);
   const [questionsReady, setQuestionsReady] = useState(false);
+  const [showEmotionCheckIn, setShowEmotionCheckIn] = useState(false);
+  const [currentEmotion, setCurrentEmotion] = useState<'calm' | 'unsettled' | 'intense' | null>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   
   const shouldReduceMotion = useReducedMotion();
@@ -171,14 +173,23 @@ const ShadowQuiz = () => {
     
     if (currentQuestion < currentQuestions.length - 1) {
       const nextQuestion = currentQuestion + 1;
-      setCurrentQuestion(nextQuestion);
       
-      // Scroll to top smoothly for next question
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
-      // Save progress after each answer
-      if (userPrefs) {
-        saveQuizProgress(nextQuestion, answers, conversations);
+      // Check if we should show emotion check-in after intense questions
+      const intensiveQuestions = [2, 4, 6]; // 0-indexed: questions 3, 5, 7
+      if (intensiveQuestions.includes(currentQuestion) && userPrefs?.intensityLevel !== 'gentle') {
+        setShowEmotionCheckIn(true);
+        // Store the next question to advance to after check-in
+        sessionStorage.setItem('nextQuestion', nextQuestion.toString());
+      } else {
+        setCurrentQuestion(nextQuestion);
+        
+        // Scroll to top smoothly for next question
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Save progress after each answer
+        if (userPrefs) {
+          saveQuizProgress(nextQuestion, answers, conversations);
+        }
       }
     } else {
       setCurrentScreen('results');
@@ -214,6 +225,32 @@ const ShadowQuiz = () => {
     }
     setIsTransitioning(false);
   }, [currentQuestion, shouldReduceMotion]);
+
+  const handleEmotionCheckIn = useCallback(async (emotion: 'calm' | 'unsettled' | 'intense') => {
+    setCurrentEmotion(emotion);
+    
+    // Small delay for feedback
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Get the stored next question
+    const nextQuestion = parseInt(sessionStorage.getItem('nextQuestion') || '0');
+    sessionStorage.removeItem('nextQuestion');
+    
+    // Continue to next question
+    setCurrentQuestion(nextQuestion);
+    setShowEmotionCheckIn(false);
+    setCurrentEmotion(null);
+    
+    // Scroll to top smoothly for next question
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Save progress
+    if (userPrefs) {
+      saveQuizProgress(nextQuestion, answers, conversations);
+    }
+    
+    setIsTransitioning(false);
+  }, [userPrefs, answers, conversations]);
 
   const calculateShadow = useMemo(() => {
     const shadowTraits: Record<string, number> = {};
@@ -630,6 +667,102 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Emotion Check-in Screen
+  if (showEmotionCheckIn) {
+    return (
+      <div className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden">
+        <ParticleField count={20} />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="relative z-10 text-center max-w-2xl mx-auto"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <Heart className="w-16 h-16 text-light-sage mx-auto mb-4 glow-sage" />
+            <h2 className="text-3xl sm:text-4xl font-bold text-light-mist mb-4 text-glow-soft">
+              How are you feeling?
+            </h2>
+            <p className="text-warmth-pearl text-lg">
+              Take a moment to check in with yourself after that deep question.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleEmotionCheckIn('calm')}
+              className={`p-6 rounded-xl transition-all duration-300 ${
+                currentEmotion === 'calm' 
+                  ? 'bg-light-sage/20 border-light-sage glow-sage' 
+                  : 'btn-gentle'
+              }`}
+            >
+              <div className="text-3xl mb-2">🌿</div>
+              <div className="text-light-mist font-medium">Calm</div>
+              <div className="text-warmth-pearl text-sm mt-1">Feeling grounded</div>
+            </motion.button>
+
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleEmotionCheckIn('unsettled')}
+              className={`p-6 rounded-xl transition-all duration-300 ${
+                currentEmotion === 'unsettled' 
+                  ? 'bg-light-dawn/20 border-light-dawn glow-warm' 
+                  : 'btn-supportive'
+              }`}
+            >
+              <div className="text-3xl mb-2">🌊</div>
+              <div className="text-light-mist font-medium">Unsettled</div>
+              <div className="text-warmth-pearl text-sm mt-1">A bit stirred up</div>
+            </motion.button>
+
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleEmotionCheckIn('intense')}
+              className={`p-6 rounded-xl transition-all duration-300 ${
+                currentEmotion === 'intense' 
+                  ? 'bg-shadow-rose/20 border-shadow-rose glow-soft-red' 
+                  : 'btn-supportive'
+              }`}
+            >
+              <div className="text-3xl mb-2">🔥</div>
+              <div className="text-light-mist font-medium">Intense</div>
+              <div className="text-warmth-pearl text-sm mt-1">Feeling a lot</div>
+            </motion.button>
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-light-sage text-sm italic"
+          >
+            Whatever you're feeling is valid. This is part of the journey.
+          </motion.p>
         </motion.div>
       </div>
     );
