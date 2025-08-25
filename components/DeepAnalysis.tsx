@@ -277,17 +277,52 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
       console.error('JSON parsing failed:', error);
       console.log('Raw response:', response);
       
-      // Try one more aggressive cleanup
+      // Try multiple aggressive cleanup strategies
       try {
         // Remove everything before first { and after last }
         const braceStart = response.indexOf('{');
         const braceEnd = response.lastIndexOf('}');
         if (braceStart !== -1 && braceEnd !== -1 && braceEnd > braceStart) {
-          const jsonOnly = response.slice(braceStart, braceEnd + 1);
+          let jsonOnly = response.slice(braceStart, braceEnd + 1);
+          
+          // Fix common JSON issues
+          // Remove trailing commas before ] or }
+          jsonOnly = jsonOnly.replace(/,(\s*[}\]])/g, '$1');
+          
+          // Fix incomplete arrays/objects by adding missing brackets
+          const openBraces = (jsonOnly.match(/\{/g) || []).length;
+          const closeBraces = (jsonOnly.match(/\}/g) || []).length;
+          const openBrackets = (jsonOnly.match(/\[/g) || []).length;
+          const closeBrackets = (jsonOnly.match(/\]/g) || []).length;
+          
+          // Add missing closing braces
+          for (let i = closeBraces; i < openBraces; i++) {
+            jsonOnly += '}';
+          }
+          
+          // Add missing closing brackets  
+          for (let i = closeBrackets; i < openBrackets; i++) {
+            jsonOnly += ']';
+          }
+          
           return JSON.parse(jsonOnly);
         }
       } catch (secondError) {
         console.error('Second parsing attempt also failed:', secondError);
+        
+        // Final fallback: try to extract any valid JSON fragments
+        try {
+          // Look for smaller JSON objects within the response
+          const jsonObjectRegex = /\{[^{}]*\}/g;
+          const matches = response.match(jsonObjectRegex);
+          if (matches && matches.length > 0) {
+            // Try to parse the largest match
+            const largestMatch = matches.reduce((a, b) => a.length > b.length ? a : b);
+            return JSON.parse(largestMatch);
+          }
+        } catch (thirdError) {
+          console.error('All parsing attempts failed:', thirdError);
+        }
       }
       
       return null;
