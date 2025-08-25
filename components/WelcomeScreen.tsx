@@ -245,64 +245,157 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   if (currentStep === 'identity') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
-        <ParticleField count={30} />
+      <div className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden">
+        <ParticleField count={50} />
+        
+        {/* Central mystical eye/portal effect */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <motion.div
+            animate={{ 
+              rotate: [0, 360],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ 
+              duration: 20, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="w-96 h-96 border border-light-dawn/20 rounded-full"
+          />
+          <motion.div
+            animate={{ 
+              rotate: [0, -360],
+              scale: [1.05, 0.95, 1.05],
+            }}
+            transition={{ 
+              duration: 15, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="absolute w-80 h-80 border border-light-sage/30 rounded-full"
+          />
+          <motion.div
+            animate={{ 
+              rotate: [0, 360],
+              scale: [0.9, 1.2, 0.9],
+            }}
+            transition={{ 
+              duration: 12, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="absolute w-64 h-64 border border-shadow-rose/40 rounded-full"
+          />
+        </div>
         
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="relative z-10 text-center max-w-3xl"
+          className="relative z-10 text-center max-w-4xl"
         >
-          <motion.h2 
+          {/* Dramatic title with mystical styling */}
+          <motion.div
             variants={itemVariants}
-            className="text-3xl sm:text-5xl font-bold text-white mb-6"
+            className="mb-8"
           >
-            How shall we address you in the darkness?
-          </motion.h2>
+            <motion.div
+              animate={{ 
+                rotate: [0, 5, -5, 0],
+                scale: [1, 1.02, 1]
+              }}
+              transition={{ 
+                duration: 6, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="mb-6"
+            >
+              <Eye className="w-24 h-24 text-light-dawn mx-auto glow-warm" />
+            </motion.div>
+            
+            <h1 className="text-6xl sm:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-light-dawn via-light-mist to-shadow-rose mb-4 font-display tracking-tight">
+              THE ABYSS
+            </h1>
+            
+            <motion.div
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-2xl sm:text-3xl text-light-sage font-light italic mb-6"
+            >
+              Gazes Into You
+            </motion.div>
+          </motion.div>
           
           <motion.p 
             variants={itemVariants}
-            className="text-lg text-gray-300 mb-12 leading-relaxed"
+            className="text-xl sm:text-2xl text-warmth-pearl mb-4 leading-relaxed max-w-3xl mx-auto"
           >
-            Your choice affects only your local experience. No data leaves your device.
+            "He who fights monsters should be careful lest he thereby become a monster."
           </motion.p>
+          
+          <motion.p 
+            variants={itemVariants}
+            className="text-lg text-light-mist mb-12 font-light italic"
+          >
+            — Friedrich Nietzsche
+          </motion.p>
+
+          <motion.div
+            variants={itemVariants}
+            className="mb-12"
+          >
+            <h2 className="text-2xl sm:text-3xl font-semibold text-light-mist mb-4 text-glow-soft">
+              How shall we address you in the darkness?
+            </h2>
+            <p className="text-warmth-pearl opacity-90">
+              Your choice affects only your local experience. No data leaves your device.
+            </p>
+          </motion.div>
 
           <AnimatePresence>
             {existingUser && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-8 p-6 bg-purple-900/30 border border-purple-500/40 rounded-2xl max-w-md mx-auto"
+                className="mb-12 p-8 bg-abyss-charcoal/60 backdrop-blur-sm border border-light-dawn/30 rounded-3xl max-w-lg mx-auto glow-warm"
               >
-                <h3 className="text-purple-200 font-semibold mb-2">
-                  Welcome back{existingUser.name ? `, ${existingUser.name}` : ''}
-                </h3>
-                <p className="text-purple-300 text-sm mb-4">
-                  {(() => {
-                    const hasCompletedQuiz = existingUser.currentQuizProgress && 
-                      Object.keys(existingUser.currentQuizProgress.answers).length >= 8;
-                    const assessmentCount = existingUser.assessmentHistory.length + (hasCompletedQuiz ? 1 : 0);
-                    return `${assessmentCount} previous assessment${assessmentCount !== 1 ? 's' : ''}`;
-                  })()}
-                </p>
-                <div className="flex gap-3">
-                  <button
+                <div className="text-center mb-6">
+                  <Sparkles className="w-8 h-8 text-light-dawn mx-auto mb-3 glow-warm" />
+                  <h3 className="text-2xl text-light-mist font-semibold mb-2 text-glow-soft">
+                    The Abyss Remembers You{existingUser.name ? `, ${existingUser.name}` : ''}
+                  </h3>
+                  <p className="text-light-sage text-lg">
+                    {(() => {
+                      const hasCompletedQuiz = existingUser.currentQuizProgress && 
+                        Object.keys(existingUser.currentQuizProgress.answers).length >= 8;
+                      const assessmentCount = existingUser.assessmentHistory.length + (hasCompletedQuiz ? 1 : 0);
+                      return `${assessmentCount} journey${assessmentCount !== 1 ? 's' : ''} into the depths`;
+                    })()}
+                  </p>
+                </div>
+                
+                <div className="flex gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleReturnUser}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                    className="flex-1 btn-integration text-base font-semibold py-3 px-6"
                   >
                     Continue Journey
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                      clearUserData(); // Clear all user data including journal
+                      clearUserData();
                       setExistingUser(null);
                       setCurrentStep('identity');
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                    className="flex-1 btn-gentle text-base font-semibold py-3 px-6"
                   >
                     New Identity
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
             )}
@@ -310,40 +403,59 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
           {/* Only show identity options if there's no existing user */}
           {!existingUser && (
-            <div className="grid gap-6 max-w-md mx-auto">
+            <div className="grid gap-8 max-w-2xl mx-auto">
             <motion.button
               variants={itemVariants}
-              whileHover={{ scale: 1.02, y: -2 }}
+              whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleAnonymous}
-              className="bg-gray-800/80 hover:bg-gray-700/80 border border-gray-500/30 hover:border-gray-400/50 rounded-2xl p-6 text-left transition-all duration-300 group"
+              className="group relative p-8 rounded-3xl transition-all duration-500 overflow-hidden bg-gradient-to-br from-abyss-charcoal/80 to-depth-midnight/80 backdrop-blur-sm border border-warmth-ash/40 hover:border-light-mist/60 glow-depth hover:shadow-2xl"
             >
-              <div className="flex items-center mb-3">
-                <UserX className="w-6 h-6 text-gray-400 mr-3" />
-                <h3 className="text-xl font-semibold text-white">Anonymous</h3>
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-warmth-ash/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10 text-center">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="mb-4"
+                >
+                  <UserX className="w-12 h-12 text-light-mist mx-auto glow-depth" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-light-mist mb-3 text-glow-soft">Anonymous Wanderer</h3>
+                <p className="text-warmth-pearl group-hover:text-light-pearl transition-colors leading-relaxed">
+                  Enter the abyss nameless and formless. Your journey leaves no trace, only transformation.
+                </p>
               </div>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                Journey nameless into the abyss. Each session resets, leaving no trace.
-              </p>
             </motion.button>
 
-            <motion.div variants={itemVariants}>
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowNameInput(!showNameInput)}
-                className="w-full bg-purple-800/80 hover:bg-purple-700/80 border border-purple-500/30 hover:border-purple-400/50 rounded-2xl p-6 text-left transition-all duration-300 group"
-              >
-                <div className="flex items-center mb-3">
-                  <User className="w-6 h-6 text-purple-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-white">Named Journey</h3>
-                </div>
-                <p className="text-purple-200 group-hover:text-purple-100 transition-colors">
-                  Carry a name through your shadow work. Progress saved locally.
+            <motion.button
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowNameInput(!showNameInput)}
+              className="group relative p-8 rounded-3xl transition-all duration-500 overflow-hidden bg-gradient-to-br from-shadow-wine/60 to-light-sage/40 backdrop-blur-sm border border-light-dawn/40 hover:border-light-sage/60 glow-sage hover:shadow-2xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-light-dawn/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10 text-center">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, -5, 5, 0] 
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  className="mb-4"
+                >
+                  <User className="w-12 h-12 text-light-dawn mx-auto glow-warm" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-light-pearl mb-3 text-glow-warm">Named Seeker</h3>
+                <p className="text-light-mist group-hover:text-light-pearl transition-colors leading-relaxed">
+                  Carry your chosen name through the depths. Your progress preserved, your journey remembered.
                 </p>
-              </motion.button>
+              </div>
+            </motion.button>
 
-              <AnimatePresence>
+            <AnimatePresence>
                 {showNameInput && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -370,7 +482,6 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
             </div>
           )}
         </motion.div>

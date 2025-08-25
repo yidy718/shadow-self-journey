@@ -656,7 +656,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               boxShadow: "0 10px 40px rgba(239, 68, 68, 0.3)"
             }}
             whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
-            onClick={() => setCurrentScreen('quiz')}
+            onClick={() => {
+              setCurrentScreen('quiz');
+              // Scroll to top when starting quiz
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             className="group btn-primary text-lg sm:text-2xl px-8 sm:px-12 py-4 sm:py-6 relative overflow-hidden transition-all duration-300 hover:shadow-2xl"
             aria-label="Begin the shadow self assessment"
           >
