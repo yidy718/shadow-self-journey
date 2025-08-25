@@ -31,12 +31,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ef4444;
+  background: #a0433f;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #dc2626;
+  background: #8b2635;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -208,4 +208,83 @@ a:focus-visible {
 
 .tap-feedback:active {
   transform: scale(0.98);
+}
+
+/* Psychologically supportive color utilities */
+.bg-gentle {
+  background: linear-gradient(135deg, #1a1b1e 0%, #2a2b2f 50%, #1a1f3a 100%);
+}
+
+.bg-supportive {
+  background: linear-gradient(135deg, #0a0a0b 0%, #1a1b1e 50%, #2c3e5f 100%);
+}
+
+.bg-integration {
+  background: linear-gradient(135deg, #2a2b2f 0%, #34495e 30%, #87a96b 100%);
+}
+
+/* Softer glow effects for reduced anxiety */
+.glow-soft-red {
+  box-shadow: 0 0 15px rgba(139, 38, 53, 0.3);
+}
+
+.glow-soft-red:hover {
+  box-shadow: 0 0 25px rgba(139, 38, 53, 0.4);
+}
+
+.glow-warm {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.glow-sage {
+  box-shadow: 0 0 20px rgba(135, 169, 107, 0.4);
+}
+
+.glow-depth {
+  box-shadow: 0 0 20px rgba(52, 73, 94, 0.4);
+}
+
+/* Text shadows for better readability and warmth */
+.text-glow-soft {
+  text-shadow: 0 0 15px rgba(245, 241, 232, 0.3);
+}
+
+.text-glow-warm {
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.text-glow-sage {
+  text-shadow: 0 0 20px rgba(135, 169, 107, 0.5);
+}
+
+.text-glow-depth {
+  text-shadow: 0 0 20px rgba(168, 178, 200, 0.4);
+}
+
+/* Enhanced button styles with psychological considerations */
+.btn-gentle {
+  @apply bg-gradient-to-r from-abyss-charcoal to-depth-midnight 
+         hover:from-warmth-ash hover:to-depth-ocean 
+         text-light-mist px-6 py-3 rounded-xl font-medium
+         transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
+         shadow-lg border border-depth-steel/30 glow-depth
+         focus:outline-none focus:ring-2 focus:ring-light-mist/50;
+}
+
+.btn-supportive {
+  @apply bg-gradient-to-r from-shadow-wine to-shadow-crimson
+         hover:from-shadow-rust hover:to-shadow-rose
+         text-light-pearl px-6 py-3 rounded-xl font-medium
+         transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
+         shadow-lg border border-shadow-rose/40 glow-soft-red
+         focus:outline-none focus:ring-2 focus:ring-light-dawn/50;
+}
+
+.btn-integration {
+  @apply bg-gradient-to-r from-depth-twilight to-light-sage
+         hover:from-light-sage hover:to-light-dawn
+         text-light-pearl px-6 py-3 rounded-xl font-medium
+         transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
+         shadow-lg glow-sage
+         focus:outline-none focus:ring-2 focus:ring-light-sage/50;
 }

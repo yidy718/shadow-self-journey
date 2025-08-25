@@ -108,7 +108,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   if (currentStep === 'intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-red-900/20 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-supportive flex items-center justify-center p-4 relative overflow-hidden">
         <ParticleField count={40} />
         
         <motion.div 
@@ -163,40 +163,40 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
             variants={itemVariants}
             className="mb-8 sm:mb-10 max-w-3xl mx-auto px-4"
           >
-            <div className="bg-black/30 backdrop-blur-sm border border-red-900/30 rounded-2xl p-6 sm:p-8">
-              <h2 className="text-xl sm:text-2xl text-red-200 font-semibold mb-4 text-center">Your Journey Awaits</h2>
+            <div className="bg-abyss-charcoal/50 backdrop-blur-sm border border-depth-steel/40 rounded-2xl p-6 sm:p-8">
+              <h2 className="text-xl sm:text-2xl text-light-mist font-semibold mb-4 text-center text-glow-soft">Your Journey Awaits</h2>
               
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-300">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-warmth-pearl">
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-red-200 font-bold">1</span>
+                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
+                    <span className="text-light-dawn font-bold">1</span>
                   </div>
                   <p className="text-sm font-medium">Choose Intensity</p>
                 </div>
                 
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-red-200 font-bold">2</span>
+                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
+                    <span className="text-light-dawn font-bold">2</span>
                   </div>
                   <p className="text-sm font-medium">Explore Questions</p>
                 </div>
                 
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-red-200 font-bold">3</span>
+                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
+                    <span className="text-light-dawn font-bold">3</span>
                   </div>
                   <p className="text-sm font-medium">Discover Archetype</p>
                 </div>
                 
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-red-900/40 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-red-200 font-bold">4</span>
+                  <div className="w-10 h-10 bg-depth-ocean/60 rounded-full flex items-center justify-center mb-2 glow-depth">
+                    <span className="text-light-dawn font-bold">4</span>
                   </div>
                   <p className="text-sm font-medium">AI Integration</p>
                 </div>
               </div>
               
-              <p className="text-center text-gray-400 text-sm mt-4 italic">
+              <p className="text-center text-light-sage text-sm mt-4 italic">
                 A safe space for psychological exploration and growth
               </p>
             </div>
@@ -210,7 +210,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleArchetypeAssessment}
-                className="group btn-primary text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1"
+                className="group btn-supportive text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1"
                 aria-label="Begin the shadow archetype assessment"
               >
                 <span className="relative z-10 flex items-center justify-center">
@@ -226,7 +226,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleDeepAnalysisStart}
-                  className="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold transition-all duration-300 hover:shadow-2xl relative overflow-hidden flex-1"
+                  className="group btn-gentle text-lg sm:text-xl px-6 sm:px-8 py-4 sm:py-5 relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex-1 rounded-2xl"
                   aria-label="Begin deep behavioral analysis"
                 >
                   <span className="relative z-10 flex items-center justify-center">
