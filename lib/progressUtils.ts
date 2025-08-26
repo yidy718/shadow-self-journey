@@ -31,8 +31,8 @@ export const getUserProgress = (userPrefs: UserPreferences | null): UserProgress
   const answersCount = userPrefs.currentQuizProgress?.answers ? 
     Object.keys(userPrefs.currentQuizProgress.answers).length : 0;
   
-  const hasCompletedQuiz = answersCount >= 4; // Works for both 4-question intensity and 8-question regular quizzes
   const hasAssessmentHistory = userPrefs.assessmentHistory && userPrefs.assessmentHistory.length > 0;
+  const hasCompletedQuiz = answersCount >= 4 || hasAssessmentHistory; // Completed if either in-progress quiz has 4+ answers OR has assessment history
   const hasPhase2Data = !!getStorageItem(StorageKeys.PHASE2_DATA);
   const hasPartialQuiz = answersCount > 0 && !hasCompletedQuiz;
   

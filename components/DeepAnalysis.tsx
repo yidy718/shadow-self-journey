@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye, Check, Square } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
+import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
 import ExportButton from './ExportButton';
 
 interface DeepAnalysisProps {
@@ -168,14 +169,7 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   
   // Get user preferences for intensity level
   const getUserPreferences = () => {
-    try {
-      const stored = localStorage.getItem('shadowSelfUserPrefs');
-      if (!stored) return null;
-      return JSON.parse(stored);
-    } catch (error) {
-      console.error('Error loading user preferences:', error);
-      return null;
-    }
+    return getStorageItem(StorageKeys.USER_PREFERENCES);
   };
   
   const userPrefs = getUserPreferences();
@@ -195,14 +189,14 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
 
   // Load progress from localStorage
   useEffect(() => {
-    const savedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-    const savedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+    const savedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
+    const savedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES);
     
     if (savedActions) {
-      setCompletedActions(new Set(JSON.parse(savedActions)));
+      setCompletedActions(new Set(savedActions));
     }
     if (savedExercises) {
-      setCompletedExercises(new Set(JSON.parse(savedExercises)));
+      setCompletedExercises(new Set(savedExercises));
     }
   }, []);
 
@@ -213,8 +207,8 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
 
   // Save progress to localStorage
   const saveProgress = () => {
-    localStorage.setItem('shadowAnalysisCompletedActions', JSON.stringify([...completedActions]));
-    localStorage.setItem('shadowAnalysisCompletedExercises', JSON.stringify([...completedExercises]));
+    setStorageItem(StorageKeys.COMPLETED_ACTIONS, [...completedActions]);
+    setStorageItem(StorageKeys.COMPLETED_EXERCISES, [...completedExercises]);
   };
 
   // Toggle action completion
@@ -228,7 +222,7 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     setCompletedActions(newCompleted);
     
     // Save immediately
-    localStorage.setItem('shadowAnalysisCompletedActions', JSON.stringify([...newCompleted]));
+    setStorageItem(StorageKeys.COMPLETED_ACTIONS, [...newCompleted]);
   };
 
   // Toggle exercise completion
@@ -242,7 +236,7 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
     setCompletedExercises(newCompleted);
     
     // Save immediately
-    localStorage.setItem('shadowAnalysisCompletedExercises', JSON.stringify([...newCompleted]));
+    setStorageItem(StorageKeys.COMPLETED_EXERCISES, [...newCompleted]);
   };
 
   // Enhanced JSON parsing utility with multiple fallback strategies
@@ -716,7 +710,7 @@ Analyze for:
         setPhase2Data(parsedPhase2);
         
         // Save Phase 2 data to localStorage for chat integration
-        localStorage.setItem('shadowDeepAnalysisPhase2', JSON.stringify(parsedPhase2));
+        setStorageItem(StorageKeys.PHASE2_DATA, parsedPhase2);
         
         // Create a formatted display version for backward compatibility
         const formattedAnalysis = formatPhase2ForDisplay(parsedPhase2);

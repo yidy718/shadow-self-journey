@@ -1189,53 +1189,6 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <div className="text-sm opacity-90">Integration Work</div>
             </motion.button>
 
-            {/* Progress Button - Always available */}
-            {(() => {
-              const hasPhase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
-              const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
-              const actionsCompleted = Array.isArray(completedActions) ? completedActions.length : 0;
-              
-              // Get basic progress using utility
-              const basicSteps = getBasicProgressSteps(userPrefs, conversations);
-              const hasCompletedQuiz = Object.keys(answers).length > 0;
-              
-              if (hasPhase2Data) {
-                const totalActions = (hasPhase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
-                
-                return (
-                  <motion.button
-                    onClick={() => setCurrentScreen('progress')}
-                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
-                    whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    aria-label="View progress dashboard with interactive exercises"
-                  >
-                    <BarChart className="w-6 h-6 mx-auto mb-2" />
-                    <div className="text-lg font-bold">Progress</div>
-                    <div className="text-sm opacity-90">
-                      {actionsCompleted}/{totalActions} Actions
-                    </div>
-                  </motion.button>
-                );
-              } else {
-                // Show basic progress for users without Phase 2 data
-                return (
-                  <motion.button
-                    onClick={() => setCurrentScreen('progress')}
-                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
-                    whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    aria-label="View progress dashboard"
-                  >
-                    <BarChart className="w-6 h-6 mx-auto mb-2" />
-                    <div className="text-lg font-bold">Progress</div>
-                    <div className="text-sm opacity-90">
-                      {basicSteps.current}/{basicSteps.total} Steps
-                    </div>
-                  </motion.button>
-                );
-              }
-            })()}
 
             <motion.button
               onClick={openGuide}
