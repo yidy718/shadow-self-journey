@@ -61,8 +61,8 @@ export const aggregateUserData = (): ExportData => {
   const deepAnalysis = (phase1Data || phase2Data || coreResponses || followUpResponses) ? {
     phase1Data: phase1Data,
     phase2Data: phase2Data,
-    coreResponses: coreResponses || {},
-    followUpResponses: followUpResponses || {}
+    coreResponses: (coreResponses as Record<string, string>) || {},
+    followUpResponses: (followUpResponses as Record<string, string>) || {}
   } : null;
   
   // Get exercise progress
