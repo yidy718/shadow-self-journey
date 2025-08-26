@@ -466,7 +466,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   const [selectedConversationForJournal, setSelectedConversationForJournal] = useState<Conversation | null>(null);
   const [selectedConversationForExercise, setSelectedConversationForExercise] = useState<Conversation | null>(null);
-  const [deepAnalysisForJournal, setDeepAnalysisForJournal] = useState<{summary: string, insights: string} | null>(null);
+  const [deepAnalysisForJournal, setDeepAnalysisForJournal] = useState<{summary: string, insights: string, phase2Data?: any} | null>(null);
 
   const createJournalFromConversation = useCallback((conversation: Conversation) => {
     setSelectedConversationForJournal(conversation);
@@ -478,7 +478,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     setCurrentScreen('exercises');
   }, []);
 
-  const createJournalFromDeepAnalysis = useCallback((analysisData: {summary: string, insights: string}) => {
+  const createJournalFromDeepAnalysis = useCallback((analysisData: {summary: string, insights: string, phase2Data?: any}) => {
     setDeepAnalysisForJournal(analysisData);
     setSelectedConversationForJournal(null); // Clear conversation journal data
     setCurrentScreen('journal');
@@ -1109,7 +1109,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                       <motion.button
                         whileHover={{ scale: 1.05, y: -5 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={openDeepAnalysis}
+                        onClick={() => setCurrentScreen('exercises')}
                         className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-green-500/30 focus:outline-none focus:ring-2 focus:ring-green-400"
                         aria-label="View your progress and continue exercises"
                       >
@@ -1420,7 +1420,8 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             response: selectedConversationForJournal.response
           } : deepAnalysisForJournal ? {
             question: 'Deep Shadow Analysis Results',
-            response: `${deepAnalysisForJournal.summary}\n\n${deepAnalysisForJournal.insights}`
+            response: `${deepAnalysisForJournal.summary}\n\n${deepAnalysisForJournal.insights}`,
+            phase2Data: deepAnalysisForJournal.phase2Data
           } : undefined
         }
       />

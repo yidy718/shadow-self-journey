@@ -21,6 +21,7 @@ interface ShadowJournalProps {
   initialContent?: {
     question: string;
     response: string;
+    phase2Data?: any; // Phase 2 Deep Analysis structured data
   };
 }
 
@@ -34,16 +35,90 @@ export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: Sha
     integration: ''
   });
 
-  // Handle initial content from conversation
+  // Handle initial content from conversation or Phase 2 analysis
   useEffect(() => {
     if (initialContent) {
       setIsAddingEntry(true);
-      setNewEntry({
-        reflection: `My question: "${initialContent.question}"\n\nSage's insight: ${initialContent.response}`,
-        mood: 3,
-        insights: '',
-        integration: ''
-      });
+      
+      // Check if this is Phase 2 Deep Analysis data
+      if (initialContent.phase2Data) {
+        const { phase2Data } = initialContent;
+        
+        // Parse Phase 2 data for better field distribution
+        let reflectionText = `Deep Shadow Analysis - ${new Date().toLocaleDateString()}\n\n`;
+        let insightsText = '';
+        let integrationText = '';
+        
+        try {
+          // Extract key insights from behavioral patterns
+          if (phase2Data.behavioral_patterns && phase2Data.behavioral_patterns.length > 0) {
+            insightsText += '🧠 **Key Behavioral Patterns:**\n';
+            phase2Data.behavioral_patterns.slice(0, 3).forEach((pattern: any, i: number) => {
+              insightsText += `${i + 1}. ${pattern.pattern} (${pattern.frequency} frequency)\n`;
+              insightsText += `   Impact: ${pattern.impact_areas.join(', ')}\n\n`;
+            });
+          }
+          
+          // Extract root analysis insights
+          if (phase2Data.root_analysis) {
+            const root = phase2Data.root_analysis;
+            insightsText += '🎯 **Core Shadow Elements:**\n';
+            insightsText += `• Primary Wound: ${root.primary_wound}\n`;
+            insightsText += `• Core Fear: ${root.core_fear}\n`;
+            insightsText += `• Defense Mechanism: ${root.defense_mechanism}\n\n`;
+          }
+          
+          // Extract integration practices
+          if (phase2Data.integration_plan) {
+            const plan = phase2Data.integration_plan;
+            
+            if (plan.immediate_actions && plan.immediate_actions.length > 0) {
+              integrationText += '⚡ **Immediate Actions:**\n';
+              plan.immediate_actions.slice(0, 3).forEach((action: any, i: number) => {
+                integrationText += `${i + 1}. ${action.action} (${action.timeline})\n`;
+              });
+              integrationText += '\n';
+            }
+            
+            if (plan.core_mindset_shift) {
+              integrationText += `🧭 **Core Mindset Shift:** ${plan.core_mindset_shift}\n\n`;
+            }
+            
+            if (plan.communication_shifts && plan.communication_shifts.length > 0) {
+              integrationText += '💬 **Communication Practice:**\n';
+              const shift = plan.communication_shifts[0];
+              integrationText += `From: "${shift.old_pattern}"\n`;
+              integrationText += `To: "${shift.new_approach}"\n`;
+            }
+          }
+          
+          // Add reflection summary
+          reflectionText += `This analysis revealed significant patterns in my shadow work journey. `;
+          reflectionText += `The assessment identified ${phase2Data.behavioral_patterns?.length || 0} key behavioral patterns `;
+          reflectionText += `and provided a comprehensive integration plan for growth.`;
+          
+        } catch (error) {
+          // Fallback to basic parsing if structured data fails
+          reflectionText = `Deep Shadow Analysis Results\n\n${initialContent.response}`;
+          insightsText = 'Review the patterns and themes from your analysis above';
+          integrationText = 'Choose 1-2 immediate actions to focus on this week';
+        }
+        
+        setNewEntry({
+          reflection: reflectionText,
+          mood: 3,
+          insights: insightsText,
+          integration: integrationText
+        });
+      } else {
+        // Regular conversation content
+        setNewEntry({
+          reflection: `My question: "${initialContent.question}"\n\nSage's insight: ${initialContent.response}`,
+          mood: 3,
+          insights: '',
+          integration: ''
+        });
+      }
     }
   }, [initialContent]);
 

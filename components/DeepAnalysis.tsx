@@ -17,7 +17,7 @@ interface DeepAnalysisProps {
     integration: string;
   }>;
   setCurrentScreen?: (screen: 'results' | 'identity' | 'exercises' | 'journal' | 'chat' | 'welcome' | 'quiz' | 'deepanalysis' | 'reanalysis') => void;
-  onCreateJournal?: (analysisData: {summary: string, insights: string}) => void;
+  onCreateJournal?: (analysisData: {summary: string, insights: string, phase2Data?: any}) => void;
 }
 
 interface AnalysisQuestion {
@@ -797,7 +797,8 @@ Analyze for:
 
     onCreateJournal({
       summary: summary || 'Deep Shadow Analysis',
-      insights: insights || 'Your deep analysis insights are available in the Deep Analysis section.'
+      insights: insights || 'Your deep analysis insights are available in the Deep Analysis section.',
+      phase2Data: phase2Data // Pass structured Phase 2 data for better journal field distribution
     });
   };
 
