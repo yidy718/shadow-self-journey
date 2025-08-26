@@ -93,21 +93,13 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
       const conversationHistory = localStorage.getItem('shadowConversations');
       const hasConversations = conversationHistory ? JSON.parse(conversationHistory).length > 0 : false;
       
-      // Enhanced Priority System with user choice for active users
+      // Enhanced Priority System - direct users to best experience
       if (hasPhase2Data && (hasCompletedQuiz || hasAssessmentHistory)) {
-        // They have comprehensive data - show choice menu for best experience
-        setCurrentStep('continue-options');
-        return;
+        // They have comprehensive data - go to results
+        onContinue(existingUser);
       } else if (hasCompletedQuiz || hasAssessmentHistory) {
-        // Completed basic assessment - offer multiple paths
-        if (hasJournalEntries || hasConversations) {
-          // They've been active, show options
-          setCurrentStep('continue-options');
-          return;
-        } else {
-          // Take them to results (no additional activity yet)
-          onContinue(existingUser);
-        }
+        // Take them to results (no additional activity yet)
+        onContinue(existingUser);
       } else if (hasPartialQuiz) {
         // Continue quiz where they left off
         onContinue(existingUser);
