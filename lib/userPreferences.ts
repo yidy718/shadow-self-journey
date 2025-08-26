@@ -5,6 +5,7 @@ export interface UserPreferences {
   name?: string;
   isAnonymous: boolean;
   intensityLevel?: 'gentle' | 'moderate' | 'deep' | 'intense';
+  gentleMode?: boolean; // Extra supportive mode with softer language
   assessmentHistory: AssessmentResult[];
   createdAt: Date;
   lastUsed: Date;

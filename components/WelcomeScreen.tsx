@@ -19,6 +19,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   const [existingUser, setExistingUser] = useState<UserPreferences | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
   const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel>('moderate');
+  const [gentleMode, setGentleMode] = useState(false);
 
   // Inspiring quotes for the quote screen
   const quotes = [
@@ -75,14 +76,40 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleReturnUser = () => {
     if (existingUser) {
-      // Check if user has completed quiz (has quiz progress with full answers) OR assessment history
+      // Check what data they have to provide best continue experience
       const hasCompletedQuiz = existingUser.currentQuizProgress && 
         existingUser.currentQuizProgress.answers &&
         Object.keys(existingUser.currentQuizProgress.answers).length >= 8; // 8 questions in quiz
       const hasAssessmentHistory = existingUser.assessmentHistory && existingUser.assessmentHistory.length > 0;
+      const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
+      const hasPartialQuiz = existingUser.currentQuizProgress && 
+        existingUser.currentQuizProgress.answers &&
+        Object.keys(existingUser.currentQuizProgress.answers).length > 0 &&
+        Object.keys(existingUser.currentQuizProgress.answers).length < 8;
       
-      if (hasCompletedQuiz || hasAssessmentHistory) {
-        // Take them straight to results
+      // Check additional progress indicators
+      const journalEntries = localStorage.getItem('shadowJournalEntries');
+      const hasJournalEntries = journalEntries ? JSON.parse(journalEntries).length > 0 : false;
+      const conversationHistory = localStorage.getItem('shadowConversations');
+      const hasConversations = conversationHistory ? JSON.parse(conversationHistory).length > 0 : false;
+      
+      // Enhanced Priority System with user choice for active users
+      if (hasPhase2Data && (hasCompletedQuiz || hasAssessmentHistory)) {
+        // They have comprehensive data - show choice menu for best experience
+        setCurrentStep('continue-options');
+        return;
+      } else if (hasCompletedQuiz || hasAssessmentHistory) {
+        // Completed basic assessment - offer multiple paths
+        if (hasJournalEntries || hasConversations) {
+          // They've been active, show options
+          setCurrentStep('continue-options');
+          return;
+        } else {
+          // Take them to results (no additional activity yet)
+          onContinue(existingUser);
+        }
+      } else if (hasPartialQuiz) {
+        // Continue quiz where they left off
         onContinue(existingUser);
       } else {
         // No assessments yet, show intro to choose path
@@ -99,6 +126,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleAnonymous = () => {
     const newUser = createNewUser();
+    newUser.gentleMode = gentleMode; // Initialize with current gentle mode setting
     saveUserPreferences(newUser);
     setCurrentStep('intensity');
   };
@@ -109,6 +137,7 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
       return;
     }
     const newUser = createNewUser(userName);
+    newUser.gentleMode = gentleMode; // Initialize with current gentle mode setting
     saveUserPreferences(newUser);
     setCurrentStep('intensity');
   };
@@ -118,10 +147,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   };
 
   const handleDeepAnalysisStart = () => {
-    // Save intensity level first, then start Deep Analysis
+    // Save intensity level and gentle mode first, then start Deep Analysis
     const userPrefs = getUserPreferences();
     if (userPrefs) {
       userPrefs.intensityLevel = selectedIntensity;
+      userPrefs.gentleMode = gentleMode;
       saveUserPreferences(userPrefs);
     }
     
@@ -508,6 +538,8 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           <IntensitySlider 
             value={selectedIntensity}
             onChange={setSelectedIntensity}
+            gentleMode={gentleMode}
+            onGentleModeChange={setGentleMode}
             className="mb-8"
           />
           
@@ -523,10 +555,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                // Save intensity level and continue to intro
+                // Save intensity level and gentle mode, then continue to intro
                 const userPrefs = getUserPreferences();
                 if (userPrefs) {
                   userPrefs.intensityLevel = selectedIntensity;
+                  userPrefs.gentleMode = gentleMode;
                   saveUserPreferences(userPrefs);
                   setCurrentStep('intro');
                 } else {

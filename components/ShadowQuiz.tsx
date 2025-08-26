@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle, CheckSquare, Download } from 'lucide-react';
+import { Eye, Skull, ArrowRight, RotateCcw, AlertTriangle, MessageCircle, Send, Loader, Sparkles, Heart, Brain, BookOpen, Target, Plus, HelpCircle, CheckSquare, Download, BarChart } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
@@ -12,7 +12,7 @@ import DeepAnalysis from './DeepAnalysis';
 import ReAnalysis from './ReAnalysis';
 import UserGuide from './UserGuide';
 import ExportButton from './ExportButton';
-import { questions, getQuestionsByIntensity } from '../lib/questions';
+import { questions, getQuestionsByIntensity, getQuestionText, getReflectionText } from '../lib/questions';
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
 import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, addAssessmentResult, type UserPreferences } from '../lib/userPreferences';
@@ -841,11 +841,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               </motion.div>
               
               <h2 className="text-2xl sm:text-4xl lg:text-6xl font-bold text-white mb-6 sm:mb-10 leading-tight max-w-5xl mx-auto text-glow px-4">
-                {question.text}
+                {getQuestionText(question, userPrefs?.gentleMode || false)}
               </h2>
               
               <p className="text-lg sm:text-xl text-red-200 italic opacity-80 max-w-3xl mx-auto font-light px-4">
-                {question.reflection}
+                {getReflectionText(question, userPrefs?.gentleMode || false)}
               </p>
             </div>
             
@@ -968,13 +968,13 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               variants={itemVariants}
               className="text-4xl sm:text-5xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-200 via-white to-gray-300 mb-6 tracking-tight hover:scale-105 transition-transform duration-300 cursor-default text-center"
             >
-              Your Shadow Self
+              {userPrefs?.gentleMode ? "Your Inner Journey" : "Your Shadow Self"}
             </motion.h1>
             <motion.p 
               variants={itemVariants}
               className="text-lg sm:text-2xl text-red-200 font-light text-center"
             >
-              The darkness you carry
+              {userPrefs?.gentleMode ? "Understanding your complete self" : "The darkness you carry"}
             </motion.p>
           </div>
           
@@ -1002,13 +1002,19 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               </motion.div>
               
               <h2 className="text-4xl md:text-6xl font-bold text-white text-center mb-10 text-glow">
-                {hasArchetype ? archetype.name : 'Your Shadow Analysis'}
+                {hasArchetype 
+                  ? archetype.name 
+                  : (userPrefs?.gentleMode ? 'Your Personal Insights' : 'Your Shadow Analysis')
+                }
               </h2>
               
               <div className="max-w-6xl mx-auto space-y-8">
                 <div className="bg-white/10 rounded-2xl p-10 glass">
                   <h3 className="text-3xl font-semibold text-white mb-6 text-center">
-                    {hasArchetype ? 'The Shadow You Carry' : 'Your Deep Analysis Complete'}
+                    {hasArchetype 
+                      ? (userPrefs?.gentleMode ? 'Your Inner Patterns' : 'The Shadow You Carry')
+                      : (userPrefs?.gentleMode ? 'Your Personal Analysis Complete' : 'Your Deep Analysis Complete')
+                    }
                   </h3>
                   <p className="text-xl text-white/90 leading-relaxed text-center font-light">
                     {hasArchetype 
@@ -1071,7 +1077,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   <div className="bg-gradient-to-r from-green-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
                     <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
                       <div className="text-center mb-6">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Your Progress Dashboard 📊</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Your Progress Dashboard</h3>
                         <p className="text-lg text-green-200">
                           Track your shadow work journey with interactive exercises and personalized actions.
                         </p>
@@ -1131,7 +1137,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
                     <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8 glass">
                       <div className="text-center mb-6">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to Go Deeper? 🧠</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to Go Deeper?</h3>
                         <p className="text-lg text-purple-200">
                           You've discovered your shadow archetype. Now unlock the full power of behavioral analysis 
                           with personalized exercises and ultra-specific guidance.
@@ -1151,7 +1157,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                           <ArrowRight className="w-8 h-8" />
                         </div>
                         <div className="text-sm opacity-90 mt-2">
-                          Get interactive exercises & Claude Opus 4.1 insights
+                          Get interactive exercises & comprehensive AI insights
                         </div>
                       </motion.button>
                     </div>
@@ -1212,6 +1218,48 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <div className="text-lg font-bold">Exercises</div>
               <div className="text-sm opacity-90">Integration Work</div>
             </motion.button>
+
+            {/* Progress Button - Always available */}
+            {(() => {
+              const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
+              const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+              const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
+              
+              if (hasPhase2Data) {
+                const phase2Data = JSON.parse(hasPhase2Data);
+                const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
+                
+                return (
+                  <motion.button
+                    onClick={() => setCurrentScreen('progress')}
+                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+                    whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    aria-label="View progress dashboard with interactive exercises"
+                  >
+                    <BarChart className="w-6 h-6 mx-auto mb-2" />
+                    <div className="text-lg font-bold">Progress</div>
+                    <div className="text-sm opacity-90">
+                      {actionsCompleted}/{totalActions} Actions
+                    </div>
+                  </motion.button>
+                );
+              } else {
+                return (
+                  <motion.button
+                    onClick={() => setCurrentScreen('progress')}
+                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+                    whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    aria-label="View progress dashboard"
+                  >
+                    <BarChart className="w-6 h-6 mx-auto mb-2" />
+                    <div className="text-lg font-bold">Progress</div>
+                    <div className="text-sm opacity-90">Track Journey</div>
+                  </motion.button>
+                );
+              }
+            })()}
 
             <motion.button
               onClick={openGuide}
@@ -1634,19 +1682,152 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
     const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
     
+    // Show basic progress for users without Phase 2 data
     if (!hasPhase2Data) {
-      // Redirect to Deep Analysis if no progress data
+      const journalEntries = localStorage.getItem('shadowJournalEntries');
+      const journalCount = journalEntries ? JSON.parse(journalEntries).length : 0;
+      const conversationCount = conversations.length;
+      const hasCompletedQuiz = Object.keys(answers).length > 0;
+      
       return (
-        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">No Progress Data Found</h2>
-            <p className="text-gray-300 mb-8">Complete your Deep Analysis first to access your Progress Dashboard.</p>
-            <button
-              onClick={() => setCurrentScreen('deepanalysis')}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors"
-            >
-              Start Deep Analysis
-            </button>
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 p-4">
+          <div className="max-w-6xl mx-auto py-8">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <motion.h1 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-4xl sm:text-5xl font-bold text-white mb-4"
+              >
+                Your Progress Dashboard
+              </motion.h1>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Track your shadow work journey - you're just getting started!
+              </p>
+            </div>
+
+            {/* Basic Progress Stats */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {/* Quiz Status */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-black/40 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-400 mb-2">
+                    {hasCompletedQuiz ? '✅' : '⏳'}
+                  </div>
+                  <div className="text-purple-200 text-sm font-medium mb-2">Shadow Quiz</div>
+                  <div className="text-gray-300 text-sm">
+                    {hasCompletedQuiz ? 'Archetype Discovered' : 'Not Started'}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Journal Progress */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                className="bg-black/40 backdrop-blur-sm border border-gray-500/30 rounded-2xl p-6"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-400 mb-2">
+                    {journalCount}
+                  </div>
+                  <div className="text-gray-200 text-sm font-medium mb-2">Journal Entries</div>
+                  <div className="text-gray-300 text-sm">
+                    {journalCount > 0 ? 'Insights Recorded' : 'Ready to Start'}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Conversations */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">
+                    {conversationCount}
+                  </div>
+                  <div className="text-blue-200 text-sm font-medium mb-2">Sage Conversations</div>
+                  <div className="text-gray-300 text-sm">
+                    {conversationCount > 0 ? 'Active Dialogue' : 'Ready to Chat'}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Next Steps */}
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-3xl shadow-2xl mb-8">
+              <div className="bg-black/60 backdrop-blur-sm rounded-3xl p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-3">Ready to Go Deeper?</h3>
+                  <p className="text-lg text-purple-200">
+                    Unlock comprehensive behavioral analysis with personalized exercises and interactive progress tracking.
+                  </p>
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentScreen('deepanalysis')}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-purple-500/30"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <Eye className="w-8 h-8" />
+                    <span>Start Deep Analysis</span>
+                    <ArrowRight className="w-8 h-8" />
+                  </div>
+                  <div className="text-sm opacity-90 mt-2">
+                    Get interactive exercises & comprehensive insights
+                  </div>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <motion.button
+                onClick={() => setCurrentScreen('results')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gray-800/50 hover:bg-gray-700/50 text-white px-4 py-3 rounded-xl font-semibold transition-all"
+              >
+                ← Back to Results
+              </motion.button>
+              
+              <motion.button
+                onClick={() => setCurrentScreen('journal')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-purple-600/50 hover:bg-purple-500/50 text-white px-4 py-3 rounded-xl font-semibold transition-all"
+              >
+                Journal
+              </motion.button>
+              
+              <motion.button
+                onClick={() => setCurrentScreen('chat')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-blue-600/50 hover:bg-blue-500/50 text-white px-4 py-3 rounded-xl font-semibold transition-all"
+              >
+                Chat with Sage
+              </motion.button>
+              
+              <motion.button
+                onClick={() => setCurrentScreen('exercises')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-green-600/50 hover:bg-green-500/50 text-white px-4 py-3 rounded-xl font-semibold transition-all"
+              >
+                Exercises
+              </motion.button>
+            </div>
           </div>
         </div>
       );
@@ -1770,6 +1951,87 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             </motion.div>
           </div>
 
+          {/* Next Steps Guidance */}
+          <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl p-8 mb-8">
+            <h3 className="text-2xl font-bold text-white text-center mb-6">What Should You Focus On?</h3>
+            
+            {(() => {
+              const totalProgress = actionsCompleted + exercisesCompleted;
+              const totalItems = totalActions + totalExercises;
+              const progressPercent = totalItems > 0 ? (totalProgress / totalItems) * 100 : 0;
+              
+              if (actionsCompleted === 0 && totalActions > 0) {
+                // Haven't started actions yet
+                return (
+                  <div className="text-center">
+                    <div className="bg-green-900/30 rounded-xl p-6 mb-4">
+                      <h4 className="text-xl font-semibold text-green-200 mb-3">Start with Immediate Actions</h4>
+                      <p className="text-gray-300 mb-4">
+                        Your analysis identified {totalActions} immediate actions to begin your shadow integration. 
+                        These are designed to create quick wins and build momentum.
+                      </p>
+                      <p className="text-green-200 font-medium">
+                        Start with the "easy" difficulty actions first - they'll build your confidence!
+                      </p>
+                    </div>
+                  </div>
+                );
+              } else if (actionsCompleted < totalActions && exercisesCompleted === 0) {
+                // Working on actions, haven't started exercises
+                return (
+                  <div className="text-center">
+                    <div className="bg-blue-900/30 rounded-xl p-6 mb-4">
+                      <h4 className="text-xl font-semibold text-blue-200 mb-3">Great Progress! Keep Going</h4>
+                      <p className="text-gray-300 mb-4">
+                        You've completed {actionsCompleted}/{totalActions} immediate actions. 
+                        Finish these first before moving to the deeper integration exercises.
+                      </p>
+                      <p className="text-blue-200 font-medium">
+                        Focus: Complete your remaining immediate actions
+                      </p>
+                    </div>
+                  </div>
+                );
+              } else if (actionsCompleted >= totalActions && exercisesCompleted === 0) {
+                // Finished actions, ready for exercises
+                return (
+                  <div className="text-center">
+                    <div className="bg-purple-900/30 rounded-xl p-6 mb-4">
+                      <h4 className="text-xl font-semibold text-purple-200 mb-3">Ready for Integration Exercises!</h4>
+                      <p className="text-gray-300 mb-4">
+                        Excellent! You've completed all {totalActions} immediate actions. 
+                        Now it's time for the deeper integration exercises that will create lasting change.
+                      </p>
+                      <p className="text-purple-200 font-medium">
+                        Next: Start your personalized integration exercises
+                      </p>
+                    </div>
+                  </div>
+                );
+              } else {
+                // Working on both or completed
+                return (
+                  <div className="text-center">
+                    <div className="bg-yellow-900/30 rounded-xl p-6 mb-4">
+                      <h4 className="text-xl font-semibold text-yellow-200 mb-3">
+                        {progressPercent >= 80 ? "Shadow Integration Mastery!" : "Deep Integration Phase"}
+                      </h4>
+                      <p className="text-gray-300 mb-4">
+                        {progressPercent >= 80 ? 
+                          `Incredible work! You've completed ${progressPercent.toFixed(0)}% of your shadow work journey. Focus on maintaining these practices and exploring deeper insights.` :
+                          `You're in the active integration phase with ${progressPercent.toFixed(0)}% completion. Continue balancing actions with exercises for optimal growth.`
+                        }
+                      </p>
+                      <p className="text-yellow-200 font-medium">
+                        {progressPercent >= 80 ? "Maintain & Deepen" : "Balance Actions & Exercises"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
+          </div>
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <motion.button
@@ -1778,7 +2040,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               onClick={() => setCurrentScreen('exercises')}
               className="flex-1 max-w-xs bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl"
             >
-              Continue Exercises
+              Go to Exercises
             </motion.button>
             
             <motion.button

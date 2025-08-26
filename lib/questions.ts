@@ -11,7 +11,9 @@ export interface QuestionOption {
 export interface Question {
   id: number;
   text: string;
+  gentleText?: string; // Alternative text for gentle mode
   reflection: string;
+  gentleReflection?: string; // Alternative reflection for gentle mode
   options: QuestionOption[];
 }
 
@@ -38,11 +40,23 @@ export interface IntensityQuestion {
 
 export type IntensityLevel = 'gentle' | 'moderate' | 'deep' | 'intense';
 
+// Helper function to get question text based on gentle mode
+export const getQuestionText = (question: Question, gentleMode: boolean): string => {
+  return gentleMode && question.gentleText ? question.gentleText : question.text;
+};
+
+// Helper function to get reflection text based on gentle mode  
+export const getReflectionText = (question: Question, gentleMode: boolean): string => {
+  return gentleMode && question.gentleReflection ? question.gentleReflection : question.reflection;
+};
+
 export const questions: Question[] = [
   {
     id: 1,
     text: "When you look in the mirror late at night, what truth about yourself do you refuse to acknowledge?",
+    gentleText: "When you take quiet moments for self-reflection, what aspects of yourself would you like to understand better?",
     reflection: "What specifically do you see that makes you look away?",
+    gentleReflection: "What draws your attention when you think deeply about who you are?",
     options: [
       { 
         id: 'a', 
@@ -69,7 +83,9 @@ export const questions: Question[] = [
   {
     id: 2,
     text: "Complete this sentence: 'If people knew the real me, they would...'",
+    gentleText: "Complete this sentence: 'If people knew the real me, they would...'",
     reflection: "What specifically would horrify them about you?",
+    gentleReflection: "What aspects of yourself do you wonder about sharing with others?",
     options: [
       { 
         id: 'a', 

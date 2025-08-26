@@ -45,7 +45,7 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             <h3 className="text-2xl font-semibold text-white mb-4">Welcome to Your Shadow Journey</h3>
             <p className="text-gray-300 leading-relaxed">
               This isn't your typical personality test. You're about to embark on a deep psychological exploration 
-              using Jungian shadow work principles enhanced by Claude Opus 4.1 AI.
+              using Jungian shadow work principles enhanced by advanced AI.
             </p>
           </div>
 
@@ -71,8 +71,8 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="bg-amber-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-amber-200 mb-3">⚡ Power User Tips</h4>
+          <div className="bg-purple-900/20 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-purple-200 mb-3">⚡ Power User Tips</h4>
             <ul className="space-y-2 text-gray-300">
               <li>• <strong>Use your real name</strong> - Sage creates stronger connections with named users</li>
               <li>• <strong>Be honest and specific</strong> - The more authentic your responses, the better your insights</li>
@@ -94,10 +94,10 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-blue-900/30 rounded-2xl p-6">
+            <div className="bg-purple-900/30 rounded-2xl p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <BookOpen className="w-6 h-6 text-blue-400" />
-                <h4 className="text-lg font-semibold text-blue-200">Shadow Quiz</h4>
+                <BookOpen className="w-6 h-6 text-purple-400" />
+                <h4 className="text-lg font-semibold text-purple-200">Shadow Quiz</h4>
               </div>
               <p className="text-gray-300 text-sm">
                 8 profound questions exploring your deepest psychological patterns. 
@@ -105,10 +105,10 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </p>
             </div>
 
-            <div className="bg-green-900/30 rounded-2xl p-6">
+            <div className="bg-gray-900/50 rounded-2xl p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <BarChart3 className="w-6 h-6 text-green-400" />
-                <h4 className="text-lg font-semibold text-green-200">Deep Analysis</h4>
+                <BarChart3 className="w-6 h-6 text-gray-400" />
+                <h4 className="text-lg font-semibold text-gray-200">Deep Analysis</h4>
               </div>
               <p className="text-gray-300 text-sm">
                 Hybrid behavioral assessment with structured JSON output. 
@@ -116,13 +116,13 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </p>
             </div>
 
-            <div className="bg-orange-900/30 rounded-2xl p-6">
+            <div className="bg-red-900/30 rounded-2xl p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <MessageCircle className="w-6 h-6 text-orange-400" />
-                <h4 className="text-lg font-semibold text-orange-200">Sage AI Chat</h4>
+                <MessageCircle className="w-6 h-6 text-red-400" />
+                <h4 className="text-lg font-semibold text-red-200">Sage AI Chat</h4>
               </div>
               <p className="text-gray-300 text-sm">
-                Ultra-specific exercise generation using Claude Opus 4.1. 
+                Ultra-specific exercise generation using advanced AI. 
                 Mentions "talking to barista" = get 3-step micro-practice for that exact scenario.
               </p>
             </div>
@@ -168,20 +168,20 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
           <div>
             <h3 className="text-2xl font-semibold text-white mb-4">Maximizing Your AI Conversations</h3>
             <p className="text-gray-300">
-              Sage is powered by Claude Opus 4.1 and has access to your complete shadow work journey. 
+              Sage is powered by advanced AI and has access to your complete shadow work journey. 
               Here's how to get the most insightful and practical guidance.
             </p>
           </div>
 
-          <div className="bg-green-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-green-200 mb-4">🎯 Best Practices for Ultra-Specific Exercises</h4>
+          <div className="bg-gray-900/40 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-gray-200 mb-4">🎯 Best Practices for Ultra-Specific Exercises</h4>
             
             <div className="space-y-4">
               <div>
-                <h5 className="font-medium text-green-300">✅ DO - Be Specific About Situations:</h5>
+                <h5 className="font-medium text-purple-300">✅ DO - Be Specific About Situations:</h5>
                 <div className="bg-black/30 rounded-lg p-3 mt-2 text-sm">
                   <p className="text-gray-300"><strong>Good:</strong> "I get anxious when ordering at restaurants"</p>
-                  <p className="text-green-400">→ Gets: 3-step micro-practice for restaurant ordering scenario</p>
+                  <p className="text-purple-400">→ Gets: 3-step micro-practice for restaurant ordering scenario</p>
                 </div>
               </div>
 
@@ -195,12 +195,12 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="bg-blue-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-blue-200 mb-4">💡 Example Conversations</h4>
+          <div className="bg-purple-900/20 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-purple-200 mb-4">💡 Example Conversations</h4>
             
             <div className="space-y-4">
               <div className="bg-black/30 rounded-lg p-4">
-                <p className="text-blue-300 font-medium mb-2">Situation-Specific Help:</p>
+                <p className="text-purple-300 font-medium mb-2">Situation-Specific Help:</p>
                 <p className="text-gray-300 text-sm mb-1"><strong>You:</strong> "I freeze up in team meetings when my boss asks for ideas"</p>
                 <p className="text-gray-300 text-sm"><strong>Sage:</strong> "Next time you're in that meeting, try this: 1) Before it starts, write down one small idea 2) During - when asked, share just that one prepared thought 3) After - celebrate that you contributed, even if it felt scary"</p>
               </div>
@@ -213,8 +213,8 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="bg-yellow-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-yellow-200 mb-3">🔍 What Sage Knows About You</h4>
+          <div className="bg-gray-900/30 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-gray-200 mb-3">🔍 What Sage Knows About You</h4>
             <ul className="space-y-2 text-gray-300 text-sm">
               <li>• <strong>Your Shadow Archetype:</strong> Core fears, wounds, and defense mechanisms</li>
               <li>• <strong>Behavioral Patterns:</strong> From Deep Analysis with frequency and impact areas</li>
@@ -237,12 +237,12 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             <h3 className="text-2xl font-semibold text-white mb-4">Getting Maximum Value</h3>
           </div>
 
-          <div className="bg-emerald-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-emerald-200 mb-4">📈 Progressive Journey Strategy</h4>
+          <div className="bg-purple-900/20 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-purple-200 mb-4">📈 Progressive Journey Strategy</h4>
             
             <div className="space-y-4">
               <div>
-                <h5 className="font-medium text-emerald-300">Phase 1: Foundation (Week 1)</h5>
+                <h5 className="font-medium text-purple-300">Phase 1: Foundation (Week 1)</h5>
                 <ul className="text-gray-300 text-sm space-y-1 mt-2 ml-4">
                   <li>• Complete Shadow Quiz + basic results review</li>
                   <li>• Do Deep Analysis when you have 30-45 minutes of uninterrupted time</li>
@@ -252,7 +252,7 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </div>
 
               <div>
-                <h5 className="font-medium text-emerald-300">Phase 2: Active Integration (Weeks 2-4)</h5>
+                <h5 className="font-medium text-purple-300">Phase 2: Active Integration (Weeks 2-4)</h5>
                 <ul className="text-gray-300 text-sm space-y-1 mt-2 ml-4">
                   <li>• Chat with Sage about specific daily situations as they arise</li>
                   <li>• Practice micro-exercises in real-world scenarios</li>
@@ -262,7 +262,7 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </div>
 
               <div>
-                <h5 className="font-medium text-emerald-300">Phase 3: Mastery (Month 2+)</h5>
+                <h5 className="font-medium text-purple-300">Phase 3: Mastery (Month 2+)</h5>
                 <ul className="text-gray-300 text-sm space-y-1 mt-2 ml-4">
                   <li>• Tackle "challenging" difficulty actions when ready</li>
                   <li>• Use ReAnalysis to see evolution in your patterns</li>
@@ -273,12 +273,12 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="bg-indigo-900/30 rounded-2xl p-6">
-            <h4 className="text-lg font-semibold text-indigo-200 mb-4">🎛️ Advanced Features Usage</h4>
+          <div className="bg-gray-900/30 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold text-gray-200 mb-4">🎛️ Advanced Features Usage</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h5 className="font-medium text-indigo-300 mb-2">Progress Tracking</h5>
+                <h5 className="font-medium text-gray-300 mb-2">Progress Tracking</h5>
                 <ul className="text-gray-300 text-sm space-y-1">
                   <li>• Check off actions as you complete them</li>
                   <li>• Use progress bars to maintain motivation</li>
@@ -288,7 +288,7 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </div>
 
               <div>
-                <h5 className="font-medium text-indigo-300 mb-2">Data Integration</h5>
+                <h5 className="font-medium text-gray-300 mb-2">Data Integration</h5>
                 <ul className="text-gray-300 text-sm space-y-1">
                   <li>• Journal entries feed into Sage's context</li>
                   <li>• Mood patterns influence recommendations</li>
@@ -322,8 +322,8 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-yellow-900/30 rounded-2xl p-6">
-              <h4 className="text-lg font-semibold text-yellow-200 mb-3">🔧 Deep Analysis Not Working</h4>
+            <div className="bg-red-900/20 rounded-2xl p-6">
+              <h4 className="text-lg font-semibold text-red-200 mb-3">🔧 Deep Analysis Not Working</h4>
               <div className="space-y-3 text-gray-300 text-sm">
                 <div>
                   <strong>Problem:</strong> Results show plain text instead of interactive checkboxes
@@ -340,8 +340,8 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="bg-blue-900/30 rounded-2xl p-6">
-              <h4 className="text-lg font-semibold text-blue-200 mb-3">💬 Sage Chat Issues</h4>
+            <div className="bg-purple-900/20 rounded-2xl p-6">
+              <h4 className="text-lg font-semibold text-purple-200 mb-3">💬 Sage Chat Issues</h4>
               <div className="space-y-3 text-gray-300 text-sm">
                 <div>
                   <strong>Rate Limit Error:</strong> "Please try again later"
@@ -362,8 +362,8 @@ export const UserGuide: React.FC<UserGuideProps> = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="bg-green-900/30 rounded-2xl p-6">
-              <h4 className="text-lg font-semibold text-green-200 mb-3">📱 Mobile Experience</h4>
+            <div className="bg-gray-900/30 rounded-2xl p-6">
+              <h4 className="text-lg font-semibold text-gray-200 mb-3">📱 Mobile Experience</h4>
               <div className="space-y-2 text-gray-300 text-sm">
                 <div><strong>Typing:</strong> Quiz works great on mobile - design is mobile-first</div>
                 <div><strong>Navigation:</strong> All buttons are touch-optimized with proper spacing</div>
