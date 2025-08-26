@@ -1225,6 +1225,12 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
               const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
               
+              // Check basic progress indicators
+              const journalEntries = localStorage.getItem('shadowJournalEntries');
+              const journalCount = journalEntries ? JSON.parse(journalEntries).length : 0;
+              const conversationCount = conversations.length;
+              const hasCompletedQuiz = Object.keys(answers).length > 0;
+              
               if (hasPhase2Data) {
                 const phase2Data = JSON.parse(hasPhase2Data);
                 const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
@@ -1245,6 +1251,9 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   </motion.button>
                 );
               } else {
+                // Show basic progress for users without Phase 2 data
+                const basicProgress = (hasCompletedQuiz ? 1 : 0) + Math.min(journalCount, 1) + Math.min(conversationCount, 1);
+                
                 return (
                   <motion.button
                     onClick={() => setCurrentScreen('progress')}
@@ -1255,7 +1264,9 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                   >
                     <BarChart className="w-6 h-6 mx-auto mb-2" />
                     <div className="text-lg font-bold">Progress</div>
-                    <div className="text-sm opacity-90">Track Journey</div>
+                    <div className="text-sm opacity-90">
+                      {basicProgress}/3 Steps
+                    </div>
                   </motion.button>
                 );
               }
