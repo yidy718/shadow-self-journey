@@ -16,6 +16,8 @@ import { questions, getQuestionsByIntensity, getQuestionText, getReflectionText 
 import { getShadowArchetype, type ShadowArchetype } from '../lib/shadowArchetypes';
 import { askClaude, getDemoInsight, type ShadowProfile, type EnhancedContext } from '../lib/claudeApi';
 import { getUserPreferences, saveUserPreferences, saveQuizProgress, clearQuizProgress, addAssessmentResult, type UserPreferences } from '../lib/userPreferences';
+import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
+import { getUserProgress, getBasicProgressSteps } from '../lib/progressUtils';
 
 interface Answer {
   optionId: string;
@@ -1213,19 +1215,16 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
             {/* Progress Button - Always available */}
             {(() => {
-              const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
-              const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-              const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
+              const hasPhase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
+              const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
+              const actionsCompleted = Array.isArray(completedActions) ? completedActions.length : 0;
               
-              // Check basic progress indicators
-              const journalEntries = localStorage.getItem('shadowJournalEntries');
-              const journalCount = journalEntries ? JSON.parse(journalEntries).length : 0;
-              const conversationCount = conversations.length;
+              // Get basic progress using utility
+              const basicSteps = getBasicProgressSteps(userPrefs, conversations);
               const hasCompletedQuiz = Object.keys(answers).length > 0;
               
               if (hasPhase2Data) {
-                const phase2Data = JSON.parse(hasPhase2Data);
-                const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
+                const totalActions = hasPhase2Data?.integration_plan?.immediate_actions?.length || 0;
                 
                 return (
                   <motion.button
@@ -1244,8 +1243,6 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 );
               } else {
                 // Show basic progress for users without Phase 2 data
-                const basicProgress = (hasCompletedQuiz ? 1 : 0) + Math.min(journalCount, 1) + Math.min(conversationCount, 1);
-                
                 return (
                   <motion.button
                     onClick={() => setCurrentScreen('progress')}
@@ -1257,7 +1254,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                     <BarChart className="w-6 h-6 mx-auto mb-2" />
                     <div className="text-lg font-bold">Progress</div>
                     <div className="text-sm opacity-90">
-                      {basicProgress}/3 Steps
+                      {basicSteps.current}/{basicSteps.total} Steps
                     </div>
                   </motion.button>
                 );
@@ -1705,15 +1702,14 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   // Handle dedicated progress dashboard screen
   if (currentScreen === 'progress') {
-    const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
-    const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-    const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+    const hasPhase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
+    const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
+    const completedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES);
     
     // Show basic progress for users without Phase 2 data
     if (!hasPhase2Data) {
-      const journalEntries = localStorage.getItem('shadowJournalEntries');
-      const journalCount = journalEntries ? JSON.parse(journalEntries).length : 0;
-      const conversationCount = conversations.length;
+      const progress = getUserProgress(userPrefs);
+      const basicSteps = getBasicProgressSteps(userPrefs, conversations);
       const hasCompletedQuiz = Object.keys(answers).length > 0;
       
       return (
@@ -1743,11 +1739,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               >
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-400 mb-2">
-                    {hasCompletedQuiz ? '✅' : '⏳'}
+                    {progress.hasCompletedQuiz ? '✅' : '⏳'}
                   </div>
                   <div className="text-purple-200 text-sm font-medium mb-2">Shadow Quiz</div>
                   <div className="text-gray-300 text-sm">
-                    {hasCompletedQuiz ? 'Archetype Discovered' : 'Not Started'}
+                    {progress.hasCompletedQuiz ? 'Archetype Discovered' : 'Not Started'}
                   </div>
                 </div>
               </motion.div>
@@ -1761,11 +1757,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               >
                 <div className="text-center">
                   <div className="text-3xl font-bold text-gray-400 mb-2">
-                    {journalCount}
+                    {progress.hasJournalEntries ? '📝' : '0'}
                   </div>
                   <div className="text-gray-200 text-sm font-medium mb-2">Journal Entries</div>
                   <div className="text-gray-300 text-sm">
-                    {journalCount > 0 ? 'Insights Recorded' : 'Ready to Start'}
+                    {progress.hasJournalEntries ? 'Insights Recorded' : 'Ready to Start'}
                   </div>
                 </div>
               </motion.div>
@@ -1779,11 +1775,11 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               >
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-400 mb-2">
-                    {conversationCount}
+                    {progress.hasConversations ? '💬' : '0'}
                   </div>
                   <div className="text-blue-200 text-sm font-medium mb-2">Sage Conversations</div>
                   <div className="text-gray-300 text-sm">
-                    {conversationCount > 0 ? 'Active Dialogue' : 'Ready to Chat'}
+                    {progress.hasConversations ? 'Active Dialogue' : 'Ready to Chat'}
                   </div>
                 </div>
               </motion.div>
@@ -1860,9 +1856,9 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
       );
     }
 
-    const phase2Data = JSON.parse(hasPhase2Data);
-    const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
-    const exercisesCompleted = completedExercises ? JSON.parse(completedExercises).length : 0;
+    const phase2Data = hasPhase2Data;
+    const actionsCompleted = Array.isArray(completedActions) ? completedActions.length : 0;
+    const exercisesCompleted = Array.isArray(completedExercises) ? completedExercises.length : 0;
     const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
     const totalExercises = phase2Data?.integration_exercises?.length || 0;
     
