@@ -77,9 +77,10 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   const handleReturnUser = () => {
     if (existingUser) {
       // Check what data they have to provide best continue experience
-      const hasCompletedQuiz = existingUser.currentQuizProgress && 
-        existingUser.currentQuizProgress.answers &&
-        Object.keys(existingUser.currentQuizProgress.answers).length >= 8; // 8 questions in quiz
+      // Check for quiz completion - could be 8 regular questions or 4 intensity questions
+      const answersCount = existingUser.currentQuizProgress?.answers ? 
+        Object.keys(existingUser.currentQuizProgress.answers).length : 0;
+      const hasCompletedQuiz = answersCount >= 4; // At minimum 4 questions to be considered complete
       const hasAssessmentHistory = existingUser.assessmentHistory && existingUser.assessmentHistory.length > 0;
       const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
       const hasPartialQuiz = existingUser.currentQuizProgress && 

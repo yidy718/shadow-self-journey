@@ -1296,6 +1296,30 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               <div className="text-lg font-bold">Re-analyze</div>
               <div className="text-sm opacity-90">Evolved Insights</div>
             </motion.button>
+
+            {/* Settings Button to toggle Gentle Mode */}
+            <motion.button
+              onClick={() => {
+                if (userPrefs) {
+                  const updatedPrefs = { ...userPrefs, gentleMode: !userPrefs.gentleMode };
+                  saveUserPreferences(updatedPrefs);
+                  setUserPrefs(updatedPrefs);
+                }
+              }}
+              whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+              whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+              className={`${userPrefs?.gentleMode 
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700' 
+                : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800'
+              } text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border ${userPrefs?.gentleMode ? 'border-green-500/30' : 'border-gray-500/30'} focus:outline-none focus:ring-2 ${userPrefs?.gentleMode ? 'focus:ring-green-400' : 'focus:ring-gray-400'}`}
+              aria-label={`${userPrefs?.gentleMode ? 'Disable' : 'Enable'} gentle mode`}
+            >
+              <Heart className="w-6 h-6 mx-auto mb-2" />
+              <div className="text-lg font-bold">
+                {userPrefs?.gentleMode ? 'Gentle' : 'Standard'}
+              </div>
+              <div className="text-sm opacity-90">Mode</div>
+            </motion.button>
           </motion.div>
 
           <AnimatePresence>
