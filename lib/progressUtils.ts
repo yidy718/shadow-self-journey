@@ -36,11 +36,11 @@ export const getUserProgress = (userPrefs: UserPreferences | null): UserProgress
   const hasPhase2Data = !!getStorageItem(StorageKeys.PHASE2_DATA);
   const hasPartialQuiz = answersCount > 0 && !hasCompletedQuiz;
   
-  const journalEntries = getStorageItem(StorageKeys.JOURNAL_ENTRIES);
-  const hasJournalEntries = journalEntries ? journalEntries.length > 0 : false;
+  const journalEntries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES);
+  const hasJournalEntries = Array.isArray(journalEntries) && journalEntries.length > 0;
   
-  const conversations = getStorageItem(StorageKeys.CONVERSATIONS);
-  const hasConversations = conversations ? conversations.length > 0 : false;
+  const conversations = getStorageItem<any[]>(StorageKeys.CONVERSATIONS);
+  const hasConversations = Array.isArray(conversations) && conversations.length > 0;
 
   // Calculate completion percentage
   let completionScore = 0;

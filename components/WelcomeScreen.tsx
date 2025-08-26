@@ -6,6 +6,8 @@ import { Eye, User, UserX, Sparkles, Brain, ArrowRight, AlertTriangle, BookOpen,
 import { ParticleField } from './ParticleField';
 import { IntensitySlider } from './IntensitySlider';
 import { getUserPreferences, createNewUser, saveUserPreferences, clearUserData, type UserPreferences } from '../lib/userPreferences';
+import { getRecommendedDestination, getUserProgress } from '../lib/progressUtils';
+import { getStorageItem, StorageKeys } from '../lib/storageUtils';
 import type { IntensityLevel } from '../lib/questions';
 
 interface WelcomeScreenProps {
@@ -76,37 +78,12 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   const handleReturnUser = () => {
     if (existingUser) {
-      // Check what data they have to provide best continue experience
-      // Check for quiz completion - could be 8 regular questions or 4 intensity questions
-      const answersCount = existingUser.currentQuizProgress?.answers ? 
-        Object.keys(existingUser.currentQuizProgress.answers).length : 0;
-      const hasCompletedQuiz = answersCount >= 4; // At minimum 4 questions to be considered complete
-      const hasAssessmentHistory = existingUser.assessmentHistory && existingUser.assessmentHistory.length > 0;
-      const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
-      const hasPartialQuiz = existingUser.currentQuizProgress && 
-        existingUser.currentQuizProgress.answers &&
-        Object.keys(existingUser.currentQuizProgress.answers).length > 0 &&
-        Object.keys(existingUser.currentQuizProgress.answers).length < 8;
+      const destination = getRecommendedDestination(existingUser);
       
-      // Check additional progress indicators
-      const journalEntries = localStorage.getItem('shadowJournalEntries');
-      const hasJournalEntries = journalEntries ? JSON.parse(journalEntries).length > 0 : false;
-      const conversationHistory = localStorage.getItem('shadowConversations');
-      const hasConversations = conversationHistory ? JSON.parse(conversationHistory).length > 0 : false;
-      
-      // Enhanced Priority System - direct users to best experience
-      if (hasPhase2Data && (hasCompletedQuiz || hasAssessmentHistory)) {
-        // They have comprehensive data - go to results
-        onContinue(existingUser);
-      } else if (hasCompletedQuiz || hasAssessmentHistory) {
-        // Take them to results (no additional activity yet)
-        onContinue(existingUser);
-      } else if (hasPartialQuiz) {
-        // Continue quiz where they left off
-        onContinue(existingUser);
-      } else {
-        // No assessments yet, show intro to choose path
+      if (destination === 'intro') {
         setCurrentStep('intro');
+      } else {
+        onContinue(existingUser);
       }
     }
   };
