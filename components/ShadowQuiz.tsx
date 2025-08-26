@@ -29,7 +29,7 @@ interface Conversation {
 }
 
 const ShadowQuiz = () => {
-  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat' | 'deepanalysis' | 'reanalysis' | 'guide'>('identity');
+  const [currentScreen, setCurrentScreen] = useState<'identity' | 'welcome' | 'quiz' | 'results' | 'journal' | 'exercises' | 'chat' | 'deepanalysis' | 'reanalysis' | 'guide' | 'progress'>('identity');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -1109,7 +1109,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                       <motion.button
                         whileHover={{ scale: 1.05, y: -5 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setCurrentScreen('exercises')}
+                        onClick={() => setCurrentScreen('progress')}
                         className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl border border-green-500/30 focus:outline-none focus:ring-2 focus:ring-green-400"
                         aria-label="View your progress and continue exercises"
                       >
@@ -1626,6 +1626,194 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
   // Handle user guide screen
   if (currentScreen === 'guide') {
     return <UserGuide onClose={closeGuide} />;
+  }
+
+  // Handle dedicated progress dashboard screen
+  if (currentScreen === 'progress') {
+    const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
+    const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+    const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+    
+    if (!hasPhase2Data) {
+      // Redirect to Deep Analysis if no progress data
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-4">No Progress Data Found</h2>
+            <p className="text-gray-300 mb-8">Complete your Deep Analysis first to access your Progress Dashboard.</p>
+            <button
+              onClick={() => setCurrentScreen('deepanalysis')}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors"
+            >
+              Start Deep Analysis
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const phase2Data = JSON.parse(hasPhase2Data);
+    const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
+    const exercisesCompleted = completedExercises ? JSON.parse(completedExercises).length : 0;
+    const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
+    const totalExercises = phase2Data?.integration_exercises?.length || 0;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 p-4">
+        <div className="max-w-6xl mx-auto py-8">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl sm:text-5xl font-bold text-white mb-4"
+            >
+              Your Progress Dashboard 📊
+            </motion.h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Track your shadow work journey with comprehensive insights and actionable progress.
+            </p>
+          </div>
+
+          {/* Progress Stats Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Actions Progress */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="bg-black/40 backdrop-blur-sm border border-green-500/30 rounded-2xl p-6"
+            >
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-400 mb-2">
+                  {actionsCompleted}/{totalActions}
+                </div>
+                <div className="text-green-300 text-sm font-medium mb-4">Immediate Actions</div>
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-green-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${totalActions > 0 ? (actionsCompleted / totalActions) * 100 : 0}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-400 mt-2">
+                  {totalActions > 0 ? Math.round((actionsCompleted / totalActions) * 100) : 0}% Complete
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Exercises Progress */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6"
+            >
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-400 mb-2">
+                  {exercisesCompleted}/{totalExercises}
+                </div>
+                <div className="text-blue-300 text-sm font-medium mb-4">Integration Exercises</div>
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${totalExercises > 0 ? (exercisesCompleted / totalExercises) * 100 : 0}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-400 mt-2">
+                  {totalExercises > 0 ? Math.round((exercisesCompleted / totalExercises) * 100) : 0}% Complete
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Overall Progress */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="bg-black/40 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6"
+            >
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-400 mb-2">
+                  {Math.round(((actionsCompleted + exercisesCompleted) / Math.max(totalActions + totalExercises, 1)) * 100)}%
+                </div>
+                <div className="text-purple-300 text-sm font-medium mb-4">Overall Progress</div>
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-purple-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${((actionsCompleted + exercisesCompleted) / Math.max(totalActions + totalExercises, 1)) * 100}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-400 mt-2">Shadow Integration</div>
+              </div>
+            </motion.div>
+
+            {/* Journey Stage */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              className="bg-black/40 backdrop-blur-sm border border-yellow-500/30 rounded-2xl p-6"
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400 mb-2">
+                  {actionsCompleted + exercisesCompleted === 0 ? '🌱' : 
+                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.5 ? '🌿' :
+                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.8 ? '🌳' : '🏆'}
+                </div>
+                <div className="text-yellow-300 text-sm font-medium mb-2">Journey Stage</div>
+                <div className="text-xs text-gray-300">
+                  {actionsCompleted + exercisesCompleted === 0 ? 'Getting Started' :
+                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.5 ? 'Building Awareness' :
+                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.8 ? 'Active Integration' : 'Shadow Mastery'}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen('exercises')}
+              className="flex-1 max-w-xs bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl"
+            >
+              Continue Exercises
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen('journal')}
+              className="flex-1 max-w-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl"
+            >
+              Journal Insights
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen('reanalysis')}
+              className="flex-1 max-w-xs bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl"
+            >
+              Deep Insights
+            </motion.button>
+          </div>
+
+          {/* Back Button */}
+          <div className="text-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentScreen('results')}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl transition-colors"
+            >
+              ← Back to Results
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return null;
