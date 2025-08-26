@@ -1714,7 +1714,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                 Your Progress Dashboard
               </motion.h1>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Track your shadow work journey - you're just getting started!
+                Track your shadow work journey - complete Deep Analysis below to unlock exercise tracking!
               </p>
             </div>
 
