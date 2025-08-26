@@ -90,9 +90,9 @@ const ShadowQuiz = () => {
       }
     } else {
       // No quiz progress, but check if we have conversations from localStorage
-      const savedConversations = localStorage.getItem('shadowConversations');
+      const savedConversations = getStorageItem<Conversation[]>(StorageKeys.CONVERSATIONS);
       if (savedConversations) {
-        setConversations(JSON.parse(savedConversations));
+        setConversations(savedConversations);
       }
       setCurrentScreen('welcome');
     }
@@ -307,9 +307,7 @@ const ShadowQuiz = () => {
         // Gather enhanced context from localStorage
         const enhancedContext = {
           journalEntries: (() => {
-            const journalData = localStorage.getItem('shadowJournalEntries');
-            if (!journalData) return [];
-            const entries = JSON.parse(journalData);
+            const entries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || [];
             return entries.slice(-8).map((entry: any) => ({
               date: new Date(entry.date).toLocaleDateString(),
               reflection: entry.reflection || '',
@@ -319,41 +317,19 @@ const ShadowQuiz = () => {
             }));
           })(),
           recentAnalyses: (() => {
-            const journalData = localStorage.getItem('shadowJournalEntries');
-            if (!journalData) return [];
-            const entries = JSON.parse(journalData);
+            const entries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || [];
             return entries
               .filter((entry: any) => entry.id?.includes('analysis-') || entry.id?.includes('reanalysis-'))
               .slice(-3)
               .map((entry: any) => entry.insights || entry.reflection);
           })(),
           moodTrends: (() => {
-            const journalData = localStorage.getItem('shadowJournalEntries');
-            if (!journalData) return [];
-            const entries = JSON.parse(journalData);
+            const entries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || [];
             return entries.slice(-10).map((entry: any) => entry.mood || 3);
           })(),
-          phase2Analysis: (() => {
-            // Load the most recent Deep Analysis Phase 2 data from localStorage
-            const savedPhase2 = localStorage.getItem('shadowDeepAnalysisPhase2');
-            if (savedPhase2) {
-              try {
-                return JSON.parse(savedPhase2);
-              } catch (error) {
-                console.error('Error parsing Phase 2 data:', error);
-                return null;
-              }
-            }
-            return null;
-          })(),
-          completedActions: (() => {
-            const savedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-            return savedActions ? JSON.parse(savedActions) : [];
-          })(),
-          completedExercises: (() => {
-            const savedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
-            return savedExercises ? JSON.parse(savedExercises) : [];
-          })(),
+          phase2Analysis: getStorageItem(StorageKeys.PHASE2_DATA),
+          completedActions: getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS) || [],
+          completedExercises: getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [],
           intensityLevel: userPrefs?.intensityLevel
         };
         
@@ -379,7 +355,7 @@ const ShadowQuiz = () => {
       setConversations(updatedConversations);
       
       // Save conversations to localStorage for ReAnalysis access
-      localStorage.setItem('shadowConversations', JSON.stringify(updatedConversations));
+      setStorageItem(StorageKeys.CONVERSATIONS, updatedConversations);
       
       // Save progress with new conversation
       if (userPrefs) {
@@ -442,7 +418,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     // Smart navigation based on user's journey
     const hasQuizAnswers = Object.keys(answers).length > 0;
     const hasAssessmentHistory = userPrefs?.assessmentHistory && userPrefs.assessmentHistory.length > 0;
-    const hasDeepAnalysisData = localStorage.getItem('shadowDeepAnalysisPhase2');
+    const hasDeepAnalysisData = getStorageItem(StorageKeys.PHASE2_DATA);
     
     if (hasQuizAnswers || hasAssessmentHistory) {
       // User has completed some form of assessment - go to results
@@ -1054,18 +1030,18 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             className="mb-8"
           >
             {(() => {
-              const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
+              const hasPhase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
               
               if (hasPhase2Data) {
                 // Only show the big progress card if they have actual Phase 2 data
-                const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-                const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+                const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS) || [];
+                const completedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [];
                 // Show Progress Dashboard if they have Deep Analysis data
-                const phase2Data = JSON.parse(hasPhase2Data);
-                const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
-                const exercisesCompleted = completedExercises ? JSON.parse(completedExercises).length : 0;
-                const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
-                const totalExercises = phase2Data?.integration_exercises?.length || 0;
+                const phase2Data = hasPhase2Data;
+                const actionsCompleted = completedActions.length;
+                const exercisesCompleted = completedExercises.length;
+                const totalActions = (phase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
+                const totalExercises = (phase2Data as any)?.integration_exercises?.length || 0;
                 
                 return (
                   <div className="bg-gradient-to-r from-green-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
@@ -1224,7 +1200,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               const hasCompletedQuiz = Object.keys(answers).length > 0;
               
               if (hasPhase2Data) {
-                const totalActions = hasPhase2Data?.integration_plan?.immediate_actions?.length || 0;
+                const totalActions = (hasPhase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
                 
                 return (
                   <motion.button
@@ -1647,8 +1623,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   if (currentScreen === 'deepanalysis') {
     // Load journal entries for analysis
-    const journalEntries = localStorage.getItem('shadowJournalEntries');
-    const parsedEntries = journalEntries ? JSON.parse(journalEntries) : [];
+    const parsedEntries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || [];
     
     // Get archetype if user has completed quiz
     const currentArchetype = Object.keys(answers).length > 0 ? getShadowArchetype(calculateShadow.dominantTraits || [], calculateShadow.totalDarkness || 0) : null;
@@ -1859,8 +1834,8 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
     const phase2Data = hasPhase2Data;
     const actionsCompleted = Array.isArray(completedActions) ? completedActions.length : 0;
     const exercisesCompleted = Array.isArray(completedExercises) ? completedExercises.length : 0;
-    const totalActions = phase2Data?.integration_plan?.immediate_actions?.length || 0;
-    const totalExercises = phase2Data?.integration_exercises?.length || 0;
+    const totalActions = (phase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
+    const totalExercises = (phase2Data as any)?.integration_exercises?.length || 0;
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 p-4">
