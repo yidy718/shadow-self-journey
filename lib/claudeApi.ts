@@ -110,11 +110,6 @@ export const askClaude = async (
     }
 
     const data = await response.json();
-    console.log('📨 Frontend: Received response:', {
-      source: data.source,
-      responseLength: data.response?.length || 0,
-      responseStart: data.response?.substring(0, 100) + '...'
-    });
     return data.response;
   } catch (error) {
     console.error('Error asking Claude:', error);

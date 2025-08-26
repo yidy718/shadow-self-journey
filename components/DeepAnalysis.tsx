@@ -524,7 +524,6 @@ Generate 3-5 specific follow-up questions that:
         questions = parsedPhase1.follow_up_questions
           .slice(0, parsedPhase1.recommended_followups || 3)
           .map(fq => fq.question);
-        console.log('Using structured Phase 1 data:', parsedPhase1);
       } else {
         // Fallback to original parsing logic for backwards compatibility
         console.warn('Failed to parse structured response, using fallback logic');
@@ -567,7 +566,6 @@ Generate 3-5 specific follow-up questions that:
         "When you're triggered emotionally, what's the story you tell yourself about what's happening?",
         "How do you think others experience you when you're stressed or defensive?"
       ];
-      console.log('Using fallback questions due to error');
       setFollowUpQuestions(fallbackQuestions);
       setCurrentPhase('followup');
     } finally {
@@ -716,7 +714,6 @@ Analyze for:
       
       if (parsedPhase2) {
         setPhase2Data(parsedPhase2);
-        console.log('Using structured Phase 2 data:', parsedPhase2);
         
         // Save Phase 2 data to localStorage for chat integration
         localStorage.setItem('shadowDeepAnalysisPhase2', JSON.stringify(parsedPhase2));
