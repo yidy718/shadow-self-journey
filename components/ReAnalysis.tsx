@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader, Brain, FileText, MessageCircle, Eye, Target, Sparkles } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
+import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
+import { type UserPreferences } from '../lib/userPreferences';
 import toast from 'react-hot-toast';
 
 interface ReAnalysisProps {
@@ -53,9 +55,8 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
       };
 
       // Load journal entries
-      const journalData = localStorage.getItem('shadowJournalEntries');
-      if (journalData) {
-        const entries = JSON.parse(journalData);
+      const entries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES);
+      if (entries) {
         data.journalEntries = entries.map((entry: any) => ({
           id: entry.id,
           date: new Date(entry.date).toLocaleDateString(),
@@ -67,15 +68,14 @@ export const ReAnalysis = ({ onClose, shadowProfile }: ReAnalysisProps) => {
       }
 
       // Load conversation history from multiple sources
-      const conversationData = localStorage.getItem('shadowConversations');
+      const conversationData = getStorageItem<any[]>(StorageKeys.CONVERSATIONS);
       if (conversationData) {
-        data.conversations = JSON.parse(conversationData);
+        data.conversations = conversationData;
       }
       
       // Also check user preferences for conversations (backup/alternative source)
-      const userPrefs = localStorage.getItem('shadowUserPreferences');
-      if (userPrefs) {
-        const prefs = JSON.parse(userPrefs);
+      const prefs = getStorageItem<UserPreferences>(StorageKeys.USER_PREFERENCES);
+      if (prefs) {
         if (prefs.currentQuizProgress?.conversations && prefs.currentQuizProgress.conversations.length > 0) {
           // Merge with existing conversations, avoiding duplicates
           const existingIds = new Set(data.conversations.map(c => c.timestamp));
@@ -548,10 +548,9 @@ CRITICAL: Every numbered item must be a complete question ending with a question
                 : 'Exploring deeper questions to expand my shadow work'
             };
             
-            const existingEntries = localStorage.getItem('shadowJournalEntries');
-            const entries = existingEntries ? JSON.parse(existingEntries) : [];
+            const entries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || [];
             entries.unshift(reAnalysisEntry);
-            localStorage.setItem('shadowJournalEntries', JSON.stringify(entries));
+            setStorageItem(StorageKeys.JOURNAL_ENTRIES, entries);
             
             toast.success('Re-analysis saved to your journal!', {
               duration: 4000,

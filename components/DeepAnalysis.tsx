@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Brain, FileText, Plus, Lightbulb, Target, Eye, Check, Square } from 'lucide-react';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
 import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
+import { type UserPreferences } from '../lib/userPreferences';
 import ExportButton from './ExportButton';
 
 interface DeepAnalysisProps {
@@ -168,8 +169,8 @@ export const DeepAnalysis = ({ onClose, shadowProfile, journalEntries, setCurren
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   
   // Get user preferences for intensity level
-  const getUserPreferences = () => {
-    return getStorageItem(StorageKeys.USER_PREFERENCES);
+  const getUserPreferences = (): UserPreferences | null => {
+    return getStorageItem<UserPreferences>(StorageKeys.USER_PREFERENCES);
   };
   
   const userPrefs = getUserPreferences();

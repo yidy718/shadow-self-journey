@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Plus, Trash2, Calendar, Heart, Save, ArrowLeft, Edit3 } from 'lucide-react';
+import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
 import ExportButton from './ExportButton';
 
 interface JournalEntry {
@@ -124,10 +125,10 @@ export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: Sha
 
   // Load entries from localStorage on mount
   useEffect(() => {
-    const savedEntries = localStorage.getItem('shadowJournalEntries');
+    const savedEntries = getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES);
     if (savedEntries) {
       try {
-        const parsed = JSON.parse(savedEntries).map((entry: any) => ({
+        const parsed = savedEntries.map((entry: any) => ({
           ...entry,
           date: new Date(entry.date)
         }));
@@ -141,7 +142,7 @@ export const ShadowJournal = ({ currentArchetype, onClose, initialContent }: Sha
   // Save entries to localStorage
   const saveEntries = (updatedEntries: JournalEntry[]) => {
     try {
-      localStorage.setItem('shadowJournalEntries', JSON.stringify(updatedEntries));
+      setStorageItem(StorageKeys.JOURNAL_ENTRIES, updatedEntries);
       setEntries(updatedEntries);
     } catch (error) {
       console.error('Error saving journal entries:', error);

@@ -1,6 +1,7 @@
 'use client';
 
 import { getUserPreferences, type UserPreferences } from './userPreferences';
+import { getStorageItem, StorageKeys } from './storageUtils';
 
 export interface ExportData {
   user: UserPreferences | null;
@@ -43,35 +44,34 @@ export const aggregateUserData = (): ExportData => {
   const userPrefs = getUserPreferences();
   
   // Get journal entries
-  const journalData = localStorage.getItem('shadowJournalEntries');
-  const journalEntries = journalData ? JSON.parse(journalData).map((entry: any) => ({
+  const journalEntries = (getStorageItem<any[]>(StorageKeys.JOURNAL_ENTRIES) || []).map((entry: any) => ({
     ...entry,
     date: new Date(entry.date)
-  })) : [];
+  }));
   
   // Get conversations from user preferences
   const conversations = userPrefs?.currentQuizProgress?.conversations || [];
   
   // Get Deep Analysis data
-  const phase1Data = localStorage.getItem('shadowDeepAnalysisPhase1');
-  const phase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
-  const coreResponses = localStorage.getItem('shadowDeepAnalysisCoreResponses');
-  const followUpResponses = localStorage.getItem('shadowDeepAnalysisFollowUpResponses');
+  const phase1Data = getStorageItem('shadowDeepAnalysisPhase1');
+  const phase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
+  const coreResponses = getStorageItem('shadowDeepAnalysisCoreResponses');
+  const followUpResponses = getStorageItem('shadowDeepAnalysisFollowUpResponses');
   
   const deepAnalysis = (phase1Data || phase2Data || coreResponses || followUpResponses) ? {
-    phase1Data: phase1Data ? JSON.parse(phase1Data) : null,
-    phase2Data: phase2Data ? JSON.parse(phase2Data) : null,
-    coreResponses: coreResponses ? JSON.parse(coreResponses) : {},
-    followUpResponses: followUpResponses ? JSON.parse(followUpResponses) : {}
+    phase1Data: phase1Data,
+    phase2Data: phase2Data,
+    coreResponses: coreResponses || {},
+    followUpResponses: followUpResponses || {}
   } : null;
   
   // Get exercise progress
-  const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-  const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
+  const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
+  const completedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES);
   
   const exerciseProgress = {
-    completedActions: completedActions ? JSON.parse(completedActions) : [],
-    completedExercises: completedExercises ? JSON.parse(completedExercises) : []
+    completedActions: completedActions || [],
+    completedExercises: completedExercises || []
   };
   
   return {

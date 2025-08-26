@@ -7,6 +7,7 @@ import {
   Heart, Brain, Lightbulb, User, Shield, Eye,
   Clock, Star, Zap, Flame
 } from 'lucide-react';
+import { getStorageItem, setStorageItem } from '../lib/storageUtils';
 
 interface Exercise {
   id: string;
@@ -37,8 +38,7 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
 
   useEffect(() => {
     // Load completed exercises from localStorage
-    const savedProgress = localStorage.getItem('shadowExerciseProgress');
-    const completedExercises = savedProgress ? JSON.parse(savedProgress) : {};
+    const completedExercises = getStorageItem<Record<string, boolean>>('shadowExerciseProgress') || {};
 
     // Generate exercises based on archetype
     let archetypeExercises = generateExercises(archetype, completedExercises);
@@ -385,7 +385,7 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
     setExercises(updatedExercises);
 
     // Save to localStorage
-    const completedData = JSON.parse(localStorage.getItem('shadowExerciseProgress') || '{}');
+    const completedData = getStorageItem<Record<string, string>>('shadowExerciseProgress') || {};
     const exercise = updatedExercises.find(ex => ex.id === exerciseId);
     
     if (exercise?.completed) {
@@ -394,7 +394,7 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
       delete completedData[exerciseId];
     }
     
-    localStorage.setItem('shadowExerciseProgress', JSON.stringify(completedData));
+    setStorageItem('shadowExerciseProgress', completedData);
   };
 
   const filteredExercises = exercises.filter(exercise => {
