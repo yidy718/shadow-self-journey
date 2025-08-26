@@ -1055,17 +1055,18 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
           </motion.div>
 
           {/* Claude AI Integration */}
-          {/* Primary Action - Deep Analysis CTA or Progress Dashboard */}
+          {/* Primary Action - Deep Analysis CTA only */}
           <motion.div 
             variants={itemVariants}
             className="mb-8"
           >
             {(() => {
               const hasPhase2Data = localStorage.getItem('shadowDeepAnalysisPhase2');
-              const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
-              const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
               
               if (hasPhase2Data) {
+                // Only show the big progress card if they have actual Phase 2 data
+                const completedActions = localStorage.getItem('shadowAnalysisCompletedActions');
+                const completedExercises = localStorage.getItem('shadowAnalysisCompletedExercises');
                 // Show Progress Dashboard if they have Deep Analysis data
                 const phase2Data = JSON.parse(hasPhase2Data);
                 const actionsCompleted = completedActions ? JSON.parse(completedActions).length : 0;
