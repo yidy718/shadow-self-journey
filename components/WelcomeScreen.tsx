@@ -481,14 +481,41 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
             <span>Estimated time: 15-25 minutes for core assessment</span>
           </div>
           
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setCurrentStep('preview')}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
-          >
-            See What to Expect
-          </motion.button>
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">How would you like to proceed?</h3>
+            <p className="text-gray-300 text-sm max-w-2xl mx-auto">
+              You can start immediately with sensible defaults, or learn more about the process first.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                // Dive Right In - skip all the prep screens, use moderate intensity as default
+                const userPrefs = getUserPreferences();
+                if (userPrefs) {
+                  userPrefs.intensityLevel = 'moderate';
+                  userPrefs.gentleMode = false;
+                  saveUserPreferences(userPrefs);
+                  onContinue(userPrefs);
+                }
+              }}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-red-500/30"
+            >
+              🚀 Dive Right In
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentStep('preparation')}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-2xl border border-purple-500/30"
+            >
+              📚 See What to Expect
+            </motion.button>
+          </div>
         </motion.div>
       </div>
     );
