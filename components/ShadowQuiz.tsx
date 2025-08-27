@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ParticleField } from './ParticleField';
 import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
+import { ProgressDashboard } from './ProgressDashboard';
 import ShadowJournal from './ShadowJournal';
 import IntegrationExercises from './IntegrationExercises';
 import DeepAnalysis from './DeepAnalysis';
@@ -51,6 +52,38 @@ const ShadowQuiz = () => {
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   
   const shouldReduceMotion = useReducedMotion();
+  
+  // Performance: Memoize expensive calculations
+  const calculateShadow = useMemo(() => {
+    if (!answers || Object.keys(answers).length === 0) {
+      return { dominantTraits: [], totalDarkness: 0 };
+    }
+
+    const shadowTraits: Record<string, number> = {};
+    Object.values(answers).forEach(answer => {
+      if (answer?.shadow) {
+        Object.entries(answer.shadow).forEach(([trait, value]) => {
+          shadowTraits[trait] = (shadowTraits[trait] || 0) + (value as number);
+        });
+      }
+    });
+
+    const dominantTraits = Object.entries(shadowTraits)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3) as [string, number][];
+    
+    const totalDarkness = Object.values(shadowTraits).reduce((sum, val) => sum + val, 0);
+
+    return { dominantTraits, totalDarkness };
+  }, [answers]);
+
+  // Performance: Memoize current question data
+  const currentQuestionData = useMemo(() => {
+    if (!questionsReady || currentQuestion >= currentQuestions.length) {
+      return null;
+    }
+    return currentQuestions[currentQuestion];
+  }, [questionsReady, currentQuestion, currentQuestions]);
   
   // Preload next screen data for better performance
   useEffect(() => {
@@ -254,23 +287,6 @@ const ShadowQuiz = () => {
     setIsTransitioning(false);
   }, [userPrefs, answers, conversations]);
 
-  const calculateShadow = useMemo(() => {
-    const shadowTraits: Record<string, number> = {};
-    let totalDarkness = 0;
-    
-    Object.values(answers).forEach(answer => {
-      Object.entries(answer.shadow).forEach(([trait, value]) => {
-        shadowTraits[trait] = (shadowTraits[trait] || 0) + value;
-        totalDarkness += value;
-      });
-    });
-
-    const dominantTraits = Object.entries(shadowTraits)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3) as [string, number][];
-
-    return { shadowTraits, dominantTraits, totalDarkness };
-  }, [answers]);
 
   const handleAskClaude = useCallback(async () => {
     if (!userQuestion.trim()) return;
@@ -1649,6 +1665,22 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
   // Handle dedicated progress dashboard screen
   if (currentScreen === 'progress') {
+    return (
+      <ProgressDashboard
+        userPrefs={userPrefs}
+        conversations={conversations}
+        answers={answers}
+        onBack={() => setCurrentScreen('results')}
+        onNavigateToJournal={() => setCurrentScreen('journal')}
+        onNavigateToExercises={() => setCurrentScreen('exercises')}
+        onNavigateToChat={() => setCurrentScreen('chat')}
+        onNavigateToResults={() => setCurrentScreen('results')}
+      />
+    );
+  }
+
+  // Legacy progress screen logic (to be removed after testing)
+  if (false) {
     const hasPhase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
     const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS);
     const completedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES);
