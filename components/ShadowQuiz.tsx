@@ -1035,13 +1035,19 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               if (hasPhase2Data) {
                 // Only show the big progress card if they have actual Phase 2 data
                 const completedActions = getStorageItem<string[]>(StorageKeys.COMPLETED_ACTIONS) || [];
-                const completedExercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [];
+                const completedPhase2Exercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [];
+                
+                // Also track Integration Exercises (traditional shadow work exercises)
+                const integrationExerciseProgress = getStorageItem<Record<string, string>>('shadowExerciseProgress') || {};
+                const integrationExercisesCompleted = Object.keys(integrationExerciseProgress).length;
+                const totalIntegrationExercises = 5;
+                
                 // Show Progress Dashboard if they have Deep Analysis data
                 const phase2Data = hasPhase2Data;
                 const actionsCompleted = completedActions.length;
-                const exercisesCompleted = completedExercises.length;
+                const phase2ExercisesCompleted = completedPhase2Exercises.length;
                 const totalActions = (phase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
-                const totalExercises = (phase2Data as any)?.integration_exercises?.length || 0;
+                const totalPhase2Exercises = (phase2Data as any)?.integration_exercises?.length || 0;
                 
                 return (
                   <div className="bg-gradient-to-r from-green-600 to-blue-600 p-1 rounded-3xl shadow-2xl hover:shadow-3xl transition-shadow duration-500">
@@ -1070,15 +1076,28 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                         
                         <div className="text-center bg-black/30 rounded-2xl p-4">
                           <div className="text-3xl font-bold text-blue-400">
-                            {exercisesCompleted}/{totalExercises}
+                            {integrationExercisesCompleted}/{totalIntegrationExercises}
                           </div>
-                          <div className="text-sm text-blue-300">Exercises Started</div>
+                          <div className="text-sm text-blue-300">Integration Exercises</div>
                           <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                             <div 
                               className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${totalExercises > 0 ? (exercisesCompleted / totalExercises) * 100 : 0}%` }}
+                              style={{ width: `${totalIntegrationExercises > 0 ? (integrationExercisesCompleted / totalIntegrationExercises) * 100 : 0}%` }}
                             />
                           </div>
+                          {totalPhase2Exercises > 0 && (
+                            <div className="mt-3 pt-2 border-t border-gray-600">
+                              <div className="text-sm text-cyan-400">
+                                {phase2ExercisesCompleted}/{totalPhase2Exercises} Deep Analysis
+                              </div>
+                              <div className="w-full bg-gray-700 rounded-full h-1 mt-1">
+                                <div 
+                                  className="bg-cyan-500 h-1 rounded-full transition-all duration-500"
+                                  style={{ width: `${totalPhase2Exercises > 0 ? (phase2ExercisesCompleted / totalPhase2Exercises) * 100 : 0}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
@@ -1786,9 +1805,14 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
 
     const phase2Data = hasPhase2Data;
     const actionsCompleted = Array.isArray(completedActions) ? completedActions.length : 0;
-    const exercisesCompleted = Array.isArray(completedExercises) ? completedExercises.length : 0;
+    const phase2ExercisesCompleted = Array.isArray(completedExercises) ? completedExercises.length : 0;
     const totalActions = (phase2Data as any)?.integration_plan?.immediate_actions?.length || 0;
-    const totalExercises = (phase2Data as any)?.integration_exercises?.length || 0;
+    const totalPhase2Exercises = (phase2Data as any)?.integration_exercises?.length || 0;
+    
+    // Also track Integration Exercises (traditional shadow work exercises)
+    const integrationExerciseProgress = getStorageItem<Record<string, string>>('shadowExerciseProgress') || {};
+    const integrationExercisesCompleted = Object.keys(integrationExerciseProgress).length;
+    const totalIntegrationExercises = 5; // Standard integration exercises per archetype
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 p-4">
@@ -1833,28 +1857,56 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
               </div>
             </motion.div>
 
-            {/* Exercises Progress */}
+            {/* Exercises Progress - Clear separation of both exercise types */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6"
+              className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6 md:col-span-2"
             >
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-400 mb-2">
-                  {exercisesCompleted}/{totalExercises}
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Exercise Progress</h3>
+              </div>
+              
+              {/* Integration Exercises */}
+              <div className="bg-blue-900/20 rounded-xl p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-blue-300 font-medium">Integration Exercises</div>
+                  <div className="text-2xl font-bold text-blue-400">
+                    {integrationExercisesCompleted}/{totalIntegrationExercises}
+                  </div>
                 </div>
-                <div className="text-blue-300 text-sm font-medium mb-4">Integration Exercises</div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
+                <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
                   <div 
                     className="bg-blue-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${totalExercises > 0 ? (exercisesCompleted / totalExercises) * 100 : 0}%` }}
+                    style={{ width: `${totalIntegrationExercises > 0 ? (integrationExercisesCompleted / totalIntegrationExercises) * 100 : 0}%` }}
                   />
                 </div>
-                <div className="text-xs text-gray-400 mt-2">
-                  {totalExercises > 0 ? Math.round((exercisesCompleted / totalExercises) * 100) : 0}% Complete
+                <div className="text-xs text-gray-400 text-center">
+                  Shadow archetype exercises • {totalIntegrationExercises > 0 ? Math.round((integrationExercisesCompleted / totalIntegrationExercises) * 100) : 0}% Complete
                 </div>
               </div>
+              
+              {/* Deep Analysis Exercises */}
+              {totalPhase2Exercises > 0 && (
+                <div className="bg-cyan-900/20 rounded-xl p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-cyan-300 font-medium">Deep Analysis Exercises</div>
+                    <div className="text-2xl font-bold text-cyan-400">
+                      {phase2ExercisesCompleted}/{totalPhase2Exercises}
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                    <div 
+                      className="bg-cyan-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${totalPhase2Exercises > 0 ? (phase2ExercisesCompleted / totalPhase2Exercises) * 100 : 0}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 text-center">
+                    AI-generated personalized exercises • {totalPhase2Exercises > 0 ? Math.round((phase2ExercisesCompleted / totalPhase2Exercises) * 100) : 0}% Complete
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             {/* Overall Progress */}
@@ -1866,13 +1918,13 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             >
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-400 mb-2">
-                  {Math.round(((actionsCompleted + exercisesCompleted) / Math.max(totalActions + totalExercises, 1)) * 100)}%
+                  {Math.round(((actionsCompleted + integrationExercisesCompleted) / Math.max(totalActions + totalIntegrationExercises, 1)) * 100)}%
                 </div>
                 <div className="text-purple-300 text-sm font-medium mb-4">Overall Progress</div>
                 <div className="w-full bg-gray-700 rounded-full h-3">
                   <div 
                     className="bg-purple-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${((actionsCompleted + exercisesCompleted) / Math.max(totalActions + totalExercises, 1)) * 100}%` }}
+                    style={{ width: `${((actionsCompleted + integrationExercisesCompleted) / Math.max(totalActions + totalIntegrationExercises, 1)) * 100}%` }}
                   />
                 </div>
                 <div className="text-xs text-gray-400 mt-2">Shadow Integration</div>
@@ -1888,15 +1940,15 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             >
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400 mb-2">
-                  {actionsCompleted + exercisesCompleted === 0 ? '🌱' : 
-                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.5 ? '🌿' :
-                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.8 ? '🌳' : '🏆'}
+                  {actionsCompleted + integrationExercisesCompleted === 0 ? '🌱' : 
+                   actionsCompleted + integrationExercisesCompleted < (totalActions + totalIntegrationExercises) * 0.5 ? '🌿' :
+                   actionsCompleted + integrationExercisesCompleted < (totalActions + totalIntegrationExercises) * 0.8 ? '🌳' : '🏆'}
                 </div>
                 <div className="text-yellow-300 text-sm font-medium mb-2">Journey Stage</div>
                 <div className="text-xs text-gray-300">
-                  {actionsCompleted + exercisesCompleted === 0 ? 'Getting Started' :
-                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.5 ? 'Building Awareness' :
-                   actionsCompleted + exercisesCompleted < (totalActions + totalExercises) * 0.8 ? 'Active Integration' : 'Shadow Mastery'}
+                  {actionsCompleted + integrationExercisesCompleted === 0 ? 'Getting Started' :
+                   actionsCompleted + integrationExercisesCompleted < (totalActions + totalIntegrationExercises) * 0.5 ? 'Building Awareness' :
+                   actionsCompleted + integrationExercisesCompleted < (totalActions + totalIntegrationExercises) * 0.8 ? 'Active Integration' : 'Shadow Mastery'}
                 </div>
               </div>
             </motion.div>
@@ -1907,8 +1959,8 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
             <h3 className="text-2xl font-bold text-white text-center mb-6">What Should You Focus On?</h3>
             
             {(() => {
-              const totalProgress = actionsCompleted + exercisesCompleted;
-              const totalItems = totalActions + totalExercises;
+              const totalProgress = actionsCompleted + integrationExercisesCompleted;
+              const totalItems = totalActions + totalIntegrationExercises;
               const progressPercent = totalItems > 0 ? (totalProgress / totalItems) * 100 : 0;
               
               if (actionsCompleted === 0 && totalActions > 0) {
@@ -1927,7 +1979,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                     </div>
                   </div>
                 );
-              } else if (actionsCompleted < totalActions && exercisesCompleted === 0) {
+              } else if (actionsCompleted < totalActions && integrationExercisesCompleted === 0) {
                 // Working on actions, haven't started exercises
                 return (
                   <div className="text-center">
@@ -1943,7 +1995,7 @@ This appears to be a temporary issue. Please try again in a few moments. Your co
                     </div>
                   </div>
                 );
-              } else if (actionsCompleted >= totalActions && exercisesCompleted === 0) {
+              } else if (actionsCompleted >= totalActions && integrationExercisesCompleted === 0) {
                 // Finished actions, ready for exercises
                 return (
                   <div className="text-center">
