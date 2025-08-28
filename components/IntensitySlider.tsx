@@ -10,6 +10,8 @@ interface IntensitySliderProps {
   onChange: (intensity: IntensityLevel) => void;
   gentleMode?: boolean;
   onGentleModeChange?: (enabled: boolean) => void;
+  allowedLevels?: IntensityLevel[];
+  restrictionMessage?: string;
   className?: string;
 }
 
@@ -83,10 +85,13 @@ const getIntensityOptions = (gentleMode: boolean): IntensityOption[] => [
   }
 ];
 
-export const IntensitySlider = ({ value, onChange, gentleMode = false, onGentleModeChange, className = '' }: IntensitySliderProps) => {
+export const IntensitySlider = ({ value, onChange, gentleMode = false, onGentleModeChange, allowedLevels, restrictionMessage, className = '' }: IntensitySliderProps) => {
   const [hoveredLevel, setHoveredLevel] = useState<IntensityLevel | null>(null);
 
-  const intensityOptions = getIntensityOptions(gentleMode);
+  const allIntensityOptions = getIntensityOptions(gentleMode);
+  const intensityOptions = allowedLevels 
+    ? allIntensityOptions.filter(option => allowedLevels.includes(option.level))
+    : allIntensityOptions;
   const selectedOption = intensityOptions.find(option => option.level === value);
   const displayOption = hoveredLevel 
     ? intensityOptions.find(option => option.level === hoveredLevel)
@@ -98,12 +103,21 @@ export const IntensitySlider = ({ value, onChange, gentleMode = false, onGentleM
         <h2 className="text-2xl font-bold text-white mb-3">
           {gentleMode ? "Choose Your Journey Style" : "Choose Your Depth"}
         </h2>
-        <p className="text-gray-300 text-sm max-w-2xl mx-auto">
+        <p className="text-gray-300 text-sm max-w-2xl mx-auto mb-4">
           {gentleMode 
             ? "How would you like to explore your inner world? All approaches are valuable."
             : "How deeply do you want to explore your shadow? You can change this anytime during your journey."
           }
         </p>
+        
+        {/* Age-based restriction notice */}
+        {restrictionMessage && (
+          <div className="max-w-2xl mx-auto mb-4 p-3 bg-blue-900/40 rounded-lg border border-blue-500/40">
+            <div className="text-blue-200 text-sm">
+              {restrictionMessage}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gentle Mode Toggle */}

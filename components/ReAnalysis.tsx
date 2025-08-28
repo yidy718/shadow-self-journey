@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader, Brain, FileText, MessageCircle, Eye, Target, Sparkles } from 'lucide-react';
+import { DeepAnalysisSkeleton } from './Skeletons';
 import { askClaude, type ShadowProfile } from '../lib/claudeApi';
 import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
 import { type UserPreferences } from '../lib/userPreferences';
@@ -325,19 +326,7 @@ CRITICAL: Every numbered item must be a complete question ending with a question
   };
 
   const renderLoadingPhase = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-4xl mx-auto p-8 text-center"
-    >
-      <div className="bg-black/40 rounded-3xl p-12 glass">
-        <Loader className="w-12 h-12 animate-spin text-purple-400 mx-auto mb-6" />
-        <h2 className="text-2xl font-semibold text-white mb-4">Gathering Your Journey Data</h2>
-        <p className="text-gray-300">
-          Sage is collecting your journal entries, conversations, and previous analyses...
-        </p>
-      </div>
-    </motion.div>
+    <DeepAnalysisSkeleton phase="Gathering Your Journey Data" />
   );
 
   const renderOptionsPhase = () => (

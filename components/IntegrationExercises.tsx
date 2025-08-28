@@ -7,7 +7,7 @@ import {
   Heart, Brain, Lightbulb, User, Shield, Eye,
   Clock, Star, Zap, Flame
 } from 'lucide-react';
-import { getStorageItem, setStorageItem } from '../lib/storageUtils';
+import { getStorageItem, setStorageItem, StorageKeys } from '../lib/storageUtils';
 
 interface Exercise {
   id: string;
@@ -15,7 +15,7 @@ interface Exercise {
   description: string;
   duration: string;
   difficulty: 'Gentle' | 'Moderate' | 'Deep' | 'Intense';
-  category: 'Daily Practice' | 'Reflection' | 'Action' | 'Meditation' | 'Journaling';
+  category: 'Daily Practice' | 'Reflection' | 'Action' | 'Meditation' | 'Journaling' | 'Deep Analysis';
   instructions: string[];
   archetype: string;
   completed: boolean;
@@ -29,9 +29,10 @@ interface IntegrationExercisesProps {
     question: string;
     response: string;
   };
+  onNavigateToDeepAnalysis?: () => void;
 }
 
-export const IntegrationExercises = ({ archetype, onClose, conversationContext }: IntegrationExercisesProps) => {
+export const IntegrationExercises = ({ archetype, onClose, conversationContext, onNavigateToDeepAnalysis }: IntegrationExercisesProps) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
@@ -39,17 +40,44 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
   useEffect(() => {
     // Load completed exercises from localStorage
     const completedExercises = getStorageItem<Record<string, boolean>>('shadowExerciseProgress') || {};
+    const completedPhase2Exercises = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [];
 
     // Generate exercises based on archetype
     let archetypeExercises = generateExercises(archetype, completedExercises);
     
+    // Load Phase 2 exercises from deep analysis if available
+    const phase2Data = getStorageItem(StorageKeys.PHASE2_DATA);
+    let phase2Exercises: Exercise[] = [];
+    
+    if (phase2Data && (phase2Data as any).integration_exercises) {
+      phase2Exercises = (phase2Data as any).integration_exercises.map((exercise: any, index: number) => ({
+        id: `phase2-${index}`,
+        title: exercise.exercise,
+        description: exercise.description,
+        duration: exercise.frequency === 'daily' ? '10-15 min daily' : exercise.frequency === 'weekly' ? '30-45 min weekly' : 'As needed',
+        difficulty: 'Deep' as const,
+        category: 'Deep Analysis' as const,
+        instructions: [
+          exercise.description,
+          `Purpose: ${exercise.purpose}`,
+          `Frequency: ${exercise.frequency}`,
+          'This exercise was personalized based on your deep behavioral analysis.'
+        ],
+        archetype: 'Deep Analysis',
+        completed: completedPhase2Exercises.includes(`phase2-${index}`)
+      }));
+    }
+    
+    // Combine all exercises with Phase 2 exercises at the top if they exist
+    let allExercises = phase2Exercises.length > 0 ? [...phase2Exercises, ...archetypeExercises] : archetypeExercises;
+    
     // If we have conversation context, add a custom exercise at the top
     if (conversationContext) {
       const customExercise = generateConversationExercise(conversationContext, archetype, completedExercises);
-      archetypeExercises = [customExercise, ...archetypeExercises];
+      allExercises = [customExercise, ...allExercises];
     }
     
-    setExercises(archetypeExercises);
+    setExercises(allExercises);
   }, [archetype, conversationContext]);
 
   const generateConversationExercise = (
@@ -383,18 +411,37 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
     });
 
     setExercises(updatedExercises);
-
-    // Save to localStorage
-    const completedData = getStorageItem<Record<string, string>>('shadowExerciseProgress') || {};
     const exercise = updatedExercises.find(ex => ex.id === exerciseId);
-    
-    if (exercise?.completed) {
-      completedData[exerciseId] = new Date().toISOString();
+
+    // Handle Phase 2 exercises differently
+    if (exerciseId.startsWith('phase2-')) {
+      // Phase 2 exercises use the COMPLETED_EXERCISES array storage
+      const completedPhase2 = getStorageItem<string[]>(StorageKeys.COMPLETED_EXERCISES) || [];
+      
+      if (exercise?.completed) {
+        if (!completedPhase2.includes(exerciseId)) {
+          completedPhase2.push(exerciseId);
+        }
+      } else {
+        const index = completedPhase2.indexOf(exerciseId);
+        if (index > -1) {
+          completedPhase2.splice(index, 1);
+        }
+      }
+      
+      setStorageItem(StorageKeys.COMPLETED_EXERCISES, completedPhase2);
     } else {
-      delete completedData[exerciseId];
+      // Traditional archetype exercises use the old storage system
+      const completedData = getStorageItem<Record<string, string>>('shadowExerciseProgress') || {};
+      
+      if (exercise?.completed) {
+        completedData[exerciseId] = new Date().toISOString();
+      } else {
+        delete completedData[exerciseId];
+      }
+      
+      setStorageItem('shadowExerciseProgress', completedData);
     }
-    
-    setStorageItem('shadowExerciseProgress', completedData);
   };
 
   const filteredExercises = exercises.filter(exercise => {
@@ -471,6 +518,43 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
           />
         </motion.div>
 
+        {/* Exercise Types Info */}
+        {exercises.some(ex => ex.id.startsWith('phase2-')) && (
+          <div className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-6 mb-8">
+            <div className="flex items-center mb-3">
+              <Brain className="w-6 h-6 text-purple-400 mr-3" />
+              <h3 className="text-lg font-semibold text-white">Exercise Types Available</h3>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div className="flex items-start">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-900/30 text-purple-200 border border-purple-500/30 mr-3 mt-0.5">
+                  <Brain className="w-3 h-3 mr-1" />
+                  Deep Analysis
+                </span>
+                <p className="text-gray-300">Personalized exercises from your behavioral analysis</p>
+              </div>
+              <div className="flex items-start">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-900/30 text-indigo-200 border border-indigo-500/30 mr-3 mt-0.5">
+                  <Target className="w-3 h-3 mr-1" />
+                  Archetype
+                </span>
+                <p className="text-gray-300">Traditional shadow work for your archetype</p>
+              </div>
+            </div>
+            {onNavigateToDeepAnalysis && (
+              <div className="mt-4 pt-4 border-t border-purple-500/20">
+                <button
+                  onClick={onNavigateToDeepAnalysis}
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors text-sm"
+                >
+                  <Brain className="w-4 h-4 mr-2" />
+                  Review Deep Analysis
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Filters */}
         <div className="flex gap-4 mb-8">
           {(['all', 'pending', 'completed'] as const).map((filterType) => (
@@ -502,7 +586,9 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
                 className={`bg-gray-900/60 backdrop-blur-sm border rounded-3xl p-6 cursor-pointer transition-all hover:scale-105 ${
                   exercise.completed 
                     ? 'border-green-500/40 bg-green-900/10' 
-                    : 'border-indigo-500/20 hover:border-indigo-400/40'
+                    : exercise.id.startsWith('phase2-')
+                      ? 'border-purple-500/30 hover:border-purple-400/50 bg-purple-900/5'
+                      : 'border-indigo-500/20 hover:border-indigo-400/40'
                 }`}
                 onClick={() => setSelectedExercise(exercise)}
               >
@@ -524,6 +610,14 @@ export const IntegrationExercises = ({ archetype, onClose, conversationContext }
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-2">{exercise.title}</h3>
+                {exercise.id.startsWith('phase2-') && (
+                  <div className="mb-3">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-900/30 text-purple-200 border border-purple-500/30">
+                      <Brain className="w-3 h-3 mr-1" />
+                      Deep Analysis
+                    </span>
+                  </div>
+                )}
                 <p className="text-gray-300 mb-4 line-clamp-2">{exercise.description}</p>
 
                 <div className="flex items-center justify-between">

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileText, Database, X } from 'lucide-react';
+import { ExportLoadingSkeleton } from './Skeletons';
 import { exportAsJSON, exportAsText, getExportStats } from '../lib/dataExport';
 
 interface ExportButtonProps {
@@ -133,9 +134,8 @@ export const ExportButton = ({ variant = 'secondary', className = '' }: ExportBu
               <div className="bg-black/40 rounded-2xl p-4 mb-6 text-sm">
                 <h3 className="text-white font-medium mb-3">Your Data Includes:</h3>
                 {statsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-3"></div>
-                    <span className="text-gray-300">Loading data summary...</span>
+                  <div className="py-4">
+                    <ExportLoadingSkeleton />
                   </div>
                 ) : (
                   <div className="space-y-2">

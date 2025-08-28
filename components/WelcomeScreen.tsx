@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, User, UserX, Sparkles, Brain, ArrowRight, AlertTriangle, BookOpen, Clock, Heart, Shield, Phone } from 'lucide-react';
 import { ParticleField } from './ParticleField';
 import { IntensitySlider } from './IntensitySlider';
-import { getUserPreferences, createNewUser, saveUserPreferences, clearUserData, type UserPreferences } from '../lib/userPreferences';
+import { getUserPreferences, createNewUser, saveUserPreferences, clearUserData, getAllowedIntensityLevels, getRecommendedIntensity, isIntensityAllowed, getAgeRestictionMessage, type UserPreferences } from '../lib/userPreferences';
 import { getRecommendedDestination, getUserProgress } from '../lib/progressUtils';
 import { getStorageItem, StorageKeys } from '../lib/storageUtils';
 import type { IntensityLevel } from '../lib/questions';
@@ -18,6 +18,7 @@ interface WelcomeScreenProps {
 export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps) => {
   const [currentStep, setCurrentStep] = useState<'splash' | 'quote' | 'identity' | 'intro' | 'preparation' | 'intensity' | 'preview' | 'safety' | 'warning'>('splash');
   const [userName, setUserName] = useState('');
+  const [userAge, setUserAge] = useState('');
   const [existingUser, setExistingUser] = useState<UserPreferences | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
   const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel>('moderate');
@@ -95,8 +96,17 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
   };
 
   const handleAnonymous = () => {
-    const newUser = createNewUser();
+    const age = parseInt(userAge) || undefined;
+    const newUser = createNewUser(undefined, age);
     newUser.gentleMode = gentleMode; // Initialize with current gentle mode setting
+    
+    // Set recommended intensity based on age
+    if (age) {
+      const recommendedIntensity = getRecommendedIntensity(age);
+      setSelectedIntensity(recommendedIntensity);
+      newUser.intensityLevel = recommendedIntensity;
+    }
+    
     saveUserPreferences(newUser);
     setCurrentStep('intensity');
   };
@@ -106,8 +116,17 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
       setShowNameInput(true);
       return;
     }
-    const newUser = createNewUser(userName);
+    const age = parseInt(userAge) || undefined;
+    const newUser = createNewUser(userName, age);
     newUser.gentleMode = gentleMode; // Initialize with current gentle mode setting
+    
+    // Set recommended intensity based on age
+    if (age) {
+      const recommendedIntensity = getRecommendedIntensity(age);
+      setSelectedIntensity(recommendedIntensity);
+      newUser.intensityLevel = recommendedIntensity;
+    }
+    
     saveUserPreferences(newUser);
     setCurrentStep('intensity');
   };
@@ -346,12 +365,41 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <div className="text-center max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl">
           <h2 className="text-4xl font-bold text-white mb-8">
-            How shall we address you?
+            Let's personalize your experience
           </h2>
           
           <p className="text-gray-300 mb-8">
-            Your choice affects only your local experience. No data leaves your device.
+            Your information stays private on your device. Age helps us recommend appropriate intensity levels.
           </p>
+          
+          {/* Age Input */}
+          <div className="mb-8 bg-gray-700/50 p-6 rounded-lg">
+            <label className="block text-white font-semibold mb-4 text-left">
+              Age (optional)
+            </label>
+            <input
+              type="number"
+              min="13"
+              max="99"
+              placeholder="Enter your age..."
+              value={userAge}
+              onChange={(e) => setUserAge(e.target.value)}
+              className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-purple-400 focus:outline-none"
+            />
+            <p className="text-gray-400 text-sm mt-2 text-left">
+              Age helps us recommend safe intensity levels for shadow work exploration.
+            </p>
+            
+            {/* Age-based restriction warning */}
+            {parseInt(userAge) > 0 && (
+              <div className="mt-4 p-3 bg-blue-900/40 rounded-lg border border-blue-500/40">
+                <div className="text-blue-200 text-sm">
+                  {getAgeRestictionMessage(parseInt(userAge)) || 
+                    `Available intensity levels: ${getAllowedIntensityLevels(parseInt(userAge)).join(', ')}`}
+                </div>
+              </div>
+            )}
+          </div>
           
           {existingUser && (
             <div className="mb-8 p-4 bg-blue-900/30 rounded-lg border border-blue-500/40">
@@ -394,13 +442,16 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
           )}
           
           {showNameInput && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-4 bg-gray-700/30 p-6 rounded-lg">
+              <label className="block text-white font-semibold mb-2 text-left">
+                Name (optional)
+              </label>
               <input
                 type="text"
                 placeholder="Enter your name..."
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600"
+                className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-purple-400 focus:outline-none"
               />
               <button
                 onClick={handleWithName}
@@ -523,6 +574,11 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
 
   // Intensity Selection Step
   if (currentStep === 'intensity') {
+    const currentUser = getUserPreferences();
+    const userAgeNum = parseInt(userAge) || currentUser?.age;
+    const allowedLevels = userAgeNum ? getAllowedIntensityLevels(userAgeNum) : undefined;
+    const restrictionMessage = userAgeNum ? getAgeRestictionMessage(userAgeNum) : null;
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
         <ParticleField count={25} />
@@ -534,9 +590,16 @@ export const WelcomeScreen = ({ onContinue, onDeepAnalysis }: WelcomeScreenProps
         >
           <IntensitySlider 
             value={selectedIntensity}
-            onChange={setSelectedIntensity}
+            onChange={(intensity) => {
+              // Only allow selection if intensity is allowed for this age
+              if (!userAgeNum || isIntensityAllowed(intensity, userAgeNum)) {
+                setSelectedIntensity(intensity);
+              }
+            }}
             gentleMode={gentleMode}
             onGentleModeChange={setGentleMode}
+            allowedLevels={allowedLevels}
+            restrictionMessage={restrictionMessage}
             className="mb-8"
           />
           
